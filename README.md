@@ -1,5 +1,6 @@
 MobileNNBench
 =============
+[![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](LICENSE)
 
 In recent years, the on device deep learning applications are getting more and
 more popular. It's a challenging task for app developers to deploy their

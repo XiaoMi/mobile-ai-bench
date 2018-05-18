@@ -1,0 +1,7 @@
+stages:
+  - benchmark
+
+benchmark:
+  stage: benchmark 
+  script:
+    - echo success
