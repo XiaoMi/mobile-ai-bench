@@ -1,6 +1,7 @@
 MobileNNBench
 =============
 [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](LICENSE)
+[![build status](http://v9.git.n.xiaomi.com/deep-computing/mobile-nn-bench/badges/master/build.svg)](http://v9.git.n.xiaomi.com/deep-computing/mobile-nn-bench/commits/master)
 
 In recent years, the on device deep learning applications are getting more and
 more popular. It's a challenging task for app developers to deploy their
