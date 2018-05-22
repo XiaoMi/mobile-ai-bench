@@ -4,7 +4,7 @@ MobileNNBench
 [![build status](http://v9.git.n.xiaomi.com/deep-computing/mobile-nn-bench/badges/master/build.svg)](http://v9.git.n.xiaomi.com/deep-computing/mobile-nn-bench/commits/master)
 
 In recent years, the on device deep learning applications are getting more and
-more popular. It's a challenging task for app developers to deploy their
+more popular. It's a challenging task for application developers to deploy their
 deep learning models in their applications. They need to choose proper
 inference framework, optionally utilizing quantization or compression
 techniques regarding to the precision-performance trade-off, and finally
