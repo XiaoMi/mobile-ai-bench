@@ -13,3 +13,6 @@ appropriate decision among these choices is a tedious and time consuming task.
 
 The puropse of this project is to provide an end-to-end neural network benchmark
 on mobile devices, which hopefully can provide insights for the developers.
+
+## License
+[Apache License 2.0](LICENSE).
