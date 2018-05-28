@@ -14,6 +14,9 @@
 
 #include "nnbench/executors/snpe/snpe_executor.h"
 
+#include <map>
+#include <string>
+
 namespace nnbench {
 
 Status SnpeExecutor::Prepare(const char *model_name) {

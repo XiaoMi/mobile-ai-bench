@@ -14,6 +14,10 @@
 
 #include "nnbench/executors/base_executor.h"
 
+#include <map>
+#include <memory>
+#include <string>
+
 namespace nnbench {
 
 class BaseTensor::Impl {

@@ -15,6 +15,9 @@
 #ifndef NNBENCH_EXECUTORS_SNPE_SNPE_EXECUTOR_H_
 #define NNBENCH_EXECUTORS_SNPE_SNPE_EXECUTOR_H_
 
+#include <map>
+#include <string>
+
 #include "nnbench/executors/base_executor.h"
 
 namespace nnbench {

@@ -17,6 +17,7 @@
 
 #include <map>
 #include <memory>
+#include <string>
 #include <vector>
 
 namespace nnbench {

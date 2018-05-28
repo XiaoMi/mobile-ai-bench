@@ -1,7 +1,15 @@
 stages:
+  - cpplint
   - benchmark
 
-benchmark:
-  stage: benchmark 
+cpplint:
+  stage: cpplint
   script:
-    - echo success
+    - curl -o cpplint.py https://raw.githubusercontent.com/google/styleguide/gh-pages/cpplint/cpplint.py
+    - python cpplint.py --linelength=80 --counting=detailed $(find nnbench -name "*.h" -or -name "*.cc")
+
+benchmark:
+  stage: benchmark
+  script:
+    - bazel build //nnbench/...
+
