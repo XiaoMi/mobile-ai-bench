@@ -19,13 +19,33 @@
 
 namespace nnbench {
 
-Status SnpeExecutor::Prepare(const char *model_name) {
+Status SnpeCPUExecutor::Prepare(const char *model_name) {
+  (void)(model_name);
+  int sum = 0;
+  for (int i = 0; i < 10000; ++i) {
+    sum += i;
+  }
+  return Status::SUCCESS;
+}
+
+Status SnpeCPUExecutor::Run(const std::map<std::string, BaseTensor> &inputs,
+                         std::map<std::string, BaseTensor> *outputs) {
+  (void)(inputs);
+  (void)(outputs);
+  int sum = 0;
+  for (int i = 0; i < 100000; ++i) {
+    sum += i;
+  }
+  return Status::SUCCESS;
+}
+
+Status SnpeGPUExecutor::Prepare(const char *model_name) {
   (void)(model_name);
   return Status::NOT_SUPPORTED;
 }
 
-Status SnpeExecutor::Run(const std::map<std::string, BaseTensor> &inputs,
-                         std::map<std::string, BaseTensor> *outputs) {
+Status SnpeGPUExecutor::Run(const std::map<std::string, BaseTensor> &inputs,
+                            std::map<std::string, BaseTensor> *outputs) {
   (void)(inputs);
   (void)(outputs);
   return Status::NOT_SUPPORTED;

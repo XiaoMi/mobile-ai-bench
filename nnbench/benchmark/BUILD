@@ -1,0 +1,31 @@
+package(
+    default_visibility = ["//visibility:public"],
+)
+
+licenses(["notice"])  # Apache 2.0
+
+cc_library(
+    name = "benchmark",
+    testonly = 1,
+    srcs = [
+        "benchmark.cc",
+    ],
+    hdrs = [
+        "benchmark.h",
+    ],
+    deps = [
+        "//nnbench/executors:snpe_executor",
+    ],
+    alwayslink = 1,
+)
+
+cc_test(
+    name = "model_benchmark",
+    testonly = 1,
+    srcs = ["benchmark_main.cc"],
+    linkstatic = 1,
+    deps = [
+        "benchmark",
+        "//external:gflags_nothreads",
+    ],
+)

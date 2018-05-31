@@ -12,36 +12,41 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef NNBENCH_EXECUTORS_SNPE_SNPE_EXECUTOR_H_
-#define NNBENCH_EXECUTORS_SNPE_SNPE_EXECUTOR_H_
+#ifndef NNBENCH_BENCHMARK_BENCHMARK_H_
+#define NNBENCH_BENCHMARK_BENCHMARK_H_
 
-#include <map>
 #include <string>
+#include <utility>
+#include <vector>
+#include <memory>
 
 #include "nnbench/executors/base_executor.h"
 
+#define BENCHMARK_CONCAT(a, b, c) a##b##c
+#define BENCHMARK(e, m, f, r) \
+  static ::nnbench::testing::Benchmark *BENCHMARK_CONCAT(m, f, r) = \
+    (new ::nnbench::testing::Benchmark(e, #m))
+
 namespace nnbench {
+namespace testing {
 
-class SnpeCPUExecutor : public BaseExecutor {
+class Benchmark {
  public:
-  SnpeCPUExecutor() : BaseExecutor(SNPE, CPU) {}
+  Benchmark(BaseExecutor *executor, const char *model_name);
 
-  virtual Status Prepare(const char *model_name);
+  static Status Run(const char *model_name);
 
-  virtual Status Run(const std::map<std::string, BaseTensor> &inputs,
-                     std::map<std::string, BaseTensor> *outputs);
+ private:
+  std::string model_name_;
+  BaseExecutor *executor_;
+
+  void Register();
+  Status Run(double *init_seconds, double *run_seconds);
 };
 
-class SnpeGPUExecutor : public BaseExecutor {
- public:
-  SnpeGPUExecutor() : BaseExecutor(SNPE, GPU) {}
+int64_t NowMicros();
 
-  virtual Status Prepare(const char *model_name);
-
-  virtual Status Run(const std::map<std::string, BaseTensor> &inputs,
-                     std::map<std::string, BaseTensor> *outputs);
-};
-
+}  // namespace testing
 }  // namespace nnbench
 
-#endif  // NNBENCH_EXECUTORS_SNPE_SNPE_EXECUTOR_H_
+#endif  // NNBENCH_BENCHMARK_BENCHMARK_H_
