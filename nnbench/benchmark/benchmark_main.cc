@@ -12,6 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+#include <string>
+
 #include "gflags/gflags.h"
 #include "nnbench/benchmark/benchmark.h"
 #include "nnbench/executors/snpe/snpe_executor.h"
@@ -28,13 +30,15 @@ BENCHMARK(snpe_gpu_executor.get(), MobileNet, SNPE, GPU);
 BENCHMARK(snpe_gpu_executor.get(), InceptionV3, SNPE, GPU);
 
 
-DEFINE_string(model_name, "all", "benchmark model name");
+DEFINE_string(model_name, "all", "the model to benchmark");
 
 int main(int argc, char **argv) {
-  gflags::SetUsageMessage("./model_benchmark [--model_name=all]");
+  std::string usage = "run benchmark, e.g. " + std::string(argv[0]) +
+                      " --model_name=all";
+  gflags::SetUsageMessage(usage);
   gflags::ParseCommandLineFlags(&argc, &argv, true);
 
   nnbench::Status status =
-      nnbench::testing::Benchmark::Run(FLAGS_model_name.c_str());
+      nnbench::benchmark::Benchmark::Run(FLAGS_model_name.c_str());
   return status;
 }
