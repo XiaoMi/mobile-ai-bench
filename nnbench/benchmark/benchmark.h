@@ -24,11 +24,11 @@
 
 #define BENCHMARK_CONCAT(a, b, c) a##b##c
 #define BENCHMARK(e, m, f, r) \
-  static ::nnbench::testing::Benchmark *BENCHMARK_CONCAT(m, f, r) = \
-    (new ::nnbench::testing::Benchmark(e, #m))
+  static ::nnbench::benchmark::Benchmark *BENCHMARK_CONCAT(m, f, r) = \
+    (new ::nnbench::benchmark::Benchmark(e, #m))
 
 namespace nnbench {
-namespace testing {
+namespace benchmark {
 
 class Benchmark {
  public:
@@ -46,7 +46,7 @@ class Benchmark {
 
 int64_t NowMicros();
 
-}  // namespace testing
+}  // namespace benchmark
 }  // namespace nnbench
 
 #endif  // NNBENCH_BENCHMARK_BENCHMARK_H_

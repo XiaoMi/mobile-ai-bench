@@ -22,7 +22,7 @@
 #include <map>
 
 namespace nnbench {
-namespace testing {
+namespace benchmark {
 
 static std::vector<Benchmark *> *all_benchmarks = nullptr;
 
@@ -114,5 +114,5 @@ int64_t NowMicros() {
   return static_cast<int64_t>(tv.tv_sec) * 1000000 + tv.tv_usec;
 }
 
-}  // namespace testing
+}  // namespace benchmark
 }  // namespace nnbench
