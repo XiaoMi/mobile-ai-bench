@@ -14,9 +14,11 @@
 
 #include "nnbench/executors/base_executor.h"
 
+#include <numeric>
 #include <map>
 #include <memory>
 #include <string>
+#include <functional>
 
 namespace nnbench {
 
@@ -66,6 +68,11 @@ BaseTensor::~BaseTensor() = default;
 const std::vector<int64_t> &BaseTensor::shape() const { return impl_->shape; }
 
 const std::shared_ptr<float> BaseTensor::data() const { return impl_->data; }
+
+int64_t BaseTensor::size() const {
+  return std::accumulate(shape().begin(), shape().end(), 1,
+                         std::multiplies<int64_t>());
+}
 
 std::shared_ptr<float> BaseTensor::data() { return impl_->data; }
 

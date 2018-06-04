@@ -11,6 +11,16 @@ new_http_archive(
     ],
 )
 
+new_http_archive(
+    name = "snpe",
+    build_file = "third_party/snpe/snpe.BUILD",
+    sha256 = "b11780e5e7f591e916c69bdface4a1ef75b0c19f7b43c868bd62c0f3747d3fbb",
+    strip_prefix = "snpe-1.15.0",
+    urls = [
+        "https://cnbj1-fds.api.xiaomi.net/nnbench/third_party/snpe-1.15.0.zip",
+    ],
+)
+
 http_archive(
     # v2.2.0 + fix of include path
     name = "com_github_gflags_gflags",

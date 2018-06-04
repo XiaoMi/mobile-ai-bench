@@ -13,21 +13,18 @@
 // limitations under the License.
 
 #include <string>
+#include <iostream>
 
 #include "gflags/gflags.h"
 #include "nnbench/benchmark/benchmark.h"
+#include "nnbench/executors/base_executor.h"
 #include "nnbench/executors/snpe/snpe_executor.h"
 
 // define all benchmarks here
 std::unique_ptr<nnbench::SnpeCPUExecutor>
     snpe_cpu_executor(new nnbench::SnpeCPUExecutor());
-BENCHMARK(snpe_cpu_executor.get(), MobileNet, SNPE, CPU);
-BENCHMARK(snpe_cpu_executor.get(), InceptionV3, SNPE, CPU);
-
-std::unique_ptr<nnbench::SnpeGPUExecutor>
-    snpe_gpu_executor(new nnbench::SnpeGPUExecutor());
-BENCHMARK(snpe_gpu_executor.get(), MobileNet, SNPE, GPU);
-BENCHMARK(snpe_gpu_executor.get(), InceptionV3, SNPE, GPU);
+NNBENCH_BENCHMARK(snpe_cpu_executor.get(), InceptionV3, SNPE, CPU,
+                  inception_v3.dlc, {"Mul:0"}, {"keyboard.dat"}, {268203});
 
 
 DEFINE_string(model_name, "all", "the model to benchmark");
@@ -35,6 +32,7 @@ DEFINE_string(model_name, "all", "the model to benchmark");
 int main(int argc, char **argv) {
   std::string usage = "run benchmark, e.g. " + std::string(argv[0]) +
                       " --model_name=all";
+  std::cout << usage << std::endl;
   gflags::SetUsageMessage(usage);
   gflags::ParseCommandLineFlags(&argc, &argv, true);
 

@@ -18,6 +18,7 @@
 #include <sys/time.h>
 
 #include <algorithm>
+#include <fstream>
 #include <vector>
 #include <map>
 
@@ -26,8 +27,25 @@ namespace benchmark {
 
 static std::vector<Benchmark *> *all_benchmarks = nullptr;
 
-Benchmark::Benchmark(BaseExecutor *executor, const char *model_name)
-    : model_name_(model_name), executor_(executor) {
+Benchmark::Benchmark(BaseExecutor *executor,
+                     const char *model_name,
+                     const char *model_file,
+                     std::initializer_list<std::string> input_names,
+                     std::initializer_list<std::string> input_files,
+                     std::initializer_list<int64_t> input_sizes)
+    : executor_(executor),
+      model_name_(model_name),
+      model_file_(model_file),
+      input_names_(input_names),
+      input_files_(input_files),
+      input_sizes_(input_sizes) {
+  if (input_names.size() != input_files.size() ||
+      input_files.size() != input_sizes.size()) {
+    printf("size of input_names(%lu), input_files(%lu) and input_sizes(%lu) "
+               "should be equal\n", input_names.size(), input_files.size(),
+           input_sizes.size());
+    abort();
+  }
   Register();
 }
 
@@ -47,7 +65,8 @@ Status Benchmark::Run(const char *model_name) {
   printf("model_name,framework,runtime,init time,inference time\n");
   for (auto b : *all_benchmarks) {
     if (strcmp(model_name, "all") != 0 &&
-        strcmp(model_name, b->model_name_.c_str()) != 0) continue;
+        strcmp(model_name, b->model_name_.c_str()) != 0)
+      continue;
     double init_seconds, run_seconds;
     Status status = b->Run(&init_seconds, &run_seconds);
     if (status != SUCCESS) {
@@ -78,13 +97,33 @@ Status Benchmark::Run(double *init_seconds, double *run_seconds) {
   int64_t start_time, end_time;
   // prepare
   start_time = NowMicros();
-  Status status = executor_->Prepare(model_name_.c_str());
+  Status status = executor_->Prepare(model_file_.c_str());
   end_time = NowMicros();
   *init_seconds = (end_time - start_time) * 1e-6;
   if (status != SUCCESS) return status;
   // warm-up
   std::map<std::string, BaseTensor> inputs;
   std::map<std::string, BaseTensor> outputs;
+  for (size_t i = 0; i < input_names_.size(); ++i) {
+    std::shared_ptr<float> input_data(new float[input_sizes_[i]]);
+    if (!input_files_[i].empty()) {
+      std::ifstream fin(input_files_[i].c_str(),
+                        std::ios::in | std::ios::binary);
+      if (!fin) {
+        printf("Open file %s failed!\n", input_files_[i].c_str());
+        abort();
+      }
+      fin.read(reinterpret_cast<char *>(input_data.get()), input_sizes_[i] * 4);
+    } else {
+      // random input
+      unsigned int seed = 1;
+      for (size_t j = 0; j < input_sizes_[i]; ++j)
+        input_data.get()[j] = rand_r(&seed) % 100 / 100.0f;
+    }
+    std::vector<int64_t> input_shape = {input_sizes_[i]};
+    BaseTensor input_tensor = BaseTensor(input_shape, input_data);
+    inputs.insert({input_names_[i], input_tensor});
+  }
   for (int i = 0; i < 5; ++i) {
     status = executor_->Run(inputs, &outputs);
   }
