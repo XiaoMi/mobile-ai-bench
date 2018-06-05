@@ -19,6 +19,7 @@
 
 #include <algorithm>
 #include <fstream>
+#include <functional>
 #include <vector>
 #include <map>
 
@@ -30,20 +31,20 @@ static std::vector<Benchmark *> *all_benchmarks = nullptr;
 Benchmark::Benchmark(BaseExecutor *executor,
                      const char *model_name,
                      const char *model_file,
-                     std::initializer_list<std::string> input_names,
-                     std::initializer_list<std::string> input_files,
-                     std::initializer_list<int64_t> input_sizes)
+                     std::vector<std::string> input_names,
+                     std::vector<std::string> input_files,
+                     std::vector<std::vector<int64_t>> input_shapes)
     : executor_(executor),
       model_name_(model_name),
       model_file_(model_file),
       input_names_(input_names),
       input_files_(input_files),
-      input_sizes_(input_sizes) {
-  if (input_names.size() != input_files.size() ||
-      input_files.size() != input_sizes.size()) {
-    printf("size of input_names(%u), input_files(%u) and input_sizes(%u) "
+      input_shapes_(input_shapes) {
+  if (input_names.size() != input_shapes_.size() ||
+      (input_files.size() != input_shapes_.size() && input_files.size() > 0)) {
+    printf("size of input_names(%lu), input_files(%lu) and input_shapes(%lu) "
                "should be equal\n", input_names.size(), input_files.size(),
-           input_sizes.size());
+           input_shapes_.size());
     abort();
   }
   Register();
@@ -105,23 +106,27 @@ Status Benchmark::Run(double *init_seconds, double *run_seconds) {
   std::map<std::string, BaseTensor> inputs;
   std::map<std::string, BaseTensor> outputs;
   for (size_t i = 0; i < input_names_.size(); ++i) {
-    std::shared_ptr<float> input_data(new float[input_sizes_[i]]);
-    if (!input_files_[i].empty()) {
+    int64_t input_size =
+        std::accumulate(input_shapes_[i].begin(), input_shapes_[i].end(), 1,
+                        std::multiplies<int64_t>());
+    std::shared_ptr<float> input_data(new float[input_size]);
+    if (input_files_.size() > 0 && !input_files_[i].empty()) {
       std::ifstream fin(input_files_[i].c_str(),
                         std::ios::in | std::ios::binary);
       if (!fin) {
         printf("Open file %s failed!\n", input_files_[i].c_str());
         abort();
       }
-      fin.read(reinterpret_cast<char *>(input_data.get()), input_sizes_[i] * 4);
+      fin.read(reinterpret_cast<char *>(input_data.get()),
+               input_size * sizeof(float));
+      fin.close();
     } else {
       // random input
       unsigned int seed = 1;
-      for (size_t j = 0; j < input_sizes_[i]; ++j)
+      for (size_t j = 0; j < input_size; ++j)
         input_data.get()[j] = rand_r(&seed) % 100 / 100.0f;
     }
-    std::vector<int64_t> input_shape = {input_sizes_[i]};
-    BaseTensor input_tensor = BaseTensor(input_shape, input_data);
+    BaseTensor input_tensor = BaseTensor(input_shapes_[i], input_data);
     inputs.insert({input_names_[i], input_tensor});
   }
   for (int i = 0; i < 5; ++i) {

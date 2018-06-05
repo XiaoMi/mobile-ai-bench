@@ -18,19 +18,23 @@
 #include "gflags/gflags.h"
 #include "nnbench/benchmark/benchmark.h"
 #include "nnbench/executors/base_executor.h"
+#include "nnbench/executors/ncnn/ncnn_executor.h"
 #include "nnbench/executors/snpe/snpe_executor.h"
 
 // define all benchmarks here
 std::unique_ptr<nnbench::SnpeCPUExecutor>
     snpe_cpu_executor(new nnbench::SnpeCPUExecutor());
 NNBENCH_BENCHMARK(snpe_cpu_executor.get(), InceptionV3, SNPE, CPU,
-                  inception_v3.dlc, {"Mul:0"}, {"keyboard.dat"}, {268203});
+                  inception_v3.dlc, (std::vector<std::string>{"Mul:0"}),
+                  (std::vector<std::string>{"keyboard.dat"}),
+                  (std::vector<std::vector<int64_t>>{{299, 299, 3}}));
 
-std::unique_ptr<nnbench::SnpeGPUExecutor>
-    snpe_gpu_executor(new nnbench::SnpeGPUExecutor());
-NNBENCH_BENCHMARK(snpe_gpu_executor.get(), InceptionV3, SNPE, GPU,
-                  inception_v3.dlc, {"Mul:0"}, {"keyboard.dat"}, {268203});
-
+std::unique_ptr<nnbench::NcnnExecutor>
+    ncnn_executor(new nnbench::NcnnExecutor());
+NNBENCH_BENCHMARK(ncnn_executor.get(), mobilenet, NCNN, CPU,
+                  mobilenet.param, (std::vector<std::string>{"data"}),
+                  (std::vector<std::string>{}),
+                  (std::vector<std::vector<int64_t>>{{224, 224, 3}}));
 
 DEFINE_string(model_name, "all", "the model to benchmark");
 
