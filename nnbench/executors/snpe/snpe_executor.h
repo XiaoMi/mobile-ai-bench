@@ -16,9 +16,11 @@
 #define NNBENCH_EXECUTORS_SNPE_SNPE_EXECUTOR_H_
 
 #include <map>
+#include <memory>
 #include <string>
 
 #include "nnbench/executors/base_executor.h"
+#include "SNPE/SNPE.hpp"
 
 namespace nnbench {
 
@@ -30,6 +32,10 @@ class SnpeCPUExecutor : public BaseExecutor {
 
   virtual Status Run(const std::map<std::string, BaseTensor> &inputs,
                      std::map<std::string, BaseTensor> *outputs);
+ private:
+  std::unique_ptr<zdl::SNPE::SNPE> snpe_;
+  zdl::DlSystem::TensorMap input_tensor_map_;
+  zdl::DlSystem::TensorMap output_tensor_map_;
 };
 
 class SnpeGPUExecutor : public BaseExecutor {

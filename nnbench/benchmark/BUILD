@@ -14,7 +14,7 @@ cc_library(
         "benchmark.h",
     ],
     deps = [
-        "//nnbench/executors:snpe_executor",
+        "//nnbench/executors:base_executor",
     ],
     alwayslink = 1,
 )
@@ -27,5 +27,6 @@ cc_test(
     deps = [
         "benchmark",
         "//external:gflags_nothreads",
+        "//nnbench/executors:snpe_executor",
     ],
 )

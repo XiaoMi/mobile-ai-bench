@@ -58,6 +58,7 @@ class BaseTensor {
 
   const std::vector<int64_t> &shape() const;
   const std::shared_ptr<float> data() const;
+  int64_t size() const;
   std::shared_ptr<float> data();
 
  private:

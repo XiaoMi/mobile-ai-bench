@@ -23,22 +23,34 @@
 #include "nnbench/executors/base_executor.h"
 
 #define BENCHMARK_CONCAT(a, b, c) a##b##c
-#define BENCHMARK(e, m, f, r) \
-  static ::nnbench::benchmark::Benchmark *BENCHMARK_CONCAT(m, f, r) = \
-    (new ::nnbench::benchmark::Benchmark(e, #m))
+#define NNBENCH_BENCHMARK(executor, model_name, framework, runtime, \
+                          model_file, input_names, input_files, input_sizes) \
+  static ::nnbench::benchmark::Benchmark \
+      *BENCHMARK_CONCAT(model_name, framework, runtime) = \
+    (new ::nnbench::benchmark::Benchmark(executor, #model_name, #model_file, \
+         input_names, input_files, input_sizes))
 
 namespace nnbench {
 namespace benchmark {
 
 class Benchmark {
  public:
-  Benchmark(BaseExecutor *executor, const char *model_name);
+  Benchmark(BaseExecutor *executor,
+            const char *model_name,
+            const char *model_file,
+            std::initializer_list<std::string> input_names,
+            std::initializer_list<std::string> input_files,
+            std::initializer_list<int64_t> input_sizes);
 
   static Status Run(const char *model_name);
 
  private:
-  std::string model_name_;
   BaseExecutor *executor_;
+  std::string model_name_;
+  std::string model_file_;
+  std::vector<std::string> input_names_;
+  std::vector<std::string> input_files_;
+  std::vector<int64_t> input_sizes_;
 
   void Register();
   Status Run(double *init_seconds, double *run_seconds);
