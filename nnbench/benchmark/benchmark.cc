@@ -41,7 +41,7 @@ Benchmark::Benchmark(BaseExecutor *executor,
       input_sizes_(input_sizes) {
   if (input_names.size() != input_files.size() ||
       input_files.size() != input_sizes.size()) {
-    printf("size of input_names(%lu), input_files(%lu) and input_sizes(%lu) "
+    printf("size of input_names(%u), input_files(%u) and input_sizes(%u) "
                "should be equal\n", input_names.size(), input_files.size(),
            input_sizes.size());
     abort();
