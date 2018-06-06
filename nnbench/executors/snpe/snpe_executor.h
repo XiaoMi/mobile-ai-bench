@@ -46,6 +46,10 @@ class SnpeGPUExecutor : public BaseExecutor {
 
   virtual Status Run(const std::map<std::string, BaseTensor> &inputs,
                      std::map<std::string, BaseTensor> *outputs);
+ private:
+  std::unique_ptr<zdl::SNPE::SNPE> snpe_;
+  zdl::DlSystem::TensorMap input_tensor_map_;
+  zdl::DlSystem::TensorMap output_tensor_map_;
 };
 
 }  // namespace nnbench

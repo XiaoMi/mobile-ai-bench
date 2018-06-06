@@ -26,6 +26,11 @@ std::unique_ptr<nnbench::SnpeCPUExecutor>
 NNBENCH_BENCHMARK(snpe_cpu_executor.get(), InceptionV3, SNPE, CPU,
                   inception_v3.dlc, {"Mul:0"}, {"keyboard.dat"}, {268203});
 
+std::unique_ptr<nnbench::SnpeGPUExecutor>
+    snpe_gpu_executor(new nnbench::SnpeGPUExecutor());
+NNBENCH_BENCHMARK(snpe_gpu_executor.get(), InceptionV3, SNPE, GPU,
+                  inception_v3.dlc, {"Mul:0"}, {"keyboard.dat"}, {268203});
+
 
 DEFINE_string(model_name, "all", "the model to benchmark");
 

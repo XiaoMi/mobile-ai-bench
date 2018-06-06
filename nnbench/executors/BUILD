@@ -30,11 +30,9 @@ cc_library(
     name = "snpe_executor",
     srcs = [
         "snpe/snpe_executor.cc",
-        "snpe/snpe_utils.cc",
     ],
     hdrs = [
         "snpe/snpe_executor.h",
-        "snpe/snpe_utils.h",
     ],
     copts = [
         "-Werror",
