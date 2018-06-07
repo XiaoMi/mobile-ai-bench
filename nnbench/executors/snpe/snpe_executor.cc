@@ -67,7 +67,7 @@ std::unique_ptr<zdl::SNPE::SNPE> BuildSnpeRuntime(
   udlBundle.cookie = reinterpret_cast<void *>(0xdeadbeaf);
 
   if (!zdl::SNPE::SNPEFactory::isRuntimeAvailable(runtime)) {
-    std::cerr << "SNPE Runtime" << static_cast<int>(runtime)
+    std::cerr << "SNPE Runtime " << static_cast<int>(runtime)
               << " not available! " << std::endl;
     return nullptr;
   }

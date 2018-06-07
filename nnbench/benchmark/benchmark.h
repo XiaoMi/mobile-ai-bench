@@ -38,9 +38,9 @@ class Benchmark {
   Benchmark(BaseExecutor *executor,
             const char *model_name,
             const char *model_file,
-            std::initializer_list<std::string> input_names,
-            std::initializer_list<std::string> input_files,
-            std::initializer_list<int64_t> input_sizes);
+            std::vector<std::string> input_names,
+            std::vector<std::string> input_files,
+            std::vector<std::vector<int64_t>> input_shapes);
 
   static Status Run(const char *model_name);
 
@@ -50,7 +50,7 @@ class Benchmark {
   std::string model_file_;
   std::vector<std::string> input_names_;
   std::vector<std::string> input_files_;
-  std::vector<int64_t> input_sizes_;
+  std::vector<std::vector<int64_t>> input_shapes_;
 
   void Register();
   Status Run(double *init_seconds, double *run_seconds);

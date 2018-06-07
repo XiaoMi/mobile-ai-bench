@@ -105,7 +105,7 @@ def get_target_socs_serialnos(target_socs=None):
 def bazel_build(target,
                 abi="armeabi-v7a"):
     print("* Build %s with ABI %s" % (target, abi))
-    if abi == "x86_64":
+    if abi == "host":
         bazel_args = (
             "build",
             target,
@@ -116,7 +116,10 @@ def bazel_build(target,
             target,
             "--config",
             "android",
-            "--cpu=%s" % abi,)
+            "--cpu=%s" % abi,
+            "--action_env=ANDROID_NDK_HOME=%s"
+            % os.environ["ANDROID_NDK_HOME"],
+        )
     sh.bazel(
         _fg=True,
         *bazel_args)

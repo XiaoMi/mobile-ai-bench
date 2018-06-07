@@ -53,3 +53,23 @@ cc_library(
         "@snpe//:snpe_arm64-v8a",
     ]),
 )
+
+cc_library(
+    name = "ncnn_executor",
+    srcs = glob([
+        "ncnn/ncnn_executor.cc",
+    ]),
+    hdrs = [
+        "ncnn/ncnn_executor.h",
+    ],
+    copts = [
+        "-Werror",
+        "-Wextra",
+        "-Wno-missing-field-initializers",
+        "-fno-rtti",  # ncnn builds with -fno-rtti
+    ],
+    deps = [
+        ":base_executor",
+        "@ncnn",
+    ],
+)

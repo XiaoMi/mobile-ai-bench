@@ -21,7 +21,7 @@ import sh_commands
 abi_types = [
     "armeabi-v7a",
     "arm64-v8a",
-    "x86_64",
+    "host",
 ]
 
 
@@ -131,7 +131,7 @@ def main(unused_args):
             print("Not supported abi: %s" % target_abi)
             continue
         sh_commands.bazel_build(target, target_abi)
-        if target_abi == "x86_64":
+        if target_abi == "host":
             print("Unable to run target on host yet!")
             continue
         for serialno in target_devices:

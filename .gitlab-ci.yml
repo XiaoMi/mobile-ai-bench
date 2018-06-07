@@ -13,7 +13,7 @@ benchmark:
   script:
     - DATE_STR=`date "+%Y_%m_%d"`
     - CI_PROJECT_OUTPUT_PATH=/nnbench-build-output/$CI_PROJECT_NAME/${DATE_STR}_${CI_PIPELINE_ID}
-    - mkdir -p $CI_PROJECT_OUTPUT_PATH
+    - ANDROID_NDK_HOME=/opt/android-ndk-r15c
     - python tools/benchmark.py --output_dir=$CI_PROJECT_OUTPUT_PATH
     - if [ -f $CI_PROJECT_OUTPUT_PATH/report.csv ]; then cp $CI_PROJECT_OUTPUT_PATH/report.csv .; cat report.csv | sed 's/,/ ,/g' | column -t -s,; fi
   artifacts:
