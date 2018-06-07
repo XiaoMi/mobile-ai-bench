@@ -1,0 +1,8 @@
+build --verbose_failures
+build --copt=-std=c++11
+
+# Usage example: bazel build --config android
+build:android --crosstool_top=//external:android/crosstool
+build:android --host_crosstool_top=@bazel_tools//tools/cpp:toolchain
+build:android --config=cross_compile
+

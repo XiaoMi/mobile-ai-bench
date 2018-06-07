@@ -62,7 +62,6 @@ Status Benchmark::Run(const char *model_name) {
   // Internal perf regression tools depends on the output formatting,
   // please keep in consistent when modifying
   Status res = SUCCESS;
-  printf("model_name,framework,runtime,init time,inference time\n");
   for (auto b : *all_benchmarks) {
     if (strcmp(model_name, "all") != 0 &&
         strcmp(model_name, b->model_name_.c_str()) != 0)
@@ -73,8 +72,8 @@ Status Benchmark::Run(const char *model_name) {
       res = status;
       continue;
     }
-    // TODO(wuchenghui): complete benchmark info
-    printf("%s,%d,%d,%f,%f\n",
+    // model_name,framework,runtime,init time,inference time
+    printf("benchmark:%s,%d,%d,%f,%f\n",
            b->model_name_.c_str(),
            b->executor_->GetFramework(),
            b->executor_->GetRuntime(),
