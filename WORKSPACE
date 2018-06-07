@@ -42,6 +42,18 @@ bind(
     actual = "@com_github_gflags_gflags//:gflags_nothreads",
 )
 
+new_http_archive(
+    name = "ncnn",
+    build_file = "third_party/ncnn/ncnn.BUILD",
+    sha256 = "a813f42ed898c008d18e7abf0f0e8fb0b6c5d8de1e7a9e9c8a2d0b3967678193",
+    strip_prefix = "ncnn-20180427",
+    type = "zip",
+    urls = [
+        "https://cnbj1-fds.api.xiaomi.net/nnbench/ncnn-20180427.zip",
+        "https://codeload.github.com/Tencent/ncnn/zip/20180427",
+    ],
+)
+
 # Set up Android NDK
 android_ndk_repository(
     name = "androidndk",

@@ -11,5 +11,4 @@ cpplint:
 benchmark:
   stage: benchmark
   script:
-    - bazel build //nnbench/benchmark:model_benchmark --crosstool_top=//external:android/crosstool --host_crosstool_top=@bazel_tools//tools/cpp:toolchain --cpu=armeabi-v7a --copt=-std=c++11
-
+    - bazel build //nnbench/benchmark:model_benchmark --crosstool_top=//external:android/crosstool --host_crosstool_top=@bazel_tools//tools/cpp:toolchain --cpu=armeabi-v7a --copt=-std=c++11 --action_env=ANDROID_NDK_HOME=/opt/android-ndk-r15c
