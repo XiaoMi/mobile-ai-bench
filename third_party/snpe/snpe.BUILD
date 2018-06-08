@@ -5,7 +5,7 @@ cc_library(
     hdrs = glob([
         "include/zdl/*/*.hpp",
     ]),
-    includes = ["include/zdl"]
+    includes = ["include/zdl"],
 )
 
 cc_library(
@@ -29,7 +29,7 @@ cc_library(
 cc_library(
     name = "snpe_arm64-v8a",
     srcs = [
-        "lib/aarch64-android-gcc4.9/libSNPE.so"
+        "lib/aarch64-android-gcc4.9/libSNPE.so",
         #"lib/aarch64-linux-gcc4.9/libSNPE.so"
     ],
     deps = ["snpe_hdr"],

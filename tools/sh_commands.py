@@ -173,6 +173,10 @@ def prepare_model_and_input(serialno, config_file, device_bin_path, output_dir):
         device_input_path = device_bin_path + '/' + input_file
         adb_push(host_input_path, device_input_path, serialno)
 
+    # ncnn model files are generated from source
+    ncnn_model_path = "bazel-genfiles/external/ncnn/models/"
+    adb_push(ncnn_model_path, device_bin_path, serialno)
+
 
 def adb_run(abi,
             serialno,
