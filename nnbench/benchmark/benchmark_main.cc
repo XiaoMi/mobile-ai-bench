@@ -26,7 +26,14 @@ std::unique_ptr<nnbench::SnpeCPUExecutor>
     snpe_cpu_executor(new nnbench::SnpeCPUExecutor());
 NNBENCH_BENCHMARK(snpe_cpu_executor.get(), InceptionV3, SNPE, CPU,
                   inception_v3.dlc, (std::vector<std::string>{"Mul:0"}),
-                  (std::vector<std::string>{"keyboard.dat"}),
+                  (std::vector<std::string>{"keyboard_299x299.dat"}),
+                  (std::vector<std::vector<int64_t>>{{299, 299, 3}}));
+
+std::unique_ptr<nnbench::SnpeGPUExecutor>
+    snpe_gpu_executor(new nnbench::SnpeGPUExecutor());
+NNBENCH_BENCHMARK(snpe_gpu_executor.get(), InceptionV3, SNPE, GPU,
+                  inception_v3.dlc, (std::vector<std::string>{"Mul:0"}),
+                  (std::vector<std::string>{"keyboard_299x299.dat"}),
                   (std::vector<std::vector<int64_t>>{{299, 299, 3}}));
 
 std::unique_ptr<nnbench::NcnnExecutor>
@@ -35,6 +42,7 @@ NNBENCH_BENCHMARK(ncnn_executor.get(), mobilenet, NCNN, CPU,
                   mobilenet.param, (std::vector<std::string>{"data"}),
                   (std::vector<std::string>{}),
                   (std::vector<std::vector<int64_t>>{{224, 224, 3}}));
+
 
 DEFINE_string(model_name, "all", "the model to benchmark");
 

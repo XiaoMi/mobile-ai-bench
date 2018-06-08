@@ -42,9 +42,11 @@ Benchmark::Benchmark(BaseExecutor *executor,
       input_shapes_(input_shapes) {
   if (input_names.size() != input_shapes_.size() ||
       (input_files.size() != input_shapes_.size() && input_files.size() > 0)) {
-    printf("size of input_names(%lu), input_files(%lu) and input_shapes(%lu) "
-               "should be equal\n", input_names.size(), input_files.size(),
-           input_shapes_.size());
+    printf("size of input_names(%d), input_files(%d) and input_shapes(%d) "
+               "should be equal\n",
+           static_cast<int>(input_names.size()),
+           static_cast<int>(input_files.size()),
+           static_cast<int>(input_shapes_.size()));
     abort();
   }
   Register();
@@ -63,7 +65,6 @@ Status Benchmark::Run(const char *model_name) {
   // Internal perf regression tools depends on the output formatting,
   // please keep in consistent when modifying
   Status res = SUCCESS;
-  printf("model_name,framework,runtime,init time,inference time\n");
   for (auto b : *all_benchmarks) {
     if (strcmp(model_name, "all") != 0 &&
         strcmp(model_name, b->model_name_.c_str()) != 0)
@@ -74,8 +75,8 @@ Status Benchmark::Run(const char *model_name) {
       res = status;
       continue;
     }
-    // TODO(wuchenghui): complete benchmark info
-    printf("%s,%d,%d,%f,%f\n",
+    // model_name,framework,runtime,init time,inference time
+    printf("benchmark:%s,%d,%d,%f,%f\n",
            b->model_name_.c_str(),
            b->executor_->GetFramework(),
            b->executor_->GetRuntime(),

@@ -1,0 +1,6 @@
+models:
+  inception_v3.dlc: https://cnbj1-fds.api.xiaomi.net/nnbench/models/inception_v3.dlc
+
+
+inputs:
+  keyboard_299x299.dat: https://cnbj1-fds.api.xiaomi.net/nnbench/inputs/keyboard_299x299.dat
