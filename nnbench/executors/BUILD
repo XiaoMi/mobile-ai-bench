@@ -6,8 +6,8 @@ licenses(["notice"])  # Apache 2.0
 
 load(
     "//nnbench:nnbench.bzl",
-    "if_android_armv7",
     "if_android_arm64",
+    "if_android_armv7",
     "if_not_android",
 )
 

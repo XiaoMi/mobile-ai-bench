@@ -38,11 +38,34 @@ NNBENCH_BENCHMARK(snpe_gpu_executor.get(), InceptionV3, SNPE, GPU,
 
 std::unique_ptr<nnbench::NcnnExecutor>
     ncnn_executor(new nnbench::NcnnExecutor());
-NNBENCH_BENCHMARK(ncnn_executor.get(), mobilenet, NCNN, CPU,
+NNBENCH_BENCHMARK(ncnn_executor.get(), AlexNet, NCNN, CPU,
+                  alexnet.param, (std::vector<std::string>{"data"}),
+                  (std::vector<std::string>{}),
+                  (std::vector<std::vector<int64_t>>{{227, 227, 3}}));
+NNBENCH_BENCHMARK(ncnn_executor.get(), GoogLeNet, NCNN, CPU,
+                  googlenet.param, (std::vector<std::string>{"data"}),
+                  (std::vector<std::string>{}),
+                  (std::vector<std::vector<int64_t>>{{224, 224, 3}}));
+NNBENCH_BENCHMARK(ncnn_executor.get(), MobileNetV1, NCNN, CPU,
                   mobilenet.param, (std::vector<std::string>{"data"}),
                   (std::vector<std::string>{}),
                   (std::vector<std::vector<int64_t>>{{224, 224, 3}}));
-
+NNBENCH_BENCHMARK(ncnn_executor.get(), MobileNetV2, NCNN, CPU,
+                  mobilenet_v2.param, (std::vector<std::string>{"data"}),
+                  (std::vector<std::string>{}),
+                  (std::vector<std::vector<int64_t>>{{224, 224, 3}}));
+NNBENCH_BENCHMARK(ncnn_executor.get(), ResNet18, NCNN, CPU,
+                  resnet18.param, (std::vector<std::string>{"data"}),
+                  (std::vector<std::string>{}),
+                  (std::vector<std::vector<int64_t>>{{224, 224, 3}}));
+NNBENCH_BENCHMARK(ncnn_executor.get(), SqueezeNet, NCNN, CPU,
+                  squeezenet.param, (std::vector<std::string>{"data"}),
+                  (std::vector<std::string>{}),
+                  (std::vector<std::vector<int64_t>>{{227, 227, 3}}));
+NNBENCH_BENCHMARK(ncnn_executor.get(), VGG16, NCNN, CPU,
+                  vgg16.param, (std::vector<std::string>{"data"}),
+                  (std::vector<std::string>{}),
+                  (std::vector<std::vector<int64_t>>{{224, 224, 3}}));
 
 DEFINE_string(model_name, "all", "the model to benchmark");
 

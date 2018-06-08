@@ -12,6 +12,18 @@ new_http_archive(
 )
 
 new_http_archive(
+    name = "ncnn",
+    build_file = "third_party/ncnn/ncnn.BUILD",
+    sha256 = "a813f42ed898c008d18e7abf0f0e8fb0b6c5d8de1e7a9e9c8a2d0b3967678193",
+    strip_prefix = "ncnn-20180427",
+    type = "zip",
+    urls = [
+        "https://cnbj1-fds.api.xiaomi.net/nnbench/third_party/ncnn-20180427.zip",
+        "https://codeload.github.com/Tencent/ncnn/zip/20180427",
+    ],
+)
+
+new_http_archive(
     name = "snpe",
     build_file = "third_party/snpe/snpe.BUILD",
     sha256 = "b11780e5e7f591e916c69bdface4a1ef75b0c19f7b43c868bd62c0f3747d3fbb",
@@ -40,18 +52,6 @@ bind(
 bind(
     name = "gflags_nothreads",
     actual = "@com_github_gflags_gflags//:gflags_nothreads",
-)
-
-new_http_archive(
-    name = "ncnn",
-    build_file = "third_party/ncnn/ncnn.BUILD",
-    sha256 = "a813f42ed898c008d18e7abf0f0e8fb0b6c5d8de1e7a9e9c8a2d0b3967678193",
-    strip_prefix = "ncnn-20180427",
-    type = "zip",
-    urls = [
-        "https://cnbj1-fds.api.xiaomi.net/nnbench/ncnn-20180427.zip",
-        "https://codeload.github.com/Tencent/ncnn/zip/20180427",
-    ],
 )
 
 # Set up Android NDK
