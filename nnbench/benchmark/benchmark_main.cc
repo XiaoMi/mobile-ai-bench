@@ -68,6 +68,8 @@ NNBENCH_BENCHMARK(ncnn_executor.get(), VGG16, NCNN, CPU,
                   (std::vector<std::vector<int64_t>>{{224, 224, 3}}));
 
 DEFINE_string(model_name, "all", "the model to benchmark");
+DEFINE_string(framework, "all", "the framework to benchmark");
+DEFINE_string(runtime, "all", "the runtime to benchmark");
 
 int main(int argc, char **argv) {
   std::string usage = "run benchmark, e.g. " + std::string(argv[0]) +
@@ -76,7 +78,7 @@ int main(int argc, char **argv) {
   gflags::SetUsageMessage(usage);
   gflags::ParseCommandLineFlags(&argc, &argv, true);
 
-  nnbench::Status status =
-      nnbench::benchmark::Benchmark::Run(FLAGS_model_name.c_str());
+  nnbench::Status status = nnbench::benchmark::Benchmark::Run(
+      FLAGS_model_name.c_str(), FLAGS_framework.c_str(), FLAGS_runtime.c_str());
   return status;
 }
