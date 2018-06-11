@@ -52,6 +52,20 @@ class SnpeGPUExecutor : public BaseExecutor {
   zdl::DlSystem::TensorMap output_tensor_map_;
 };
 
+class SnpeDSPExecutor : public BaseExecutor {
+ public:
+  SnpeDSPExecutor() : BaseExecutor(SNPE, DSP) {}
+
+  virtual Status Prepare(const char *model_name);
+
+  virtual Status Run(const std::map<std::string, BaseTensor> &inputs,
+                     std::map<std::string, BaseTensor> *outputs);
+ private:
+  std::unique_ptr<zdl::SNPE::SNPE> snpe_;
+  zdl::DlSystem::TensorMap input_tensor_map_;
+  zdl::DlSystem::TensorMap output_tensor_map_;
+};
+
 }  // namespace nnbench
 
 #endif  // NNBENCH_EXECUTORS_SNPE_SNPE_EXECUTOR_H_

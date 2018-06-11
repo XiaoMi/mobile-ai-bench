@@ -148,6 +148,9 @@ def prepare_device_env(serialno, abi="armeabi-v7a",
         snpe_lib_path = \
             "bazel-mobile-nn-bench/external/snpe/lib/aarch64-android-gcc4.9"
 
+    adb_push("bazel-mobile-nn-bench/external/snpe/lib/dsp",
+             device_bin_path, serialno)
+
     if snpe_lib_path:
         adb_push(snpe_lib_path, device_bin_path, serialno)
         #sh.adb("-s", serialno, "push", snpe_lib_path, device_bin_path)
@@ -162,12 +165,14 @@ def prepare_model_and_input(serialno, config_file, device_bin_path, output_dir):
         configs = yaml.load(f)
 
     for model_file in configs["models"]:
+        print("downloading %s..." % model_file)
         host_model_path = output_dir + '/' + model_file
         device_model_path = device_bin_path + '/' + model_file
         urllib.urlretrieve(configs["models"][model_file], host_model_path)
         adb_push(host_model_path, device_model_path, serialno)
 
     for input_file in configs["inputs"]:
+        print("downloading %s..." % input_file)
         host_input_path = output_dir + '/' + input_file
         urllib.urlretrieve(configs["inputs"][input_file], host_input_path)
         device_input_path = device_bin_path + '/' + input_file

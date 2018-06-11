@@ -92,9 +92,9 @@ void Benchmark::Register() {
 }
 
 Status Benchmark::Run(double *init_seconds, double *run_seconds) {
-  static const int64_t kMinIters = 10;
+  static const int64_t kMinIters = 20;
   static const int64_t kMaxIters = 1000000000;
-  static const double kMinTime = 1;
+  static const double kMinTime = 2;
   int64_t iters = kMinIters;
   int64_t start_time, end_time;
   // prepare
