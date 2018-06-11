@@ -26,6 +26,36 @@
 namespace nnbench {
 namespace benchmark {
 
+namespace {
+
+nnbench::Framework ParseFramework(const char *framework) {
+  if (strcmp(framework, "MACE") == 0) {
+    return nnbench::Framework::MACE;
+  } else if (strcmp(framework, "SNPE") == 0) {
+    return nnbench::Framework::SNPE;
+  } else if (strcmp(framework, "NCNN") == 0) {
+    return nnbench::Framework::NCNN;
+  } else if (strcmp(framework, "TENSORFLOW_LITE") == 0) {
+    return nnbench::Framework::TENSORFLOW_LITE;
+  } else {
+    return nnbench::Framework::MACE;
+  }
+}
+
+nnbench::Runtime ParseRuntime(const char *runtime) {
+  if (strcmp(runtime, "CPU") == 0) {
+    return nnbench::Runtime::CPU;
+  } else if (strcmp(runtime, "GPU") == 0) {
+    return nnbench::Runtime::GPU;
+  } else if (strcmp(runtime, "DSP") == 0) {
+    return nnbench::Runtime::DSP;
+  } else {
+    return nnbench::Runtime::CPU;
+  }
+}
+
+}  // namespace
+
 static std::vector<Benchmark *> *all_benchmarks = nullptr;
 
 Benchmark::Benchmark(BaseExecutor *executor,
@@ -53,7 +83,8 @@ Benchmark::Benchmark(BaseExecutor *executor,
 }
 
 // Run all benchmarks filtered by model_name
-Status Benchmark::Run(const char *model_name) {
+Status Benchmark::Run(const char *model_name, const char *framework,
+                      const char *runtime) {
   if (!all_benchmarks) return SUCCESS;
 
   // sort by model name
@@ -68,6 +99,12 @@ Status Benchmark::Run(const char *model_name) {
   for (auto b : *all_benchmarks) {
     if (strcmp(model_name, "all") != 0 &&
         strcmp(model_name, b->model_name_.c_str()) != 0)
+      continue;
+    if (strcmp(framework, "all") != 0 &&
+        ParseFramework(framework) != b->executor_->GetFramework())
+      continue;
+    if (strcmp(runtime, "all") != 0 &&
+        ParseRuntime(runtime) != b->executor_->GetRuntime())
       continue;
     double init_seconds, run_seconds;
     Status status = b->Run(&init_seconds, &run_seconds);

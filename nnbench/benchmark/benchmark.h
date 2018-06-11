@@ -42,7 +42,8 @@ class Benchmark {
             std::vector<std::string> input_files,
             std::vector<std::vector<int64_t>> input_shapes);
 
-  static Status Run(const char *model_name);
+  static Status Run(const char *model_name, const char *framework,
+                    const char *runtime);
 
  private:
   BaseExecutor *executor_;
