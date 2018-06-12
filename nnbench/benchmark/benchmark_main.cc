@@ -28,6 +28,10 @@ NNBENCH_BENCHMARK(snpe_cpu_executor.get(), InceptionV3, SNPE, CPU,
                   inception_v3.dlc, (std::vector<std::string>{"Mul:0"}),
                   (std::vector<std::string>{"keyboard_299x299.dat"}),
                   (std::vector<std::vector<int64_t>>{{299, 299, 3}}));
+NNBENCH_BENCHMARK(snpe_cpu_executor.get(), VGG16, SNPE, CPU,
+                  vgg16.dlc, (std::vector<std::string>{"input:0"}),
+                  (std::vector<std::string>{"chairs_224x224.raw"}),
+                  (std::vector<std::vector<int64_t>>{{224, 224, 3}}));
 
 std::unique_ptr<nnbench::SnpeGPUExecutor>
     snpe_gpu_executor(new nnbench::SnpeGPUExecutor());
@@ -35,6 +39,19 @@ NNBENCH_BENCHMARK(snpe_gpu_executor.get(), InceptionV3, SNPE, GPU,
                   inception_v3.dlc, (std::vector<std::string>{"Mul:0"}),
                   (std::vector<std::string>{"keyboard_299x299.dat"}),
                   (std::vector<std::vector<int64_t>>{{299, 299, 3}}));
+// TODO(wuchenghui): benchmark snpe + gpu + vgg16
+
+std::unique_ptr<nnbench::SnpeDSPExecutor>
+    snpe_dsp_executor(new nnbench::SnpeDSPExecutor());
+NNBENCH_BENCHMARK(snpe_dsp_executor.get(), InceptionV3, SNPE, DSP,
+                  inception_v3_quantized.dlc,
+                  (std::vector<std::string>{"Mul:0"}),
+                  (std::vector<std::string>{"keyboard_299x299.dat"}),
+                  (std::vector<std::vector<int64_t>>{{299, 299, 3}}));
+NNBENCH_BENCHMARK(snpe_dsp_executor.get(), VGG16, SNPE, DSP,
+                  vgg16_quantized.dlc, (std::vector<std::string>{"input:0"}),
+                  (std::vector<std::string>{"chairs_224x224.raw"}),
+                  (std::vector<std::vector<int64_t>>{{224, 224, 3}}));
 
 std::unique_ptr<nnbench::NcnnExecutor>
     ncnn_executor(new nnbench::NcnnExecutor());
@@ -74,7 +91,6 @@ DEFINE_string(runtime, "all", "the runtime to benchmark");
 int main(int argc, char **argv) {
   std::string usage = "run benchmark, e.g. " + std::string(argv[0]) +
                       " --model_name=all";
-  std::cout << usage << std::endl;
   gflags::SetUsageMessage(usage);
   gflags::ParseCommandLineFlags(&argc, &argv, true);
 

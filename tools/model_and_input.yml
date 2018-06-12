@@ -1,6 +1,13 @@
 models:
+  # Get inception_v3 model file from snpe/models/inception_v3/scripts/setup_inceptionv3.py
   inception_v3.dlc: https://cnbj1-fds.api.xiaomi.net/nnbench/models/inception_v3.dlc
+  inception_v3_quantized.dlc: https://cnbj1-fds.api.xiaomi.net/nnbench/models/inception_v3_quantized.dlc
+  # vgg16 model file converted from tensorflow graph
+  vgg16.dlc: https://cnbj1-fds.api.xiaomi.net/nnbench/models/vgg16.dlc
+  vgg16_quantized.dlc: https://cnbj1-fds.api.xiaomi.net/nnbench/models/vgg16_quantized.dlc
 
 
 inputs:
   keyboard_299x299.dat: https://cnbj1-fds.api.xiaomi.net/nnbench/inputs/keyboard_299x299.dat
+  chairs_224x224.raw: https://cnbj1-fds.api.xiaomi.net/nnbench/inputs/chairs_224x224.raw
+
