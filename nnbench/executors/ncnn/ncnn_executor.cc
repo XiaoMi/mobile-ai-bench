@@ -18,6 +18,8 @@
 #include <memory>
 #include <vector>
 
+#include "ncnn/include/cpu.h"
+
 namespace ncnn {
 
 int BenchNet::load_model() {
@@ -40,6 +42,10 @@ namespace nnbench {
 
 Status NcnnExecutor::Prepare(const char *model_name) {
   int ret;
+
+  ncnn::set_cpu_powersave(0);
+  ncnn::set_omp_dynamic(0);
+  ncnn::set_omp_num_threads(4);
 
   ret = net.load_param(model_name);
   if (ret != 0) {
