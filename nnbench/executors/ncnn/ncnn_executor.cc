@@ -85,4 +85,8 @@ Status NcnnExecutor::Run(const std::map<std::string, BaseTensor> &inputs,
   return Status::SUCCESS;
 }
 
+void NcnnExecutor::Finish() {
+  net.clear();
+}
+
 }  // namespace nnbench

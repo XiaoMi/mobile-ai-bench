@@ -77,6 +77,8 @@ class BaseExecutor {
 
   virtual Status Run(const std::map<std::string, BaseTensor> &inputs,
                      std::map<std::string, BaseTensor> *outputs) = 0;
+
+  virtual void Finish() = 0;
   Framework GetFramework() {return framework_;}
   Runtime GetRuntime() {return runtime_;}
  private:

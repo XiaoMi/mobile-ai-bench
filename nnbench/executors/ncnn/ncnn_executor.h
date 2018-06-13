@@ -49,6 +49,8 @@ class NcnnExecutor : public BaseExecutor {
 
   virtual Status Run(const std::map<std::string, BaseTensor> &inputs,
                      std::map<std::string, BaseTensor> *outputs);
+
+  virtual void Finish();
  private:
   ncnn::BenchNet net;
 };

@@ -36,37 +36,13 @@ namespace nnbench {
 
 namespace {
 
-std::unique_ptr<zdl::DlContainer::IDlContainer> LoadContainerFromFile(
-    const char *containerPath) {
-  std::unique_ptr<zdl::DlContainer::IDlContainer> container;
-  container = zdl::DlContainer::IDlContainer::open(
-      zdl::DlSystem::String(containerPath));
-  return container;
-}
-
-std::unique_ptr<zdl::SNPE::SNPE> SetBuilderOptions(
-    const std::unique_ptr<zdl::DlContainer::IDlContainer> &container,
-    zdl::DlSystem::Runtime_t runtime,
-    zdl::DlSystem::UDLBundle udlBundle,
-    bool useUserSuppliedBuffers) {
-  std::unique_ptr<zdl::SNPE::SNPE> snpe;
-  zdl::SNPE::SNPEBuilder snpeBuilder(container.get());
-  snpe = snpeBuilder.setOutputLayers({})
-      .setRuntimeProcessor(runtime)
-      .setUdlBundle(udlBundle)
-      .setUseUserSuppliedBuffers(useUserSuppliedBuffers)
-      .build();
-
-  return snpe;
-}
-
 std::unique_ptr<zdl::SNPE::SNPE> BuildSnpeRuntime(
     const char *model_name, zdl::DlSystem::Runtime_t runtime) {
   std::cout << "building snpe with model_name: " << model_name << " runtime:"
             << static_cast<int>(runtime) << std::endl;
-  zdl::DlSystem::UDLBundle udlBundle;
+  zdl::DlSystem::UDLBundle udl_bundle;
   // 0xdeadbeaf to test cookie
-  udlBundle.cookie = reinterpret_cast<void *>(0xdeadbeaf);
+  udl_bundle.cookie = reinterpret_cast<void *>(0xdeadbeaf);
 
   if (!zdl::SNPE::SNPEFactory::isRuntimeAvailable(runtime)) {
     std::cerr << "SNPE Runtime " << static_cast<int>(runtime)
@@ -74,9 +50,16 @@ std::unique_ptr<zdl::SNPE::SNPE> BuildSnpeRuntime(
     return nullptr;
   }
 
-  std::unique_ptr<zdl::DlContainer::IDlContainer>
-      container = LoadContainerFromFile(model_name);
-  auto snpe = SetBuilderOptions(container, runtime, udlBundle, false);
+  std::unique_ptr<zdl::DlContainer::IDlContainer> container =
+      zdl::DlContainer::IDlContainer::open(
+      zdl::DlSystem::String(model_name));
+  zdl::SNPE::SNPEBuilder snpe_builder(container.get());
+  std::unique_ptr<zdl::SNPE::SNPE> snpe =
+      snpe_builder.setOutputLayers({})
+          .setRuntimeProcessor(runtime)
+          .setUdlBundle(udl_bundle)
+          .setUseUserSuppliedBuffers(false)
+          .build();
   std::cout << "snpe build ok" << std::endl;
   return snpe;
 }
@@ -99,11 +82,10 @@ Status ProcessInput(zdl::SNPE::SNPE *snpe,
     input_tensor =
         zdl::SNPE::SNPEFactory::getTensorFactory().createTensor(input_shape);
     size_t input_size = inputs.at(input_name).size();
-    std::vector<float> input_vec(inputs.at(input_name).data().get(),
-                                 inputs.at(input_name).data().get()
-                                     + input_size);
 
-    std::copy(input_vec.begin(), input_vec.end(), input_tensor.get()->begin());
+    std::copy(inputs.at(input_name).data().get(),
+              inputs.at(input_name).data().get() + input_size,
+              input_tensor.get()->begin());
     input_tensor_map->add(input_name.c_str(), input_tensor.release());
   }
   return Status::SUCCESS;
@@ -114,6 +96,7 @@ Status ProcessOutput(const zdl::DlSystem::TensorMap &output_tensor_map,
   auto tensor_names = output_tensor_map.getTensorNames();
   for (size_t i = 0; i < tensor_names.size(); ++i) {
     std::string output_name(tensor_names.at(i));
+    if (outputs->count(output_name) > 0) continue;
     zdl::DlSystem::ITensor* output_tensor =
         output_tensor_map.getTensor(output_name.c_str());
     std::shared_ptr<float> out_data(new float[output_tensor->getSize()]);
@@ -155,6 +138,12 @@ Status SnpeCPUExecutor::Run(const std::map<std::string, BaseTensor> &inputs,
   return status;
 }
 
+void SnpeCPUExecutor::Finish() {
+  if (snpe_ != nullptr) snpe_.reset();
+  input_tensor_map_.clear();
+  output_tensor_map_.clear();
+}
+
 Status SnpeGPUExecutor::Prepare(const char *model_name) {
   static zdl::DlSystem::Runtime_t runtime = zdl::DlSystem::Runtime_t::GPU;
   snpe_ = BuildSnpeRuntime(model_name, runtime);
@@ -177,6 +166,12 @@ Status SnpeGPUExecutor::Run(const std::map<std::string, BaseTensor> &inputs,
   // step3: process output
   status = ProcessOutput(output_tensor_map_, outputs);
   return status;
+}
+
+void SnpeGPUExecutor::Finish() {
+  if (snpe_ != nullptr) snpe_.reset();
+  input_tensor_map_.clear();
+  output_tensor_map_.clear();
 }
 
 Status SnpeDSPExecutor::Prepare(const char *model_name) {
@@ -203,5 +198,10 @@ Status SnpeDSPExecutor::Run(const std::map<std::string, BaseTensor> &inputs,
   return status;
 }
 
+void SnpeDSPExecutor::Finish() {
+  if (snpe_ != nullptr) snpe_.reset();
+  input_tensor_map_.clear();
+  output_tensor_map_.clear();
+}
 
 }  // namespace nnbench
