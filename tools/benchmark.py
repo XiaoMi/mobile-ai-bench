@@ -126,6 +126,7 @@ def main(unused_args):
     target_abis = FLAGS.target_abis.split(',')
     target = FLAGS.target
     host_bin_path, bin_name = sh_commands.bazel_target_to_bin(target)
+    sh_commands.build_mace(FLAGS.target_abis, FLAGS.output_dir)
     for target_abi in target_abis:
         if target_abi not in abi_types:
             print("Not supported abi: %s" % target_abi)

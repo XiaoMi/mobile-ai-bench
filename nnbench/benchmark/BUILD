@@ -36,6 +36,7 @@ cc_test(
     deps = [
         "benchmark",
         "//external:gflags_nothreads",
+        "//nnbench/executors:mace_executor",
         "//nnbench/executors:ncnn_executor",
         "//nnbench/executors:snpe_executor",
     ],
