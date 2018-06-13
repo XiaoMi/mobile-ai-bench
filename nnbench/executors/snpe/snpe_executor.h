@@ -32,6 +32,8 @@ class SnpeCPUExecutor : public BaseExecutor {
 
   virtual Status Run(const std::map<std::string, BaseTensor> &inputs,
                      std::map<std::string, BaseTensor> *outputs);
+
+  virtual void Finish();
  private:
   std::unique_ptr<zdl::SNPE::SNPE> snpe_;
   zdl::DlSystem::TensorMap input_tensor_map_;
@@ -46,6 +48,8 @@ class SnpeGPUExecutor : public BaseExecutor {
 
   virtual Status Run(const std::map<std::string, BaseTensor> &inputs,
                      std::map<std::string, BaseTensor> *outputs);
+
+  virtual void Finish();
  private:
   std::unique_ptr<zdl::SNPE::SNPE> snpe_;
   zdl::DlSystem::TensorMap input_tensor_map_;
@@ -60,6 +64,8 @@ class SnpeDSPExecutor : public BaseExecutor {
 
   virtual Status Run(const std::map<std::string, BaseTensor> &inputs,
                      std::map<std::string, BaseTensor> *outputs);
+
+  virtual void Finish();
  private:
   std::unique_ptr<zdl::SNPE::SNPE> snpe_;
   zdl::DlSystem::TensorMap input_tensor_map_;

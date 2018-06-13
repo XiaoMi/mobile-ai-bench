@@ -180,6 +180,7 @@ Status Benchmark::Run(double *init_seconds, double *run_seconds) {
     const double seconds = (end_time - start_time) * 1e-6;
     if (seconds >= kMinTime || iters >= kMaxIters) {
       *run_seconds = seconds / iters;
+      executor_->Finish();
       return SUCCESS;
     }
 
