@@ -114,7 +114,7 @@ def parse_args():
         "--frameworks",
         type=str,
         default="all",
-        help="frameworks to run, MACE/SNPE/NCNN/TENSORFLOW_LITE,"
+        help="frameworks to run, MACE/SNPE/NCNN/TFLITE,"
              "comma seperated list or all")
     parser.add_argument(
         "--runtimes",
@@ -158,6 +158,8 @@ def main(unused_args):
     host_bin_path, bin_name = sh_commands.bazel_target_to_bin(target)
     if "MACE" in frameworks:
         sh_commands.build_mace(FLAGS.target_abis, FLAGS.output_dir)
+    if "TFLITE" in frameworks:
+        sh_commands.get_tflite()
     all_prepare = []
     all_run_avg = []
     for target_abi in target_abis:

@@ -25,7 +25,7 @@ FRAMEWORKS = (
     "MACE",
     "SNPE",
     "NCNN",
-    "TENSORFLOW_LITE"
+    "TFLITE"
 )
 
 
@@ -200,6 +200,20 @@ def prepare_device_env(serialno, abi, device_bin_path, frameworks):
         adb_push("third_party/nnlib/libhexagon_controller.so",
                  device_bin_path, serialno)
 
+    # for tflite
+    if "TFLITE" in frameworks:
+        tflite_lib_path = ""
+        if abi == "armeabi-v7a":
+            tflite_lib_path = \
+               "third_party/tflite/tensorflow/contrib/lite/" + \
+               "lib/armeabi-v7a/libtensorflowLite.so"
+        elif abi == "arm64-v8a":
+            tflite_lib_path = \
+               "third_party/tflite/tensorflow/contrib/lite/" + \
+               "lib/arm64-v8a/libtensorflowLite.so"
+        if tflite_lib_path:
+            adb_push(tflite_lib_path, device_bin_path, serialno)
+
 
 def prepare_model_and_input(serialno, abi, config_file, device_bin_path,
                             output_dir, frameworks):
@@ -300,3 +314,7 @@ def adb_run(abi,
 
 def build_mace(abis, output_dir):
     sh.bash("tools/build_mace.sh", abis, os.path.abspath(output_dir), _fg=True)
+
+
+def get_tflite():
+    sh.bash("tools/get_tflite.sh")

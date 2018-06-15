@@ -32,7 +32,7 @@ enum Framework {
   MACE = 0,
   SNPE = 1,
   NCNN = 2,
-  TENSORFLOW_LITE = 3
+  TFLITE = 3
 };
 
 enum Runtime {

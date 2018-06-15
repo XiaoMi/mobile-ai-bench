@@ -47,3 +47,9 @@ def if_snpe_enabled(a):
         "//nnbench:snpe_enabled": a,
         "//conditions:default": [],
     })
+
+def if_tflite_enabled(a):
+    return select({
+        "//nnbench:tflite_enabled": a,
+        "//conditions:default": [],
+    })
