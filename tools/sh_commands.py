@@ -13,6 +13,7 @@
 # limitations under the License.
 
 import filelock
+import hashlib
 import os
 import re
 import sh
@@ -76,9 +77,34 @@ def adb_supported_abis(serialno):
     return abis
 
 
-def adb_push(src_path, dst_path, serialno):
-    print("Push %s to %s" % (src_path, dst_path))
-    sh.adb("-s", serialno, "push", src_path, dst_path)
+def file_checksum(fname):
+    hash_func = hashlib.sha256()
+    with open(fname, "rb") as f:
+        for chunk in iter(lambda: f.read(4096), b""):
+            hash_func.update(chunk)
+    return hash_func.hexdigest()
+
+
+def adb_push_file(src_file, dst_dir, serialno):
+    src_checksum = file_checksum(src_file)
+    dst_file = os.path.join(dst_dir, os.path.basename(src_file))
+    stdout_buff = []
+    sh.adb("-s", serialno, "shell", "sha256sum", dst_file,
+           _out=lambda line: stdout_buff.append(line))
+    dst_checksum = stdout_buff[0].split()[0]
+    if src_checksum == dst_checksum:
+        print("Equal checksum with %s and %s" % (src_file, dst_file))
+    else:
+        print("Push %s to %s" % (src_file, dst_dir))
+        sh.adb("-s", serialno, "push", src_file, dst_dir)
+
+
+def adb_push(src_path, dst_dir, serialno):
+    if os.path.isdir(src_path):
+        for src_file in os.listdir(src_path):
+            adb_push_file(os.path.join(src_path, src_file), dst_dir, serialno)
+    else:
+        adb_push_file(src_path, dst_dir, serialno)
 
 
 def get_soc_serialnos_map():
@@ -170,16 +196,14 @@ def prepare_model_and_input(serialno, config_file, device_bin_path, output_dir):
     for model_file in configs["models"]:
         print("downloading %s..." % model_file)
         host_model_path = output_dir + '/' + model_file
-        device_model_path = device_bin_path + '/' + model_file
         urllib.urlretrieve(configs["models"][model_file], host_model_path)
-        adb_push(host_model_path, device_model_path, serialno)
+        adb_push(host_model_path, device_bin_path, serialno)
 
     for input_file in configs["inputs"]:
         print("downloading %s..." % input_file)
         host_input_path = output_dir + '/' + input_file
         urllib.urlretrieve(configs["inputs"][input_file], host_input_path)
-        device_input_path = device_bin_path + '/' + input_file
-        adb_push(host_input_path, device_input_path, serialno)
+        adb_push(host_input_path, device_bin_path, serialno)
 
     # ncnn model files are generated from source
     ncnn_model_path = "bazel-genfiles/external/ncnn/models/"
@@ -212,11 +236,10 @@ def adb_run(abi,
         print("Run on device: %s, %s, %s" %
               (serialno, props["ro.board.platform"],
                props["ro.product.model"]))
-        sh.adb("-s", serialno, "shell", "rm -rf %s" % device_bin_path)
         prepare_device_env(serialno, abi, device_bin_path)
         prepare_model_and_input(serialno, model_and_input_config,
                                 device_bin_path, output_dir)
-        adb_push(host_bin_full_path, device_bin_full_path, serialno)
+        adb_push(host_bin_full_path, device_bin_path, serialno)
 
         print("Run %s" % device_bin_full_path)
 
