@@ -159,6 +159,9 @@ def prepare_device_env(serialno, abi="armeabi-v7a",
             abi
         adb_push(libgnustl_path, device_bin_path, serialno)
 
+    adb_push("third_party/nnlib/libhexagon_controller.so",
+             device_bin_path, serialno)
+
 
 def prepare_model_and_input(serialno, config_file, device_bin_path, output_dir):
     with open(config_file) as f:
@@ -181,6 +184,13 @@ def prepare_model_and_input(serialno, config_file, device_bin_path, output_dir):
     # ncnn model files are generated from source
     ncnn_model_path = "bazel-genfiles/external/ncnn/models/"
     adb_push(ncnn_model_path, device_bin_path, serialno)
+
+    # mace model files are generated from source
+    for model_file in os.listdir(output_dir):
+        if model_file.endswith(".pb") or model_file.endswith(".data"):
+            model_file_path = output_dir + '/' + model_file
+            adb_push(model_file_path, device_bin_path, serialno)
+
 
 
 def adb_run(abi,
@@ -225,3 +235,7 @@ def adb_run(abi,
             _out=process_output,
             _err_to_out=True)
         return "".join(stdout_buff)
+
+
+def build_mace(abis, output_dir):
+    sh.bash("tools/build_mace.sh", abis, os.path.abspath(output_dir), _fg=True)

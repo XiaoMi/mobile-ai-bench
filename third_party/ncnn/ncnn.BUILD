@@ -63,7 +63,6 @@ genrule(
           "popd;" +
           "cp -a $$workdir/build/install/* $(@D);" +
           "rm -rf $$workdir",
-    output_to_bindir = 0,
 )
 
 cc_library(

@@ -27,6 +27,32 @@ cc_library(
 )
 
 cc_library(
+    name = "mace_executor",
+    srcs = [
+        "mace/mace_executor.cc",
+    ],
+    hdrs = [
+        "mace/mace_executor.h",
+    ],
+    copts = [
+        "-Werror",
+        "-Wextra",
+        "-Wno-missing-field-initializers",
+    ],
+    linkopts = [
+        "-llog",
+    ],
+    deps = [
+        ":base_executor",
+        "//third_party/nnlib:libhexagon",
+    ] + if_android_armv7([
+        "//third_party/mace:mace_armeabi-v7a",
+    ]) + if_android_arm64([
+        "//third_party/mace:mace_arm64-v8a",
+    ]),
+)
+
+cc_library(
     name = "snpe_executor",
     srcs = [
         "snpe/snpe_executor.cc",

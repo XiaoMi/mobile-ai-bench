@@ -10,4 +10,4 @@ models:
 inputs:
   keyboard_299x299.dat: https://cnbj1-fds.api.xiaomi.net/nnbench/inputs/keyboard_299x299.dat
   chairs_224x224.raw: https://cnbj1-fds.api.xiaomi.net/nnbench/inputs/chairs_224x224.raw
-
+  dog.npy: https://cnbj1.fds.api.xiaomi.com/mace/inputs/dog.npy

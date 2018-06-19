@@ -24,11 +24,11 @@
 
 #define BENCHMARK_CONCAT(a, b, c) a##b##c
 #define NNBENCH_BENCHMARK(executor, model_name, framework, runtime, \
-                          model_file, input_names, input_files, input_sizes) \
+                          model_file, input_names, input_files, input_shapes) \
   static ::nnbench::benchmark::Benchmark \
       *BENCHMARK_CONCAT(model_name, framework, runtime) = \
     (new ::nnbench::benchmark::Benchmark(executor, #model_name, #model_file, \
-         input_names, input_files, input_sizes))
+         input_names, input_files, input_shapes))
 
 namespace nnbench {
 namespace benchmark {
