@@ -23,3 +23,21 @@ def if_android_arm64(a):
         "//nnbench:android_arm64": a,
         "//conditions:default": [],
     })
+
+def if_mace_enabled(a):
+    return select({
+        "//nnbench:mace_enabled": a,
+        "//conditions:default": [],
+    })
+
+def if_ncnn_enabled(a):
+    return select({
+        "//nnbench:ncnn_enabled": a,
+        "//conditions:default": [],
+    })
+
+def if_snpe_enabled(a):
+    return select({
+        "//nnbench:snpe_enabled": a,
+        "//conditions:default": [],
+    })

@@ -23,3 +23,27 @@ config_setting(
     },
     visibility = ["//visibility:public"],
 )
+
+config_setting(
+    name = "mace_enabled",
+    define_values = {
+        "mace": "true",
+    },
+    visibility = ["//visibility:public"],
+)
+
+config_setting(
+    name = "ncnn_enabled",
+    define_values = {
+        "ncnn": "true",
+    },
+    visibility = ["//visibility:public"],
+)
+
+config_setting(
+    name = "snpe_enabled",
+    define_values = {
+        "snpe": "true",
+    },
+    visibility = ["//visibility:public"],
+)
