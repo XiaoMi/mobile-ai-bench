@@ -17,27 +17,13 @@ import os
 import sys
 
 import sh_commands
+from sh_commands import FRAMEWORKS, RUNTIMES
 
 abi_types = [
     "armeabi-v7a",
     "arm64-v8a",
     "host",
 ]
-
-
-FRAMEWORKS = (
-    "MACE",
-    "SNPE",
-    "NCNN",
-    "TENSORFLOW_LITE"
-)
-
-
-RUNTIMES = (
-    "CPU",
-    "GPU",
-    "DSP"
-)
 
 
 def report_run_statistics(stdout,
@@ -96,6 +82,22 @@ def parse_args():
         help="SoCs (ro.board.platform from getprop) to build, "
              "comma seperated list or all/random")
     parser.add_argument(
+        "--model_names",
+        type=str,
+        default="all",
+        help="models to run")
+    parser.add_argument(
+        "--frameworks",
+        type=str,
+        default="all",
+        help="frameworks to run, MACE/SNPE/NCNN/TENSORFLOW_LITE,"
+             "comma seperated list or all")
+    parser.add_argument(
+        "--runtimes",
+        type=str,
+        default="all",
+        help="runtimes to run, CPU/GPU/DSP, comma seperated list or all")
+    parser.add_argument(
         "--args",
         type=str,
         default="",
@@ -124,14 +126,19 @@ def main(unused_args):
         os.mkdir(FLAGS.output_dir)
 
     target_abis = FLAGS.target_abis.split(',')
+    frameworks = FLAGS.frameworks.split(',') \
+        if FLAGS.frameworks != "all" else list(FRAMEWORKS)
+    runtimes = FLAGS.runtimes.split(',')
+    model_names = FLAGS.model_names.split(',')
     target = FLAGS.target
     host_bin_path, bin_name = sh_commands.bazel_target_to_bin(target)
-    sh_commands.build_mace(FLAGS.target_abis, FLAGS.output_dir)
+    if "MACE" in frameworks:
+        sh_commands.build_mace(FLAGS.target_abis, FLAGS.output_dir)
     for target_abi in target_abis:
         if target_abi not in abi_types:
             print("Not supported abi: %s" % target_abi)
             continue
-        sh_commands.bazel_build(target, target_abi)
+        sh_commands.bazel_build(target, target_abi, frameworks)
         if target_abi == "host":
             print("Unable to run target on host yet!")
             continue
@@ -142,10 +149,12 @@ def main(unused_args):
                       (serialno, target_abi))
                 continue
             stdouts = sh_commands.adb_run(target_abi, serialno, host_bin_path,
-                                          bin_name, FLAGS.args,
+                                          bin_name, frameworks,
+                                          model_names, runtimes,
                                           output_dir=FLAGS.output_dir)
             report_run_statistics(stdouts, target_abi, serialno,
                                   FLAGS.output_dir)
+
 
 if __name__ == "__main__":
     FLAGS, unparsed = parse_args()

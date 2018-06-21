@@ -1,5 +1,6 @@
 stages:
   - cpplint
+  - pycodestyle
   - benchmark
 
 cpplint:
@@ -7,6 +8,11 @@ cpplint:
   script:
     - curl -o cpplint.py https://raw.githubusercontent.com/google/styleguide/gh-pages/cpplint/cpplint.py
     - python cpplint.py --linelength=80 --counting=detailed $(find nnbench -name "*.h" -or -name "*.cc")
+
+pycodestyle:
+  stage: pycodestyle
+  script:
+    - pycodestyle $(find -name "*.py")
 
 benchmark:
   stage: benchmark
