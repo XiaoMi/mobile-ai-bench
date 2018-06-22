@@ -12,7 +12,7 @@ cpplint:
 pycodestyle:
   stage: pycodestyle
   script:
-    - pycodestyle $(find -name "*.py")
+    - pycodestyle $(find tools -name "*.py")
 
 benchmark:
   stage: benchmark

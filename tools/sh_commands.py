@@ -185,10 +185,10 @@ def prepare_device_env(serialno, abi, device_bin_path, frameworks):
         snpe_lib_path = ""
         if abi == "armeabi-v7a":
             snpe_lib_path = \
-                "bazel-mobile-nn-bench/external/snpe/lib/arm-android-gcc4.9"
+               "bazel-mobile-nn-bench/external/snpe/lib/arm-android-gcc4.9"
         elif abi == "arm64-v8a":
             snpe_lib_path = \
-                "bazel-mobile-nn-bench/external/snpe/lib/aarch64-android-gcc4.9"
+               "bazel-mobile-nn-bench/external/snpe/lib/aarch64-android-gcc4.9"
 
         adb_push("bazel-mobile-nn-bench/external/snpe/lib/dsp",
                  device_bin_path, serialno)
