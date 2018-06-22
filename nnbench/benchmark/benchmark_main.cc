@@ -60,6 +60,13 @@ int main(int argc, char **argv) {
                     CPU, squeezenet_v1_1, (std::vector<std::string>{"data"}),
                     (std::vector<std::string>{}),
                     (std::vector<std::vector<int64_t>>{{1, 227, 227, 3}}));
+  std::unique_ptr<nnbench::MaceCPUExecutor> inceptionv3_mace_cpu_executor(
+      new nnbench::MaceCPUExecutor({"input"},
+                                   {"InceptionV3/Predictions/Reshape_1"}));
+  NNBENCH_BENCHMARK(inceptionv3_mace_cpu_executor.get(), InceptionV3, MACE,
+                    CPU, inception_v3, (std::vector<std::string>{"input"}),
+                    (std::vector<std::string>{}),
+                    (std::vector<std::vector<int64_t>>{{1, 299, 299, 3}}));
   std::unique_ptr<nnbench::MaceCPUExecutor> vgg16_mace_cpu_executor(
       new nnbench::MaceCPUExecutor({"input"}, {"vgg_16/fc8/BiasAdd"}));
   NNBENCH_BENCHMARK(vgg16_mace_cpu_executor.get(), VGG16, MACE,

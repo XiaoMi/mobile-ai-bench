@@ -26,10 +26,28 @@ abi_types = [
 ]
 
 
+def add_statistics(statistics, all_statistics):
+    statistics.sort(key=lambda record: "".join(str(x) for x in record))
+    i = 0
+    while i < len(statistics):
+        data_str = ",".join(statistics[i][:-2])
+        model_index = i
+        for framework in range(len(FRAMEWORKS)):
+            data_str += ","
+            if i < len(statistics) \
+                    and statistics[model_index][0] == statistics[i][0] \
+                    and framework == statistics[i][-2]:
+                data_str += statistics[i][-1]
+                i += 1
+        data_str += "\n"
+        all_statistics.append(data_str)
+
+
 def report_run_statistics(stdout,
                           abi,
                           serialno,
-                          output_dir):
+                          all_prepare,
+                          all_run_avg):
     metrics = []
     for line in stdout.split('\n'):
         if line.startswith("benchmark:"):
@@ -45,26 +63,32 @@ def report_run_statistics(stdout,
     device_name = props.get("ro.product.model", "")
     target_soc = props.get("ro.board.platform", "")
 
-    report_filename = output_dir + "/report.csv"
-    if not os.path.exists(report_filename):
-        with open(report_filename, 'w') as f:
-            f.write("model_name,framework,device_name,soc,abi,runtime,"
-                    "prepare(s),run_avg(s)\n")
+    prepare = []
+    run_avg = []
+    for metric in metrics:
+        record = [metric[0], device_name, target_soc, abi,
+                  RUNTIMES[int(metric[2])], metric[1]]
+        prepare.append(record + [metric[3]])
+        run_avg.append(record + [metric[4]])
 
-    with open(report_filename, 'a') as f:
-        for metric in metrics:
-            data_str = "{model_name},{framework},{device_name},{soc},{abi}," \
-                       "{runtime},{prepare},{run_avg}\n" \
-                .format(model_name=metric[0],
-                        framework=FRAMEWORKS[metric[1]],
-                        device_name=device_name,
-                        soc=target_soc,
-                        abi=abi,
-                        runtime=RUNTIMES[metric[2]],
-                        prepare=metric[3],
-                        run_avg=metric[4],
-                        )
-            f.write(data_str)
+    add_statistics(prepare, all_prepare)
+    add_statistics(run_avg, all_run_avg)
+
+
+def write_statistics(f, title, statistics):
+    f.write(title)
+    header = "model_name,device_name,soc,abi,runtime,%s\n" \
+             % ",".join(FRAMEWORKS)
+    f.write(header)
+    statistics.sort()
+    f.write("".join(statistics))
+
+
+def write_all_statistics(all_prepare, all_run_avg, output_dir):
+    report_filename = output_dir + "/report.csv"
+    with open(report_filename, 'w') as f:
+        write_statistics(f, "Prepare:\n", all_prepare)
+        write_statistics(f, "Run_avg:\n", all_run_avg)
 
 
 def parse_args():
@@ -134,6 +158,8 @@ def main(unused_args):
     host_bin_path, bin_name = sh_commands.bazel_target_to_bin(target)
     if "MACE" in frameworks:
         sh_commands.build_mace(FLAGS.target_abis, FLAGS.output_dir)
+    all_prepare = []
+    all_run_avg = []
     for target_abi in target_abis:
         if target_abi not in abi_types:
             print("Not supported abi: %s" % target_abi)
@@ -153,7 +179,8 @@ def main(unused_args):
                                           model_names, runtimes,
                                           output_dir=FLAGS.output_dir)
             report_run_statistics(stdouts, target_abi, serialno,
-                                  FLAGS.output_dir)
+                                  all_prepare, all_run_avg)
+    write_all_statistics(all_prepare, all_run_avg, FLAGS.output_dir)
 
 
 if __name__ == "__main__":
