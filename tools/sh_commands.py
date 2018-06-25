@@ -237,7 +237,8 @@ def prepare_model_and_input(serialno, config_file, device_bin_path,
     # mace model files are generated from source
     if "MACE" in frameworks:
         for model_file in os.listdir(output_dir):
-            if model_file.endswith(".pb") or model_file.endswith(".data"):
+            if model_file.endswith(".pb") or model_file.endswith(".data") \
+                    or model_file.endswith(".bin"):
                 model_file_path = output_dir + '/' + model_file
                 adb_push(model_file_path, device_bin_path, serialno)
 
@@ -282,8 +283,11 @@ def adb_run(abi,
         for framework in frameworks:
             for runtime in runtimes:
                 for model_name in model_names:
-                    args = "--framework=%s --runtime=%s --model_name=%s" % \
-                           (framework, runtime, model_name)
+                    args = "--framework=%s --runtime=%s --model_name=%s " \
+                           "--product_soc=%s.%s" % \
+                           (framework, runtime, model_name,
+                            props["ro.product.model"].replace(" ", ""),
+                            props["ro.board.platform"])
                     sh.adb(
                         "-s",
                         serialno,

@@ -24,11 +24,12 @@
 
 #define BENCHMARK_CONCAT(a, b, c) a##b##c
 #define NNBENCH_BENCHMARK(executor, model_name, framework, runtime, \
-                          model_file, input_names, input_files, input_shapes) \
+                          model_file, input_names, input_files, input_shapes, \
+                          output_names, output_shapes) \
   static ::nnbench::benchmark::Benchmark \
       *BENCHMARK_CONCAT(model_name, framework, runtime) = \
     (new ::nnbench::benchmark::Benchmark(executor, #model_name, #model_file, \
-         input_names, input_files, input_shapes))
+         input_names, input_files, input_shapes, output_names, output_shapes))
 
 namespace nnbench {
 namespace benchmark {
@@ -40,7 +41,9 @@ class Benchmark {
             const char *model_file,
             std::vector<std::string> input_names,
             std::vector<std::string> input_files,
-            std::vector<std::vector<int64_t>> input_shapes);
+            std::vector<std::vector<int64_t>> input_shapes,
+            std::vector<std::string> output_names,
+            std::vector<std::vector<int64_t>> output_shapes);
 
   static Status Run(const char *model_name, const char *framework,
                     const char *runtime);
@@ -52,6 +55,8 @@ class Benchmark {
   std::vector<std::string> input_names_;
   std::vector<std::string> input_files_;
   std::vector<std::vector<int64_t>> input_shapes_;
+  std::vector<std::string> output_names_;
+  std::vector<std::vector<int64_t>> output_shapes_;
 
   void Register();
   Status Run(double *init_seconds, double *run_seconds);

@@ -14,10 +14,13 @@
 
 #include "nnbench/executors/mace/mace_executor.h"
 
+#include <sys/types.h>
+#include <dirent.h>
 #include <algorithm>
 #include <fstream>
 #include <iostream>
 #include <memory>
+#include <string>
 #include <vector>
 
 namespace nnbench {
@@ -43,9 +46,56 @@ inline Status ReadBinaryFile(std::vector<unsigned char> *data,
   return Status::SUCCESS;
 }
 
-Status MaceCPUExecutor::Prepare(const char *model_name) {
-  mace::DeviceType device_type = mace::CPU;
-  mace::SetOpenMPThreadPolicy(4, static_cast<mace::CPUAffinityPolicy>(0));
+std::string GetOpenclBinaryPath(const std::string &model_name,
+                                const std::string &product_soc) {
+  std::vector<std::string> files;
+  DIR *dir = opendir(".");
+  struct dirent *entry;
+  while ((entry = readdir(dir)) != nullptr) {
+    files.push_back(entry->d_name);
+  }
+  closedir(dir);
+  for (const auto &file : files) {
+    // e.g. mobilenet_v1_compiled_opencl_kernel.MIX2S.sdm845.bin
+    if (file.find(model_name) != std::string::npos
+        && file.find(product_soc) != std::string::npos) {
+      return file;
+    }
+  }
+
+  return "";
+}
+
+mace::DeviceType GetDeviceType(const Runtime &runtime) {
+  switch (runtime) {
+    case CPU: return mace::CPU;
+    case GPU: return mace::GPU;
+    case DSP: return mace::HEXAGON;
+    default: return mace::CPU;
+  }
+}
+
+Status MaceExecutor::Prepare(const char *model_name) {
+  mace::DeviceType device_type = GetDeviceType(GetRuntime());
+  mace::SetOpenMPThreadPolicy(4, static_cast<mace::CPUAffinityPolicy>(1));
+  if (device_type == mace::GPU) {
+    mace::SetGPUHints(
+        static_cast<mace::GPUPerfHint>(3),
+        static_cast<mace::GPUPriorityHint>(3));
+    std::string opencl_binary_path =
+        GetOpenclBinaryPath(model_name, product_soc_);
+    if (opencl_binary_path == "") {
+      std::cout << model_name << " opencl binary file not found." << std::endl;
+      return RUNTIME_ERROR;
+    }
+    std::vector<std::string> opencl_binary_paths = {opencl_binary_path};
+    mace::SetOpenCLBinaryPaths(opencl_binary_paths);
+
+    const std::string kernel_file_path("/data/local/tmp/mace_run/interior");
+    std::shared_ptr<mace::KVStorageFactory> storage_factory(
+        new mace::FileStorageFactory(kernel_file_path));
+    mace::SetKVStorageFactory(storage_factory);
+  }
 
   std::vector<unsigned char> model_pb_data;
   std::string model_pb_file(model_name);
@@ -70,24 +120,27 @@ Status MaceCPUExecutor::Prepare(const char *model_name) {
                                                     : Status::RUNTIME_ERROR;
 }
 
-Status MaceCPUExecutor::Run(const std::map<std::string, BaseTensor> &inputs,
-                            std::map<std::string, BaseTensor> *outputs) {
+Status MaceExecutor::Run(const std::map<std::string, BaseTensor> &inputs,
+                         std::map<std::string, BaseTensor> *outputs) {
   (void)outputs;
 
   std::map<std::string, mace::MaceTensor> mace_inputs;
   std::map<std::string, mace::MaceTensor> mace_outputs;
-  for (auto input : inputs) {
+  for (const auto &input : inputs) {
     mace_inputs[input.first] = mace::MaceTensor(input.second.shape(),
                                                 input.second.data());
   }
-
+  for (const auto &output : *outputs) {
+    mace_outputs[output.first] = mace::MaceTensor(output.second.shape(),
+                                                  output.second.data());
+  }
   mace::MaceStatus run_status = engine_->Run(mace_inputs, &mace_outputs);
 
   return run_status == mace::MACE_SUCCESS ? Status::SUCCESS
                                           : Status::RUNTIME_ERROR;
 }
 
-void MaceCPUExecutor::Finish() {
+void MaceExecutor::Finish() {
   engine_.reset();
 }
 
