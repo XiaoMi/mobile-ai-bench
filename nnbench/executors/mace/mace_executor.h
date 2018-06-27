@@ -26,11 +26,14 @@
 
 namespace nnbench {
 
-class MaceCPUExecutor : public BaseExecutor {
+class MaceExecutor : public BaseExecutor {
  public:
-  MaceCPUExecutor(std::vector<std::string> input_names,
-                  std::vector<std::string> output_names)
-      : BaseExecutor(MACE, CPU),
+  MaceExecutor(Runtime runtime,
+               const std::string &product_soc,
+               const std::vector<std::string> &input_names,
+               const std::vector<std::string> &output_names)
+      : BaseExecutor(MACE, runtime),
+        product_soc_(product_soc),
         input_names_(input_names),
         output_names_(output_names) {}
 
@@ -41,6 +44,7 @@ class MaceCPUExecutor : public BaseExecutor {
   virtual void Finish();
 
  private:
+  std::string product_soc_;
   std::vector<std::string> input_names_;
   std::vector<std::string> output_names_;
   std::shared_ptr<mace::MaceEngine> engine_;

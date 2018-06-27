@@ -63,20 +63,28 @@ Benchmark::Benchmark(BaseExecutor *executor,
                      const char *model_file,
                      std::vector<std::string> input_names,
                      std::vector<std::string> input_files,
-                     std::vector<std::vector<int64_t>> input_shapes)
+                     std::vector<std::vector<int64_t>> input_shapes,
+                     std::vector<std::string> output_names,
+                     std::vector<std::vector<int64_t>> output_shapes)
     : executor_(executor),
       model_name_(model_name),
       model_file_(model_file),
       input_names_(input_names),
       input_files_(input_files),
-      input_shapes_(input_shapes) {
-  if (input_names.size() != input_shapes_.size() ||
-      (input_files.size() != input_shapes_.size() && input_files.size() > 0)) {
+      input_shapes_(input_shapes),
+      output_names_(output_names),
+      output_shapes_(output_shapes) {
+  if (input_names.size() != input_shapes.size()
+      || (input_files.size() != input_shapes.size() && input_files.size() > 0)
+      || output_names.size() != output_shapes.size()) {
     printf("size of input_names(%d), input_files(%d) and input_shapes(%d) "
-               "should be equal\n",
+               "should be equal. sizeof output_names(%d) and output_shapes(%d) "
+               "should be equal.\n",
            static_cast<int>(input_names.size()),
            static_cast<int>(input_files.size()),
-           static_cast<int>(input_shapes_.size()));
+           static_cast<int>(input_shapes.size()),
+           static_cast<int>(output_names.size()),
+           static_cast<int>(output_shapes.size()));
     abort();
   }
   Register();
@@ -107,6 +115,10 @@ Status Benchmark::Run(const char *model_name, const char *framework,
         ParseRuntime(runtime) != b->executor_->GetRuntime())
       continue;
     double init_seconds, run_seconds;
+    printf("benchmarking:%s,%d,%d\n",
+           b->model_name_.c_str(),
+           b->executor_->GetFramework(),
+           b->executor_->GetRuntime());
     Status status = b->Run(&init_seconds, &run_seconds);
     if (status != SUCCESS) {
       res = status;
@@ -166,6 +178,14 @@ Status Benchmark::Run(double *init_seconds, double *run_seconds) {
     }
     BaseTensor input_tensor = BaseTensor(input_shapes_[i], input_data);
     inputs.insert({input_names_[i], input_tensor});
+  }
+  for (size_t i = 0; i < output_names_.size(); ++i) {
+    int64_t output_size =
+        std::accumulate(output_shapes_[i].begin(), output_shapes_[i].end(), 1,
+                        std::multiplies<int64_t>());
+    auto buffer_out = std::shared_ptr<float>(new float[output_size],
+                                             std::default_delete<float[]>());
+    outputs[output_names_[i]] = BaseTensor(output_shapes_[i], buffer_out);
   }
   for (int i = 0; i < 5; ++i) {
     status = executor_->Run(inputs, &outputs);

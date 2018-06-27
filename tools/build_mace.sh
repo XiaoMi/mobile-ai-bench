@@ -24,7 +24,11 @@ for CONF_FILE in $CONF_FILES; do
         if [ $RESULT == 0 ]; then
             cp build/$(basename $CONF_FILE .yml)/model/*.pb $2
             cp build/$(basename $CONF_FILE .yml)/model/*.data $2
-            COPIED_FILE=$CONF_FILE
+            find build/$(basename $CONF_FILE .yml)/ -name *.bin |
+                while IFS= read -r NAME; do cp $NAME $2/`echo $(basename $NAME) | sed "s/-/_/g"`; done
+            if [ "$(basename $CONF_FILE .yml)" == "inception-v3-dsp" ]; then
+                COPIED_FILE=$CONF_FILE
+            fi
         fi
     fi
 done
