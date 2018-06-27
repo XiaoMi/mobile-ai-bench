@@ -74,3 +74,6 @@ python tools/benchmark.py --output_dir=output --frameworks=all \
 
 ## License
 [Apache License 2.0](LICENSE).
+
+## Notice
+For [third party](third_party) dependencies, please refer to their licenses.
