@@ -25,13 +25,3 @@ cc_library(
     deps = ["snpe_hdr"],
     visibility = ["//visibility:public"],
 )
-
-cc_library(
-    name = "snpe_arm64-v8a",
-    srcs = [
-        "lib/aarch64-android-gcc4.9/libSNPE.so",
-        #"lib/aarch64-linux-gcc4.9/libSNPE.so"
-    ],
-    deps = ["snpe_hdr"],
-    visibility = ["//visibility:public"],
-)

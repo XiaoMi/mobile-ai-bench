@@ -8,6 +8,7 @@ load(
     "//nnbench:nnbench.bzl",
     "if_android",
     "if_mace_enabled",
+    "if_mace_dsp_enabled",
     "if_ncnn_enabled",
     "if_snpe_enabled",
 )
@@ -33,6 +34,8 @@ cc_test(
     srcs = ["benchmark_main.cc"],
     copts = if_mace_enabled([
         "-DNNBENCH_ENABLE_MACE",
+    ]) + if_mace_dsp_enabled([
+        "-DNNBENCH_ENABLE_MACE_DSP",
     ]) + if_ncnn_enabled([
         "-DNNBENCH_ENABLE_NCNN",
     ]) + if_snpe_enabled([

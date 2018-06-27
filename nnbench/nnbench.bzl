@@ -30,6 +30,12 @@ def if_mace_enabled(a):
         "//conditions:default": [],
     })
 
+def if_mace_dsp_enabled(a):
+    return select({
+        "//nnbench:mace_dsp_enabled": a,
+        "//conditions:default": [],
+    })
+
 def if_ncnn_enabled(a):
     return select({
         "//nnbench:ncnn_enabled": a,

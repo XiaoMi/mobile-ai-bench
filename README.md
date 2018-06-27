@@ -19,7 +19,18 @@ on mobile devices, which hopefully can provide insights for the developers.
 python tools/benchmark.py --output_dir=output --frameworks=all \
                           --runtimes=all --model_names=all
 ```
-## Archetecture
+The whole benchmark may take several hours, and continuous benchmarking may heat
+the device very quickly, so you may set following arguments according to your
+interests. 
+
+| option        | type | default     | explanation |
+| ------------- | ---: | -----------:| ------------|
+| --frameworks  | str  | all         | Frameworks(MACE/SNPE/NCNN/TENSORFLOW_LITE), comma seperated list or all. |
+| --runtimes    | str  | all         | Runtimes(CPU/GPU/DSP), comma seperated list or all. |
+| --target_abis | str  | armeabi-v7a | Target ABIs(armeabi-v7a/arm64-v8a), comma separated list. |
+| --model_names | str  | all         | Model names, comma seperated list or all. |
+
+## Architecture
 ```
 +---------------+         +------------------+      +------------------+
 |   Benchmark   |         |   BaseExecutor   | <--- | MaceGpuExecutor  |
