@@ -138,7 +138,7 @@ int main(int argc, char **argv) {
                     (std::vector<std::vector<int64_t>>{{1, 224, 224, 3}}),
                     (std::vector<std::string>{"prob"}),
                     (std::vector<std::vector<int64_t>>{{1, 1, 1, 1000}}));
-
+#ifdef NNBENCH_ENABLE_MACE_DSP
   std::unique_ptr<nnbench::MaceExecutor> inceptionv3_mace_dsp_executor(
       new nnbench::MaceExecutor(nnbench::DSP, FLAGS_product_soc, {"Mul"},
                                 {"softmax"}));
@@ -150,7 +150,7 @@ int main(int argc, char **argv) {
                       (std::vector<std::string>{"softmax"}),
                       (std::vector<std::vector<int64_t>>{{1, 1, 1, 1008}}));
   }
-
+#endif  // NNBENCH_ENABLE_MACE_DSP
 #endif
 #ifdef NNBENCH_ENABLE_SNPE
   std::unique_ptr<nnbench::SnpeCPUExecutor>

@@ -181,14 +181,9 @@ def bazel_target_to_bin(target):
 
 def prepare_device_env(serialno, abi, device_bin_path, frameworks):
     # for snpe
-    if "SNPE" in frameworks:
-        snpe_lib_path = ""
-        if abi == "armeabi-v7a":
-            snpe_lib_path = \
-               "bazel-mobile-nn-bench/external/snpe/lib/arm-android-gcc4.9"
-        elif abi == "arm64-v8a":
-            snpe_lib_path = \
-               "bazel-mobile-nn-bench/external/snpe/lib/aarch64-android-gcc4.9"
+    if "SNPE" in frameworks and abi == "armeabi-v7a":
+        snpe_lib_path = \
+           "bazel-mobile-nn-bench/external/snpe/lib/arm-android-gcc4.9"
 
         adb_push("bazel-mobile-nn-bench/external/snpe/lib/dsp",
                  device_bin_path, serialno)
@@ -206,13 +201,14 @@ def prepare_device_env(serialno, abi, device_bin_path, frameworks):
                  device_bin_path, serialno)
 
 
-def prepare_model_and_input(serialno, config_file, device_bin_path,
+def prepare_model_and_input(serialno, abi, config_file, device_bin_path,
                             output_dir, frameworks):
     with open(config_file) as f:
         configs = yaml.load(f)
 
     for model_file in configs["models"]:
-        if model_file.endswith(".dlc") and "SNPE" not in frameworks:
+        if model_file.endswith(".dlc") \
+                and not ("SNPE" in frameworks and abi == "armeabi-v7a"):
             continue
         host_model_path = configs["models"][model_file]
         if host_model_path.startswith("http"):
@@ -237,8 +233,7 @@ def prepare_model_and_input(serialno, config_file, device_bin_path,
     # mace model files are generated from source
     if "MACE" in frameworks:
         for model_file in os.listdir(output_dir):
-            if model_file.endswith(".pb") or model_file.endswith(".data") \
-                    or model_file.endswith(".bin"):
+            if model_file.endswith(".pb") or model_file.endswith(".data"):
                 model_file_path = output_dir + '/' + model_file
                 adb_push(model_file_path, device_bin_path, serialno)
 
@@ -266,8 +261,12 @@ def adb_run(abi,
               (serialno, props["ro.board.platform"],
                props["ro.product.model"]))
         sh.adb("-s", serialno, "shell", "mkdir -p %s" % device_bin_path)
+        sh.adb("-s", serialno, "shell", "rm -rf %s"
+               % os.path.join(device_bin_path, "interior"))
+        sh.adb("-s", serialno, "shell", "mkdir %s"
+               % os.path.join(device_bin_path, "interior"))
         prepare_device_env(serialno, abi, device_bin_path, frameworks)
-        prepare_model_and_input(serialno, model_and_input_config,
+        prepare_model_and_input(serialno, abi, model_and_input_config,
                                 device_bin_path, output_dir, frameworks)
         adb_push(host_bin_full_path, device_bin_path, serialno)
 

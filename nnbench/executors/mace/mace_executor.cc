@@ -14,8 +14,6 @@
 
 #include "nnbench/executors/mace/mace_executor.h"
 
-#include <sys/types.h>
-#include <dirent.h>
 #include <algorithm>
 #include <fstream>
 #include <iostream>
@@ -46,26 +44,6 @@ inline Status ReadBinaryFile(std::vector<unsigned char> *data,
   return Status::SUCCESS;
 }
 
-std::string GetOpenclBinaryPath(const std::string &model_name,
-                                const std::string &product_soc) {
-  std::vector<std::string> files;
-  DIR *dir = opendir(".");
-  struct dirent *entry;
-  while ((entry = readdir(dir)) != nullptr) {
-    files.push_back(entry->d_name);
-  }
-  closedir(dir);
-  for (const auto &file : files) {
-    // e.g. mobilenet_v1_compiled_opencl_kernel.MIX2S.sdm845.bin
-    if (file.find(model_name) != std::string::npos
-        && file.find(product_soc) != std::string::npos) {
-      return file;
-    }
-  }
-
-  return "";
-}
-
 mace::DeviceType GetDeviceType(const Runtime &runtime) {
   switch (runtime) {
     case CPU: return mace::CPU;
@@ -82,16 +60,8 @@ Status MaceExecutor::Prepare(const char *model_name) {
     mace::SetGPUHints(
         static_cast<mace::GPUPerfHint>(3),
         static_cast<mace::GPUPriorityHint>(3));
-    std::string opencl_binary_path =
-        GetOpenclBinaryPath(model_name, product_soc_);
-    if (opencl_binary_path == "") {
-      std::cout << model_name << " opencl binary file not found." << std::endl;
-      return RUNTIME_ERROR;
-    }
-    std::vector<std::string> opencl_binary_paths = {opencl_binary_path};
-    mace::SetOpenCLBinaryPaths(opencl_binary_paths);
 
-    const std::string kernel_file_path("/data/local/tmp/mace_run/interior");
+    const std::string kernel_file_path("./interior");
     std::shared_ptr<mace::KVStorageFactory> storage_factory(
         new mace::FileStorageFactory(kernel_file_path));
     mace::SetKVStorageFactory(storage_factory);

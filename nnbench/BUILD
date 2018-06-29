@@ -33,6 +33,17 @@ config_setting(
 )
 
 config_setting(
+    name = "mace_dsp_enabled",
+    define_values = {
+        "mace": "true",
+    },
+    values = {
+        "cpu": "armeabi-v7a",
+    },
+    visibility = ["//visibility:public"],
+)
+
+config_setting(
     name = "ncnn_enabled",
     define_values = {
         "ncnn": "true",
@@ -44,6 +55,9 @@ config_setting(
     name = "snpe_enabled",
     define_values = {
         "snpe": "true",
+    },
+    values = {
+        "cpu": "armeabi-v7a",
     },
     visibility = ["//visibility:public"],
 )
