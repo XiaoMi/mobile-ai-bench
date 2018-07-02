@@ -73,6 +73,8 @@ class BaseExecutor {
 
   virtual ~BaseExecutor() = default;
 
+  virtual Status Init(const char *model_name, int num_threads) = 0;
+
   virtual Status Prepare(const char *model_name) = 0;
 
   virtual Status Run(const std::map<std::string, BaseTensor> &inputs,

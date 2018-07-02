@@ -53,20 +53,9 @@ mace::DeviceType GetDeviceType(const Runtime &runtime) {
   }
 }
 
-Status MaceExecutor::Prepare(const char *model_name) {
+Status MaceExecutor::CreateEngine(const char *model_name,
+                                  std::shared_ptr<mace::MaceEngine> *engine) {
   mace::DeviceType device_type = GetDeviceType(GetRuntime());
-  mace::SetOpenMPThreadPolicy(4, static_cast<mace::CPUAffinityPolicy>(1));
-  if (device_type == mace::GPU) {
-    mace::SetGPUHints(
-        static_cast<mace::GPUPerfHint>(3),
-        static_cast<mace::GPUPriorityHint>(3));
-
-    const std::string kernel_file_path("./interior");
-    std::shared_ptr<mace::KVStorageFactory> storage_factory(
-        new mace::FileStorageFactory(kernel_file_path));
-    mace::SetKVStorageFactory(storage_factory);
-  }
-
   std::vector<unsigned char> model_pb_data;
   std::string model_pb_file(model_name);
   model_pb_file.append(".pb");
@@ -78,16 +67,40 @@ Status MaceExecutor::Prepare(const char *model_name) {
   model_data_file.append(".data");
 
   mace::MaceStatus create_engine_status;
-  create_engine_status =
-      CreateMaceEngineFromProto(model_pb_data,
-                                model_data_file,
-                                input_names_,
-                                output_names_,
-                                device_type,
-                                &engine_);
+  create_engine_status = CreateMaceEngineFromProto(model_pb_data,
+                                                   model_data_file,
+                                                   input_names_,
+                                                   output_names_,
+                                                   device_type,
+                                                   engine);
 
   return create_engine_status == mace::MACE_SUCCESS ? Status::SUCCESS
                                                     : Status::RUNTIME_ERROR;
+}
+
+Status MaceExecutor::Init(const char *model_name, int num_threads) {
+  mace::DeviceType device_type = GetDeviceType(GetRuntime());
+  mace::SetOpenMPThreadPolicy(num_threads,
+                              static_cast<mace::CPUAffinityPolicy>(1));
+  if (device_type == mace::GPU) {
+    mace::SetGPUHints(
+        static_cast<mace::GPUPerfHint>(3),
+        static_cast<mace::GPUPriorityHint>(3));
+
+    const std::string kernel_file_path("./interior");
+    std::shared_ptr<mace::KVStorageFactory> storage_factory(
+        new mace::FileStorageFactory(kernel_file_path));
+    mace::SetKVStorageFactory(storage_factory);
+    // Mace needs to compile opencl kernel once per new target, and since then
+    // compiled code is stored on the target, which will speedup following run.
+    std::shared_ptr<mace::MaceEngine> engine;
+    return CreateEngine(model_name, &engine);
+  }
+  return Status::SUCCESS;
+}
+
+Status MaceExecutor::Prepare(const char *model_name) {
+  return CreateEngine(model_name, &engine_);
 }
 
 Status MaceExecutor::Run(const std::map<std::string, BaseTensor> &inputs,

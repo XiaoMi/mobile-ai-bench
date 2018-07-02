@@ -114,6 +114,12 @@ Status ProcessOutput(const zdl::DlSystem::TensorMap &output_tensor_map,
 
 }  // namespace
 
+Status SnpeCPUExecutor::Init(const char *model_name, int num_threads) {
+  (void)model_name;
+  (void)num_threads;
+  return Status::SUCCESS;
+}
+
 Status SnpeCPUExecutor::Prepare(const char *model_name) {
   static zdl::DlSystem::Runtime_t runtime = zdl::DlSystem::Runtime_t::CPU;
   snpe_ = BuildSnpeRuntime(model_name, runtime);
@@ -144,6 +150,12 @@ void SnpeCPUExecutor::Finish() {
   output_tensor_map_.clear();
 }
 
+Status SnpeGPUExecutor::Init(const char *model_name, int num_threads) {
+  (void)model_name;
+  (void)num_threads;
+  return Status::SUCCESS;
+}
+
 Status SnpeGPUExecutor::Prepare(const char *model_name) {
   static zdl::DlSystem::Runtime_t runtime = zdl::DlSystem::Runtime_t::GPU;
   snpe_ = BuildSnpeRuntime(model_name, runtime);
@@ -172,6 +184,12 @@ void SnpeGPUExecutor::Finish() {
   if (snpe_ != nullptr) snpe_.reset();
   input_tensor_map_.clear();
   output_tensor_map_.clear();
+}
+
+Status SnpeDSPExecutor::Init(const char *model_name, int num_threads) {
+  (void)model_name;
+  (void)num_threads;
+  return Status::SUCCESS;
 }
 
 Status SnpeDSPExecutor::Prepare(const char *model_name) {

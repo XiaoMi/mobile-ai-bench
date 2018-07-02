@@ -2,6 +2,8 @@
 
 set -e -u -o pipefail
 
+trap "exit" INT
+
 # get all model yamls
 rm -rf mace-models
 GIT_SSH_COMMAND="ssh -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no" git clone git@v9.git.n.xiaomi.com:deep-computing/mace-models.git
