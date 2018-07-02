@@ -97,3 +97,21 @@ cc_library(
         "@ncnn",
     ],
 )
+
+cc_library(
+    name = "tflite_executor",
+    srcs = glob([
+        "tflite/tflite_executor.cc",
+    ]),
+    hdrs = [
+        "tflite/tflite_executor.h",
+    ],
+
+    deps = [
+        ":base_executor",
+    ] + if_android_armv7([
+        "//third_party/tflite:tflite_armeabi-v7a",
+    ]) + if_android_arm64([
+        "//third_party/tflite:tflite_arm64-v8a",
+    ]),
+)

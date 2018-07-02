@@ -5,7 +5,9 @@ models:
   # vgg16 model file converted from tensorflow graph
   vgg16.dlc: https://cnbj1-fds.api.xiaomi.net/nnbench/models/vgg16.dlc
   vgg16_quantized.dlc: https://cnbj1-fds.api.xiaomi.net/nnbench/models/vgg16_quantized.dlc
-
+  inception_v3.tflite: https://cnbj1.fds.api.xiaomi.com/nnbench/models/inception_v3.tflite
+  mobilenet_v1_1.0_224.tflite: https://cnbj1.fds.api.xiaomi.com/nnbench/models/mobilenet_v1_1.0_224.tflite
+  mobilenet_quant_v1_224.tflite: https://cnbj1.fds.api.xiaomi.com/nnbench/models/mobilenet_quant_v1_224.tflite
 
 inputs:
   keyboard_299x299.dat: https://cnbj1-fds.api.xiaomi.net/nnbench/inputs/keyboard_299x299.dat

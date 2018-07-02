@@ -61,3 +61,11 @@ config_setting(
     },
     visibility = ["//visibility:public"],
 )
+
+config_setting(
+    name = "tflite_enabled",
+    define_values = {
+        "tflite": "true",
+    },
+    visibility = ["//visibility:public"],
+)

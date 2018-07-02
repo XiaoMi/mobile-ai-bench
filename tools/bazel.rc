@@ -1,5 +1,6 @@
 build --verbose_failures
 build --copt=-std=c++11
+build --strategy=CppCompile=standalone
 
 # By default, we don't distinct target and host platfroms.
 # When doing cross compilation, use --config=cross_compile to distinct them.

@@ -27,6 +27,9 @@
 #ifdef NNBENCH_ENABLE_SNPE
 #include "nnbench/executors/snpe/snpe_executor.h"
 #endif
+#ifdef NNBENCH_ENABLE_TFLITE
+#include "nnbench/executors/tflite/tflite_executor.h"
+#endif
 
 DEFINE_string(model_name, "all", "the model to benchmark");
 DEFINE_string(framework, "all", "the framework to benchmark");
@@ -239,6 +242,32 @@ int main(int argc, char **argv) {
                     (std::vector<std::vector<int64_t>>{{224, 224, 3}}),
                     (std::vector<std::string>{}),
                     (std::vector<std::vector<int64_t>>{}));
+#endif
+#ifdef NNBENCH_ENABLE_TFLITE
+  std::unique_ptr<nnbench::TfLiteExecutor>
+      tflite_executor(new nnbench::TfLiteExecutor());
+  NNBENCH_BENCHMARK(tflite_executor.get(), MobileNetV1Quant, TFLITE, CPU,
+                    mobilenet_quant_v1_224.tflite,
+                    (std::vector<std::string>{"Placeholder"}),
+                    (std::vector<std::string>{}),
+                    (std::vector<std::vector<int64_t>>{{1, 224, 224, 3}}),
+                    (std::vector<std::string>{}),
+                    (std::vector<std::vector<int64_t>>{}));
+  NNBENCH_BENCHMARK(tflite_executor.get(), MobileNetV1, TFLITE, CPU,
+                    mobilenet_v1_1.0_224.tflite,
+                    (std::vector<std::string>{"input"}),
+                    (std::vector<std::string>{}),
+                    (std::vector<std::vector<int64_t>>{{1, 224, 224, 3}}),
+                    (std::vector<std::string>{}),
+                    (std::vector<std::vector<int64_t>>{}));
+  NNBENCH_BENCHMARK(tflite_executor.get(), InceptionV3, TFLITE, CPU,
+                    inception_v3.tflite,
+                    (std::vector<std::string>{"input"}),
+                    (std::vector<std::string>{}),
+                    (std::vector<std::vector<int64_t>>{{1, 299, 299, 3}}),
+                    (std::vector<std::string>{}),
+                    (std::vector<std::vector<int64_t>>{}));
+
 #endif
   nnbench::Status status = nnbench::benchmark::Benchmark::Run(
       FLAGS_model_name.c_str(), FLAGS_framework.c_str(), FLAGS_runtime.c_str());

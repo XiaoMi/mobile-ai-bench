@@ -11,6 +11,7 @@ load(
     "if_mace_dsp_enabled",
     "if_ncnn_enabled",
     "if_snpe_enabled",
+    "if_tflite_enabled",
 )
 
 cc_library(
@@ -40,6 +41,8 @@ cc_test(
         "-DNNBENCH_ENABLE_NCNN",
     ]) + if_snpe_enabled([
         "-DNNBENCH_ENABLE_SNPE",
+    ]) + if_tflite_enabled([
+        "-DNNBENCH_ENABLE_TFLITE",
     ]),
     linkopts = [
         "-fopenmp",
@@ -58,5 +61,7 @@ cc_test(
         "//nnbench/executors:ncnn_executor",
     ]) + if_snpe_enabled([
         "//nnbench/executors:snpe_executor",
+    ]) + if_tflite_enabled([
+        "//nnbench/executors:tflite_executor",
     ]),
 )

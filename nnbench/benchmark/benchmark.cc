@@ -35,8 +35,8 @@ nnbench::Framework ParseFramework(const char *framework) {
     return nnbench::Framework::SNPE;
   } else if (strcmp(framework, "NCNN") == 0) {
     return nnbench::Framework::NCNN;
-  } else if (strcmp(framework, "TENSORFLOW_LITE") == 0) {
-    return nnbench::Framework::TENSORFLOW_LITE;
+  } else if (strcmp(framework, "TFLITE") == 0) {
+    return nnbench::Framework::TFLITE;
   } else {
     return nnbench::Framework::MACE;
   }
