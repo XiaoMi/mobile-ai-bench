@@ -96,10 +96,17 @@ Status Benchmark::Run(const char *model_name, const char *framework,
                       const char *runtime, int run_interval, int num_threads) {
   if (!all_benchmarks) return SUCCESS;
 
-  // sort by model name
+  // sort by model name, framework and runtime
+  // the compare function tends to shuffle benchmarks by runtime
   std::sort(all_benchmarks->begin(), all_benchmarks->end(),
             [](const Benchmark *lhs, const Benchmark *rhs) {
-              return lhs->model_name_ < rhs->model_name_;
+              return lhs->model_name_ < rhs->model_name_
+                || (lhs->model_name_ == rhs->model_name_
+                  && (lhs->executor_->GetFramework()
+                    < rhs->executor_->GetFramework() || (
+                    lhs->executor_->GetFramework()
+                      == rhs->executor_->GetFramework()
+                      && lhs->executor_->GetRuntime() != nnbench::CPU)));
             });
 
   // Internal perf regression tools depends on the output formatting,
