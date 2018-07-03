@@ -158,8 +158,8 @@ int main(int argc, char **argv) {
 #endif  // NNBENCH_ENABLE_MACE_DSP
 #endif
 #ifdef NNBENCH_ENABLE_SNPE
-  std::unique_ptr<nnbench::SnpeCPUExecutor>
-      snpe_cpu_executor(new nnbench::SnpeCPUExecutor());
+  std::unique_ptr<nnbench::SnpeExecutor>
+      snpe_cpu_executor(new nnbench::SnpeExecutor(nnbench::CPU));
   NNBENCH_BENCHMARK(snpe_cpu_executor.get(), InceptionV3, SNPE, CPU,
                     inception_v3.dlc, (std::vector<std::string>{"Mul:0"}),
                     (std::vector<std::string>{"keyboard_299x299.dat"}),
@@ -173,8 +173,8 @@ int main(int argc, char **argv) {
                     (std::vector<std::string>{}),
                     (std::vector<std::vector<int64_t>>{}));
 
-  std::unique_ptr<nnbench::SnpeGPUExecutor>
-      snpe_gpu_executor(new nnbench::SnpeGPUExecutor());
+  std::unique_ptr<nnbench::SnpeExecutor>
+      snpe_gpu_executor(new nnbench::SnpeExecutor(nnbench::GPU));
   NNBENCH_BENCHMARK(snpe_gpu_executor.get(), InceptionV3, SNPE, GPU,
                     inception_v3.dlc, (std::vector<std::string>{"Mul:0"}),
                     (std::vector<std::string>{"keyboard_299x299.dat"}),
@@ -183,8 +183,8 @@ int main(int argc, char **argv) {
                     (std::vector<std::vector<int64_t>>{}));
   // TODO(wuchenghui): benchmark snpe + gpu + vgg16
 
-  std::unique_ptr<nnbench::SnpeDSPExecutor>
-      snpe_dsp_executor(new nnbench::SnpeDSPExecutor());
+  std::unique_ptr<nnbench::SnpeExecutor>
+      snpe_dsp_executor(new nnbench::SnpeExecutor(nnbench::DSP));
   NNBENCH_BENCHMARK(snpe_dsp_executor.get(), InceptionV3, SNPE, DSP,
                     inception_v3_quantized.dlc,
                     (std::vector<std::string>{"Mul:0"}),

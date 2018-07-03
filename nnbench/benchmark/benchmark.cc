@@ -126,12 +126,12 @@ Status Benchmark::Run(const char *model_name, const char *framework,
       continue;
     }
     // model_name,framework,runtime,init time,inference time
-    printf("benchmark:%s,%d,%d,%f,%f\n",
+    printf("benchmark:%s,%d,%d,%.3f,%.3f\n",
            b->model_name_.c_str(),
            b->executor_->GetFramework(),
            b->executor_->GetRuntime(),
-           init_seconds,
-           run_seconds);
+           init_seconds * 1000,
+           run_seconds * 1000);
     // sleep run_interval seconds to cool off the target
     sleep(static_cast<uint32_t>(run_interval));
   }

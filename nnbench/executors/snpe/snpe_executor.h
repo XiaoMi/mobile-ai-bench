@@ -24,45 +24,9 @@
 
 namespace nnbench {
 
-class SnpeCPUExecutor : public BaseExecutor {
+class SnpeExecutor : public BaseExecutor {
  public:
-  SnpeCPUExecutor() : BaseExecutor(SNPE, CPU) {}
-
-  virtual Status Init(const char *model_name, int num_threads);
-
-  virtual Status Prepare(const char *model_name);
-
-  virtual Status Run(const std::map<std::string, BaseTensor> &inputs,
-                     std::map<std::string, BaseTensor> *outputs);
-
-  virtual void Finish();
- private:
-  std::unique_ptr<zdl::SNPE::SNPE> snpe_;
-  zdl::DlSystem::TensorMap input_tensor_map_;
-  zdl::DlSystem::TensorMap output_tensor_map_;
-};
-
-class SnpeGPUExecutor : public BaseExecutor {
- public:
-  SnpeGPUExecutor() : BaseExecutor(SNPE, GPU) {}
-
-  virtual Status Init(const char *model_name, int num_threads);
-
-  virtual Status Prepare(const char *model_name);
-
-  virtual Status Run(const std::map<std::string, BaseTensor> &inputs,
-                     std::map<std::string, BaseTensor> *outputs);
-
-  virtual void Finish();
- private:
-  std::unique_ptr<zdl::SNPE::SNPE> snpe_;
-  zdl::DlSystem::TensorMap input_tensor_map_;
-  zdl::DlSystem::TensorMap output_tensor_map_;
-};
-
-class SnpeDSPExecutor : public BaseExecutor {
- public:
-  SnpeDSPExecutor() : BaseExecutor(SNPE, DSP) {}
+  explicit SnpeExecutor(Runtime runtime) : BaseExecutor(SNPE, runtime) {}
 
   virtual Status Init(const char *model_name, int num_threads);
 

@@ -14,12 +14,10 @@
 
 #include "nnbench/executors/snpe/snpe_executor.h"
 
+#include <algorithm>
+#include <iostream>
 #include <map>
 #include <string>
-#include <iostream>
-#include <cstring>
-#include <random>
-#include <algorithm>
 #include <vector>
 
 #include "DiagLog/IDiagLog.hpp"
@@ -112,23 +110,32 @@ Status ProcessOutput(const zdl::DlSystem::TensorMap &output_tensor_map,
   return Status::SUCCESS;
 }
 
+zdl::DlSystem::Runtime_t GetSnpeRuntime(const Runtime &runtime) {
+  switch (runtime) {
+    case CPU: return zdl::DlSystem::Runtime_t::CPU;
+    case GPU: return zdl::DlSystem::Runtime_t::GPU;
+    case DSP: return zdl::DlSystem::Runtime_t::DSP;
+    default: return zdl::DlSystem::Runtime_t::CPU;
+  }
+}
+
 }  // namespace
 
-Status SnpeCPUExecutor::Init(const char *model_name, int num_threads) {
+Status SnpeExecutor::Init(const char *model_name, int num_threads) {
   (void)model_name;
   (void)num_threads;
   return Status::SUCCESS;
 }
 
-Status SnpeCPUExecutor::Prepare(const char *model_name) {
-  static zdl::DlSystem::Runtime_t runtime = zdl::DlSystem::Runtime_t::CPU;
+Status SnpeExecutor::Prepare(const char *model_name) {
+  zdl::DlSystem::Runtime_t runtime = GetSnpeRuntime(GetRuntime());
   snpe_ = BuildSnpeRuntime(model_name, runtime);
   if (snpe_ == nullptr) return Status::RUNTIME_ERROR;
   return Status::SUCCESS;
 }
 
-Status SnpeCPUExecutor::Run(const std::map<std::string, BaseTensor> &inputs,
-                            std::map<std::string, BaseTensor> *outputs) {
+Status SnpeExecutor::Run(const std::map<std::string, BaseTensor> &inputs,
+                         std::map<std::string, BaseTensor> *outputs) {
   Status status;
   // step1: prepare inputs
   input_tensor_map_.clear();
@@ -144,79 +151,7 @@ Status SnpeCPUExecutor::Run(const std::map<std::string, BaseTensor> &inputs,
   return status;
 }
 
-void SnpeCPUExecutor::Finish() {
-  if (snpe_ != nullptr) snpe_.reset();
-  input_tensor_map_.clear();
-  output_tensor_map_.clear();
-}
-
-Status SnpeGPUExecutor::Init(const char *model_name, int num_threads) {
-  (void)model_name;
-  (void)num_threads;
-  return Status::SUCCESS;
-}
-
-Status SnpeGPUExecutor::Prepare(const char *model_name) {
-  static zdl::DlSystem::Runtime_t runtime = zdl::DlSystem::Runtime_t::GPU;
-  snpe_ = BuildSnpeRuntime(model_name, runtime);
-  if (snpe_ == nullptr) return Status::RUNTIME_ERROR;
-  return Status::SUCCESS;
-}
-
-Status SnpeGPUExecutor::Run(const std::map<std::string, BaseTensor> &inputs,
-                            std::map<std::string, BaseTensor> *outputs) {
-  Status status;
-  // step1: prepare inputs
-  input_tensor_map_.clear();
-  status = ProcessInput(snpe_.get(), inputs, &input_tensor_map_);
-  if (status != Status::SUCCESS) return status;
-
-  // step2: execute
-  output_tensor_map_.clear();
-  snpe_.get()->execute(input_tensor_map_, output_tensor_map_);
-
-  // step3: process output
-  status = ProcessOutput(output_tensor_map_, outputs);
-  return status;
-}
-
-void SnpeGPUExecutor::Finish() {
-  if (snpe_ != nullptr) snpe_.reset();
-  input_tensor_map_.clear();
-  output_tensor_map_.clear();
-}
-
-Status SnpeDSPExecutor::Init(const char *model_name, int num_threads) {
-  (void)model_name;
-  (void)num_threads;
-  return Status::SUCCESS;
-}
-
-Status SnpeDSPExecutor::Prepare(const char *model_name) {
-  static zdl::DlSystem::Runtime_t runtime = zdl::DlSystem::Runtime_t::DSP;
-  snpe_ = BuildSnpeRuntime(model_name, runtime);
-  if (snpe_ == nullptr) return Status::RUNTIME_ERROR;
-  return Status::SUCCESS;
-}
-
-Status SnpeDSPExecutor::Run(const std::map<std::string, BaseTensor> &inputs,
-                            std::map<std::string, BaseTensor> *outputs) {
-  Status status;
-  // step1: prepare inputs
-  input_tensor_map_.clear();
-  status = ProcessInput(snpe_.get(), inputs, &input_tensor_map_);
-  if (status != Status::SUCCESS) return status;
-
-  // step2: execute
-  output_tensor_map_.clear();
-  snpe_.get()->execute(input_tensor_map_, output_tensor_map_);
-
-  // step3: process output
-  status = ProcessOutput(output_tensor_map_, outputs);
-  return status;
-}
-
-void SnpeDSPExecutor::Finish() {
+void SnpeExecutor::Finish() {
   if (snpe_ != nullptr) snpe_.reset();
   input_tensor_map_.clear();
   output_tensor_map_.clear();

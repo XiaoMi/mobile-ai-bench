@@ -321,4 +321,4 @@ def build_mace(abis, output_dir):
 
 
 def get_tflite():
-    sh.bash("tools/get_tflite.sh")
+    sh.bash("tools/get_tflite.sh", _fg=True)

@@ -3,3 +3,11 @@ bazel-*
 *.pyc
 .project/
 output/
+mace-models/
+mace/
+nohup.out
+third_party/mace/include/
+third_party/mace/lib/
+third_party/tflite/flatbuffers/
+third_party/tflite/tensorflow/
+
