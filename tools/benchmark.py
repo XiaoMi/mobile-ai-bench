@@ -122,6 +122,16 @@ def parse_args():
         default="all",
         help="runtimes to run, CPU/GPU/DSP, comma seperated list or all")
     parser.add_argument(
+        "--run_interval",
+        type=int,
+        default=10,
+        help="run interval between benchmarks, seconds")
+    parser.add_argument(
+        "--num_threads",
+        type=int,
+        default=4,
+        help="number of threads")
+    parser.add_argument(
         "--args",
         type=str,
         default="",
@@ -177,7 +187,8 @@ def main(unused_args):
                       (serialno, target_abi))
                 continue
             stdouts = sh_commands.adb_run(target_abi, serialno, host_bin_path,
-                                          bin_name, frameworks,
+                                          bin_name, FLAGS.run_interval,
+                                          FLAGS.num_threads, frameworks,
                                           model_names, runtimes,
                                           output_dir=FLAGS.output_dir)
             report_run_statistics(stdouts, target_abi, serialno,

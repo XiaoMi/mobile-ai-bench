@@ -28,6 +28,8 @@ class SnpeCPUExecutor : public BaseExecutor {
  public:
   SnpeCPUExecutor() : BaseExecutor(SNPE, CPU) {}
 
+  virtual Status Init(const char *model_name, int num_threads);
+
   virtual Status Prepare(const char *model_name);
 
   virtual Status Run(const std::map<std::string, BaseTensor> &inputs,
@@ -44,6 +46,8 @@ class SnpeGPUExecutor : public BaseExecutor {
  public:
   SnpeGPUExecutor() : BaseExecutor(SNPE, GPU) {}
 
+  virtual Status Init(const char *model_name, int num_threads);
+
   virtual Status Prepare(const char *model_name);
 
   virtual Status Run(const std::map<std::string, BaseTensor> &inputs,
@@ -59,6 +63,8 @@ class SnpeGPUExecutor : public BaseExecutor {
 class SnpeDSPExecutor : public BaseExecutor {
  public:
   SnpeDSPExecutor() : BaseExecutor(SNPE, DSP) {}
+
+  virtual Status Init(const char *model_name, int num_threads);
 
   virtual Status Prepare(const char *model_name);
 

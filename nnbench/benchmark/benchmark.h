@@ -46,7 +46,7 @@ class Benchmark {
             std::vector<std::vector<int64_t>> output_shapes);
 
   static Status Run(const char *model_name, const char *framework,
-                    const char *runtime);
+                    const char *runtime, int run_interval, int num_threads);
 
  private:
   BaseExecutor *executor_;
@@ -59,7 +59,7 @@ class Benchmark {
   std::vector<std::vector<int64_t>> output_shapes_;
 
   void Register();
-  Status Run(double *init_seconds, double *run_seconds);
+  Status Run(double *init_seconds, double *run_seconds, int num_threads);
 };
 
 int64_t NowMicros();

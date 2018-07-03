@@ -35,6 +35,8 @@ DEFINE_string(model_name, "all", "the model to benchmark");
 DEFINE_string(framework, "all", "the framework to benchmark");
 DEFINE_string(runtime, "all", "the runtime to benchmark");
 DEFINE_string(product_soc, "", "product model and target soc");
+DEFINE_int32(run_interval, 10, "run interval between benchmarks, seconds");
+DEFINE_int32(num_threads, 4, "number of threads");
 
 int main(int argc, char **argv) {
   std::string usage = "run benchmark, e.g. " + std::string(argv[0]) +
@@ -200,18 +202,6 @@ int main(int argc, char **argv) {
 #ifdef NNBENCH_ENABLE_NCNN
   std::unique_ptr<nnbench::NcnnExecutor>
       ncnn_executor(new nnbench::NcnnExecutor());
-  NNBENCH_BENCHMARK(ncnn_executor.get(), AlexNet, NCNN, CPU,
-                    alexnet.param, (std::vector<std::string>{"data"}),
-                    (std::vector<std::string>{}),
-                    (std::vector<std::vector<int64_t>>{{227, 227, 3}}),
-                    (std::vector<std::string>{}),
-                    (std::vector<std::vector<int64_t>>{}));
-  NNBENCH_BENCHMARK(ncnn_executor.get(), GoogLeNet, NCNN, CPU,
-                    googlenet.param, (std::vector<std::string>{"data"}),
-                    (std::vector<std::string>{}),
-                    (std::vector<std::vector<int64_t>>{{224, 224, 3}}),
-                    (std::vector<std::string>{}),
-                    (std::vector<std::vector<int64_t>>{}));
   NNBENCH_BENCHMARK(ncnn_executor.get(), MobileNetV1, NCNN, CPU,
                     mobilenet.param, (std::vector<std::string>{"data"}),
                     (std::vector<std::string>{}),
@@ -224,13 +214,7 @@ int main(int argc, char **argv) {
                     (std::vector<std::vector<int64_t>>{{224, 224, 3}}),
                     (std::vector<std::string>{}),
                     (std::vector<std::vector<int64_t>>{}));
-  NNBENCH_BENCHMARK(ncnn_executor.get(), ResNet18, NCNN, CPU,
-                    resnet18.param, (std::vector<std::string>{"data"}),
-                    (std::vector<std::string>{}),
-                    (std::vector<std::vector<int64_t>>{{224, 224, 3}}),
-                    (std::vector<std::string>{}),
-                    (std::vector<std::vector<int64_t>>{}));
-  NNBENCH_BENCHMARK(ncnn_executor.get(), SqueezeNet, NCNN, CPU,
+  NNBENCH_BENCHMARK(ncnn_executor.get(), SqueezeNetV11, NCNN, CPU,
                     squeezenet.param, (std::vector<std::string>{"data"}),
                     (std::vector<std::string>{}),
                     (std::vector<std::vector<int64_t>>{{227, 227, 3}}),
@@ -270,6 +254,7 @@ int main(int argc, char **argv) {
 
 #endif
   nnbench::Status status = nnbench::benchmark::Benchmark::Run(
-      FLAGS_model_name.c_str(), FLAGS_framework.c_str(), FLAGS_runtime.c_str());
+      FLAGS_model_name.c_str(), FLAGS_framework.c_str(), FLAGS_runtime.c_str(),
+      FLAGS_run_interval, FLAGS_num_threads);
   return status;
 }

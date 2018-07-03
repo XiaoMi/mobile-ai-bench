@@ -18,6 +18,12 @@
 
 namespace nnbench {
 
+Status TfLiteExecutor::Init(const char *model_name, int num_threads) {
+  (void)model_name;
+  (void)num_threads;
+  return Status::SUCCESS;
+}
+
 Status TfLiteExecutor::Prepare(const char *model_name) {
   model_ = tflite::FlatBufferModel::BuildFromFile(model_name);
   if (!model_) {

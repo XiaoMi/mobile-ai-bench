@@ -16,12 +16,13 @@
 
 #include <string.h>
 #include <sys/time.h>
+#include <unistd.h>
 
 #include <algorithm>
 #include <fstream>
 #include <functional>
-#include <vector>
 #include <map>
+#include <vector>
 
 namespace nnbench {
 namespace benchmark {
@@ -92,7 +93,7 @@ Benchmark::Benchmark(BaseExecutor *executor,
 
 // Run all benchmarks filtered by model_name
 Status Benchmark::Run(const char *model_name, const char *framework,
-                      const char *runtime) {
+                      const char *runtime, int run_interval, int num_threads) {
   if (!all_benchmarks) return SUCCESS;
 
   // sort by model name
@@ -119,7 +120,7 @@ Status Benchmark::Run(const char *model_name, const char *framework,
            b->model_name_.c_str(),
            b->executor_->GetFramework(),
            b->executor_->GetRuntime());
-    Status status = b->Run(&init_seconds, &run_seconds);
+    Status status = b->Run(&init_seconds, &run_seconds, num_threads);
     if (status != SUCCESS) {
       res = status;
       continue;
@@ -131,6 +132,8 @@ Status Benchmark::Run(const char *model_name, const char *framework,
            b->executor_->GetRuntime(),
            init_seconds,
            run_seconds);
+    // sleep run_interval seconds to cool off the target
+    sleep(static_cast<uint32_t>(run_interval));
   }
   return res;
 }
@@ -140,15 +143,20 @@ void Benchmark::Register() {
   all_benchmarks->push_back(this);
 }
 
-Status Benchmark::Run(double *init_seconds, double *run_seconds) {
-  static const int64_t kMinIters = 20;
+Status Benchmark::Run(double *init_seconds, double *run_seconds,
+                      int num_threads) {
+  static const int64_t kMinIters = 10;
   static const int64_t kMaxIters = 1000000000;
   static const double kMinTime = 2;
   int64_t iters = kMinIters;
   int64_t start_time, end_time;
+  Status status;
+  // Init the target's environment
+  status = executor_->Init(model_file_.c_str(), num_threads);
+  if (status != SUCCESS) return status;
   // prepare
   start_time = NowMicros();
-  Status status = executor_->Prepare(model_file_.c_str());
+  status = executor_->Prepare(model_file_.c_str());
   end_time = NowMicros();
   *init_seconds = (end_time - start_time) * 1e-6;
   if (status != SUCCESS) return status;

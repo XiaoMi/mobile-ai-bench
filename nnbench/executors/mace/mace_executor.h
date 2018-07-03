@@ -37,11 +37,16 @@ class MaceExecutor : public BaseExecutor {
         input_names_(input_names),
         output_names_(output_names) {}
 
+  virtual Status Init(const char *model_name, int num_threads);
+
   virtual Status Prepare(const char *model_name);
 
   virtual Status Run(const std::map<std::string, BaseTensor> &inputs,
                      std::map<std::string, BaseTensor> *outputs);
   virtual void Finish();
+
+  Status CreateEngine(const char *model_name,
+                      std::shared_ptr<mace::MaceEngine> *engine);
 
  private:
   std::string product_soc_;

@@ -256,6 +256,8 @@ def adb_run(abi,
             serialno,
             host_bin_path,
             bin_name,
+            run_interval,
+            num_threads,
             frameworks=None,
             model_names=None,
             runtimes=None,
@@ -296,9 +298,11 @@ def adb_run(abi,
         for framework in frameworks:
             for runtime in runtimes:
                 for model_name in model_names:
-                    args = "--framework=%s --runtime=%s --model_name=%s " \
+                    args = "--run_interval=%d --num_threads=%d " \
+                           "--framework=%s --runtime=%s --model_name=%s " \
                            "--product_soc=%s.%s" % \
-                           (framework, runtime, model_name,
+                           (run_interval, num_threads, framework, runtime,
+                            model_name,
                             props["ro.product.model"].replace(" ", ""),
                             props["ro.board.platform"])
                     sh.adb(

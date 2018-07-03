@@ -45,6 +45,8 @@ class NcnnExecutor : public BaseExecutor {
  public:
   NcnnExecutor() : BaseExecutor(NCNN, CPU) {}
 
+  virtual Status Init(const char *model_name, int num_threads);
+
   virtual Status Prepare(const char *model_name);
 
   virtual Status Run(const std::map<std::string, BaseTensor> &inputs,
