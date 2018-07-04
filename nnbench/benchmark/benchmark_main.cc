@@ -166,6 +166,18 @@ int main(int argc, char **argv) {
                     (std::vector<std::vector<int64_t>>{{299, 299, 3}}),
                     (std::vector<std::string>{}),
                     (std::vector<std::vector<int64_t>>{}));
+  NNBENCH_BENCHMARK(snpe_cpu_executor.get(), MobileNetV1, SNPE, CPU,
+                    mobilenet-v1.dlc, (std::vector<std::string>{"input:0"}),
+                    (std::vector<std::string>{"chairs_224x224.raw"}),
+                    (std::vector<std::vector<int64_t>>{{224, 224, 3}}),
+                    (std::vector<std::string>{}),
+                    (std::vector<std::vector<int64_t>>{}));
+  NNBENCH_BENCHMARK(snpe_cpu_executor.get(), MobileNetV2, SNPE, CPU,
+                    mobilenet-v2.dlc, (std::vector<std::string>{"input:0"}),
+                    (std::vector<std::string>{"chairs_224x224.raw"}),
+                    (std::vector<std::vector<int64_t>>{{224, 224, 3}}),
+                    (std::vector<std::string>{}),
+                    (std::vector<std::vector<int64_t>>{}));
   NNBENCH_BENCHMARK(snpe_cpu_executor.get(), VGG16, SNPE, CPU,
                     vgg16.dlc, (std::vector<std::string>{"input:0"}),
                     (std::vector<std::string>{"chairs_224x224.raw"}),
@@ -179,6 +191,18 @@ int main(int argc, char **argv) {
                     inception_v3.dlc, (std::vector<std::string>{"Mul:0"}),
                     (std::vector<std::string>{"keyboard_299x299.dat"}),
                     (std::vector<std::vector<int64_t>>{{299, 299, 3}}),
+                    (std::vector<std::string>{}),
+                    (std::vector<std::vector<int64_t>>{}));
+  NNBENCH_BENCHMARK(snpe_gpu_executor.get(), MobileNetV1, SNPE, GPU,
+                    mobilenet-v1.dlc, (std::vector<std::string>{"input:0"}),
+                    (std::vector<std::string>{"chairs_224x224.raw"}),
+                    (std::vector<std::vector<int64_t>>{{224, 224, 3}}),
+                    (std::vector<std::string>{}),
+                    (std::vector<std::vector<int64_t>>{}));
+  NNBENCH_BENCHMARK(snpe_gpu_executor.get(), MobileNetV2, SNPE, GPU,
+                    mobilenet-v2.dlc, (std::vector<std::string>{"input:0"}),
+                    (std::vector<std::string>{"chairs_224x224.raw"}),
+                    (std::vector<std::vector<int64_t>>{{224, 224, 3}}),
                     (std::vector<std::string>{}),
                     (std::vector<std::vector<int64_t>>{}));
   // TODO(wuchenghui): benchmark snpe + gpu + vgg16
