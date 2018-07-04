@@ -38,8 +38,6 @@ class SnpeExecutor : public BaseExecutor {
   virtual void Finish();
  private:
   std::unique_ptr<zdl::SNPE::SNPE> snpe_;
-  zdl::DlSystem::TensorMap input_tensor_map_;
-  zdl::DlSystem::TensorMap output_tensor_map_;
 };
 
 }  // namespace aibench

@@ -1,5 +1,8 @@
 build --verbose_failures
 build --copt=-std=c++11
+build --copt=-O3
+build --copt=-ffast-math
+build --copt=-Ofast
 build --strategy=CppCompile=standalone
 
 # By default, we don't distinct target and host platfroms.

@@ -106,7 +106,6 @@ cc_library(
     hdrs = [
         "tflite/tflite_executor.h",
     ],
-
     deps = [
         ":base_executor",
     ] + if_android_armv7([

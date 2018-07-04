@@ -19,6 +19,8 @@ import re
 import sh
 import urllib
 
+from model_list import BENCHMARK_MODELS
+
 
 FRAMEWORKS = (
     "MACE",
@@ -309,6 +311,13 @@ def adb_run(abi,
         print("Run on device: %s, %s, %s" %
               (serialno, props["ro.board.platform"],
                props["ro.product.model"]))
+        try:
+            sh.bash("tools/power.sh",
+                    serialno, props["ro.board.platform"],
+                    _fg=True)
+        except Exception, e:
+            print("Config power exception %s" % str(e))
+
         sh.adb("-s", serialno, "shell", "mkdir -p %s" % device_bin_path)
         sh.adb("-s", serialno, "shell", "rm -rf %s"
                % os.path.join(device_bin_path, "interior"))
@@ -326,11 +335,17 @@ def adb_run(abi,
         cmd = "cd %s; ADSP_LIBRARY_PATH='.;/system/lib/rfsa/adsp;/system" \
               "/vendor/lib/rfsa/adsp;/dsp'; LD_LIBRARY_PATH=. " \
               "./model_benchmark" % device_bin_path
-        if set(frameworks) == set(FRAMEWORKS):
-            frameworks = ["all"]
-        for framework in frameworks:
-            for runtime in runtimes:
+        if frameworks == ['all']:
+            frameworks = FRAMEWORKS
+        if runtimes == ['all']:
+            runtimes = RUNTIMES
+        if model_names == ['all']:
+            model_names = BENCHMARK_MODELS
+
+        for runtime in runtimes:
+            for framework in frameworks:
                 for model_name in model_names:
+                    print(framework, runtime, model_name)
                     args = "--run_interval=%d --num_threads=%d " \
                            "--framework=%s --runtime=%s --model_name=%s " \
                            "--product_soc=%s.%s" % \

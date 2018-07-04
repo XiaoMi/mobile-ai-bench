@@ -71,13 +71,12 @@ Status ProcessInput(zdl::SNPE::SNPE *snpe,
     std::cerr << "inputs size not matched" << std::endl;
     return Status::RUNTIME_ERROR;
   }
-  std::unique_ptr<zdl::DlSystem::ITensor> input_tensor;
   for (size_t i = 0; i < input_tensor_names.size(); i++) {
     std::string input_name(input_tensor_names.at(i));
     const auto &input_shape_opt =
         snpe->getInputDimensions(input_tensor_names.at(i));
     const auto &input_shape = *input_shape_opt;
-    input_tensor =
+    std::unique_ptr<zdl::DlSystem::ITensor> input_tensor =
         zdl::SNPE::SNPEFactory::getTensorFactory().createTensor(input_shape);
     size_t input_size = inputs.at(input_name).size();
 
@@ -136,25 +135,34 @@ Status SnpeExecutor::Prepare(const char *model_name) {
 
 Status SnpeExecutor::Run(const std::map<std::string, BaseTensor> &inputs,
                          std::map<std::string, BaseTensor> *outputs) {
-  Status status;
+  Status status = SUCCESS;
+
+  zdl::DlSystem::TensorMap input_tensor_map;
+  zdl::DlSystem::TensorMap output_tensor_map;
+
   // step1: prepare inputs
-  input_tensor_map_.clear();
-  status = ProcessInput(snpe_.get(), inputs, &input_tensor_map_);
+  status = ProcessInput(snpe_.get(), inputs, &input_tensor_map);
   if (status != Status::SUCCESS) return status;
 
   // step2: execute
-  output_tensor_map_.clear();
-  snpe_.get()->execute(input_tensor_map_, output_tensor_map_);
+  snpe_.get()->execute(input_tensor_map, output_tensor_map);
 
   // step3: process output
-  status = ProcessOutput(output_tensor_map_, outputs);
+  status = ProcessOutput(output_tensor_map, outputs);
+
+  auto tensor_names = input_tensor_map.getTensorNames();
+  for (size_t i = 0; i < tensor_names.size(); ++i) {
+    std::string input_name(tensor_names.at(i));
+    zdl::DlSystem::ITensor* input_tensor =
+      input_tensor_map.getTensor(input_name.c_str());
+    delete input_tensor;
+  }
+
   return status;
 }
 
 void SnpeExecutor::Finish() {
   if (snpe_ != nullptr) snpe_.reset();
-  input_tensor_map_.clear();
-  output_tensor_map_.clear();
 }
 
 }  // namespace aibench
