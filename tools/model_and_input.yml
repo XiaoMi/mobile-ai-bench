@@ -1,17 +1,67 @@
-models:
-  # Get inception_v3 model file from snpe/models/inception_v3/scripts/setup_inceptionv3.py
-  inception_v3.dlc: https://cnbj1-fds.api.xiaomi.net/nnbench/models/inception_v3.dlc
-  inception_v3_quantized.dlc: https://cnbj1-fds.api.xiaomi.net/nnbench/models/inception_v3_quantized.dlc
-  mobilenet-v1.dlc: http://cnbj1.fds.api.xiaomi.com/nnbench/models/mobilenet-v1-1.0.dlc
-  mobilenet-v2.dlc: http://cnbj1.fds.api.xiaomi.com/nnbench/models/mobilenet-v2-1.0.dlc
-  # vgg16 model file converted from tensorflow graph
-  vgg16.dlc: https://cnbj1-fds.api.xiaomi.net/nnbench/models/vgg16.dlc
-  vgg16_quantized.dlc: https://cnbj1-fds.api.xiaomi.net/nnbench/models/vgg16_quantized.dlc
-  inception_v3.tflite: https://cnbj1.fds.api.xiaomi.com/nnbench/models/inception_v3.tflite
-  mobilenet_v1_1.0_224.tflite: https://cnbj1.fds.api.xiaomi.com/nnbench/models/mobilenet_v1_1.0_224.tflite
-  mobilenet_quant_v1_224.tflite: https://cnbj1.fds.api.xiaomi.com/nnbench/models/mobilenet_quant_v1_224.tflite
+models_and_inputs:
+  MACE:
+    # models:
+    inception_v3.data: https://cnbj1.fds.api.xiaomi.com/nnbench/models/inception_v3.data
+    inception_v3.data_md5_checksum: 95a880bb1bfec88d3394cb4a543d84b2
+    inception_v3.pb: https://cnbj1.fds.api.xiaomi.com/nnbench/models/inception_v3.pb
+    inception_v3.pb_md5_checksum: 78ace777e729de0f2cf1556a56c61ebb
+    inception_v3_dsp.data: https://cnbj1.fds.api.xiaomi.com/nnbench/models/inception_v3_dsp.data
+    inception_v3_dsp.data_md5_checksum: 274bbf729f2507a7da09a08053b94a29
+    inception_v3_dsp.pb: https://cnbj1.fds.api.xiaomi.com/nnbench/models/inception_v3_dsp.pb
+    inception_v3_dsp.pb_md5_checksum: c06e1347db68b0b1b241bfc1c31888b1
+    mobilenet_v1.data: https://cnbj1.fds.api.xiaomi.com/nnbench/models/mobilenet_v1.data
+    mobilenet_v1.data_md5_checksum: df3734de9834a8c6ed4dac488ea9a64b
+    mobilenet_v1.pb: https://cnbj1.fds.api.xiaomi.com/nnbench/models/mobilenet_v1.pb
+    mobilenet_v1.pb_md5_checksum: 71a17285ba8d433f9037c6a404dcbb83
+    mobilenet_v2.data: https://cnbj1.fds.api.xiaomi.com/nnbench/models/mobilenet_v2.data
+    mobilenet_v2.data_md5_checksum: 2867692277d72ee3eb26b3330b4ea251
+    mobilenet_v2.pb: https://cnbj1.fds.api.xiaomi.com/nnbench/models/mobilenet_v2.pb
+    mobilenet_v2.pb_md5_checksum: 283f796fa7daefa89a231a3a1fa76291
+    squeezenet_v11.data: https://cnbj1.fds.api.xiaomi.com/nnbench/models/squeezenet_v11.data
+    squeezenet_v11.data_md5_checksum: 3b3c943e25e3c23dbffbfb4c8cc306ff
+    squeezenet_v11.pb: https://cnbj1.fds.api.xiaomi.com/nnbench/models/squeezenet_v11.pb
+    squeezenet_v11.pb_md5_checksum: 2087c99079d448e86280b2974a1f03fb
+    vgg16_caffe_gpu.data: https://cnbj1.fds.api.xiaomi.com/nnbench/models/vgg16_caffe_gpu.data
+    vgg16_caffe_gpu.data_md5_checksum: 49edceecc999a04b2d8f3414e2b80124
+    vgg16_caffe_gpu.pb: https://cnbj1.fds.api.xiaomi.com/nnbench/models/vgg16_caffe_gpu.pb
+    vgg16_caffe_gpu.pb_md5_checksum: 609bf57538b26b4b3054e4967f9a3764
+    vgg16.data: https://cnbj1.fds.api.xiaomi.com/nnbench/models/vgg16.data
+    vgg16.data_md5_checksum: 081b1e296cf8e92c5f10c9aa092dbeb9
+    vgg16.pb: https://cnbj1.fds.api.xiaomi.com/nnbench/models/vgg16.pb
+    vgg16.pb_md5_checksum: 2c48e3de3750355966399a4675f21448
+    # inputs:
+    dog.npy: https://cnbj1.fds.api.xiaomi.com/mace/inputs/dog.npy
+    dog.npy_md5_checksum: 1e83988701b86bb7d8eee85e83810563
+  SNPE:
+    # Get inception_v3 model file from snpe/models/inception_v3/scripts/setup_inceptionv3.py
+    inception_v3.dlc: https://cnbj1-fds.api.xiaomi.net/nnbench/models/inception_v3.dlc
+    inception_v3.dlc_md5_checksum: e9f24b8e365d8869dd96d7c1275fefd8
+    inception_v3_quantized.dlc: https://cnbj1-fds.api.xiaomi.net/nnbench/models/inception_v3_quantized.dlc
+    inception_v3_quantized.dlc_md5_checksum: 473d402718d6a5456754bf43dfa2f6f9
+    mobilenet-v1.dlc: http://cnbj1.fds.api.xiaomi.com/nnbench/models/mobilenet-v1-1.0.dlc
+    mobilenet-v1.dlc_md5_checksum: a8f669ab3cfbbbf9162ea63c5f99c6c3
+    mobilenet-v2.dlc: http://cnbj1.fds.api.xiaomi.com/nnbench/models/mobilenet-v2-1.0.dlc
+    mobilenet-v2.dlc_md5_checksum: ec7ca4679714ecb16c5b5696b9b65e9c
+    # vgg16 model file converted from tensorflow graph
+    vgg16.dlc: https://cnbj1-fds.api.xiaomi.net/nnbench/models/vgg16.dlc
+    vgg16.dlc_md5_checksum: ca57f67905fbfaf5cf1755286970646a
+    vgg16_quantized.dlc: https://cnbj1-fds.api.xiaomi.net/nnbench/models/vgg16_quantized.dlc
+    vgg16_quantized.dlc_md5_checksum: 52829c5ad81a896e60f8afc22408d753
+    # inputs:
+    keyboard_299x299.dat: https://cnbj1-fds.api.xiaomi.net/nnbench/inputs/keyboard_299x299.dat
+    keyboard_299x299.dat_md5_checksum: 5c2ffec45a4ef882c7a7233327ec6637
+    chairs_224x224.raw: https://cnbj1-fds.api.xiaomi.net/nnbench/inputs/chairs_224x224.raw
+    chairs_224x224.raw_md5_checksum: 180008dfc1a6d3fc7a11eba3de5abc58
+  TFLITE:
+    inception_v3.tflite: https://cnbj1.fds.api.xiaomi.com/nnbench/models/inception_v3.tflite
+    inception_v3.tflite_md5_checksum: b09e7cedafccf20f1ab91c6aa8d21d9a
+    mobilenet_v1_1.0_224.tflite: https://cnbj1.fds.api.xiaomi.com/nnbench/models/mobilenet_v1_1.0_224.tflite
+    mobilenet_v1_1.0_224.tflite_md5_checksum: 8ac1abc6bb388135b8ae9343460482fe
+    mobilenet_quant_v1_224.tflite: https://cnbj1.fds.api.xiaomi.com/nnbench/models/mobilenet_quant_v1_224.tflite
+    mobilenet_quant_v1_224.tflite_md5_checksum: 9002c7725ac251d0b7ae189924daadba
 
-inputs:
-  keyboard_299x299.dat: https://cnbj1-fds.api.xiaomi.net/nnbench/inputs/keyboard_299x299.dat
-  chairs_224x224.raw: https://cnbj1-fds.api.xiaomi.net/nnbench/inputs/chairs_224x224.raw
-  dog.npy: https://cnbj1.fds.api.xiaomi.com/mace/inputs/dog.npy
+# libs:
+tensorflow-1.9.0-rc1.zip: https://cnbj1.fds.api.xiaomi.com/nnbench/third_party/tensorflow-1.9.0-rc1.zip
+tensorflow-1.9.0-rc1.zip_md5_checksum: ef248c5c6cc463e9fb28cea43dc3b840
+libmace.zip: https://cnbj1.fds.api.xiaomi.com/nnbench/third_party/libmace.zip
+libmace.zip_md5_checksum: e84fba9ebc177fd4068a588af59fd8ad

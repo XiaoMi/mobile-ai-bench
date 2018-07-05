@@ -15,6 +15,7 @@
 import argparse
 import os
 import sys
+import yaml
 
 import sh_commands
 from sh_commands import FRAMEWORKS, RUNTIMES
@@ -91,6 +92,11 @@ def write_all_statistics(all_prepare, all_run_avg, output_dir):
         write_statistics(f, "Run_avg:\n", all_run_avg)
 
 
+def get_configs(config_file="tools/model_and_input.yml"):
+    with open(config_file) as f:
+        return yaml.load(f)
+
+
 def parse_args():
     """Parses command line arguments."""
     parser = argparse.ArgumentParser()
@@ -132,6 +138,10 @@ def parse_args():
         default=4,
         help="number of threads")
     parser.add_argument(
+        "--build_mace",
+        action="store_true",
+        help="Build mace from source")
+    parser.add_argument(
         "--args",
         type=str,
         default="",
@@ -166,10 +176,12 @@ def main(unused_args):
     model_names = FLAGS.model_names.split(',')
     target = FLAGS.target
     host_bin_path, bin_name = sh_commands.bazel_target_to_bin(target)
+    configs = get_configs()
     if "MACE" in frameworks:
-        sh_commands.build_mace(FLAGS.target_abis, FLAGS.output_dir)
+        sh_commands.get_mace(configs, FLAGS.target_abis, FLAGS.output_dir,
+                             FLAGS.build_mace)
     if "TFLITE" in frameworks:
-        sh_commands.get_tflite()
+        sh_commands.get_tflite(configs, FLAGS.output_dir)
     all_prepare = []
     all_run_avg = []
     for target_abi in target_abis:
@@ -186,11 +198,10 @@ def main(unused_args):
                 print("Skip device %s which does not support ABI %s" %
                       (serialno, target_abi))
                 continue
-            stdouts = sh_commands.adb_run(target_abi, serialno, host_bin_path,
-                                          bin_name, FLAGS.run_interval,
-                                          FLAGS.num_threads, frameworks,
-                                          model_names, runtimes,
-                                          output_dir=FLAGS.output_dir)
+            stdouts = sh_commands.adb_run(
+                target_abi, serialno, configs, host_bin_path, bin_name,
+                FLAGS.run_interval, FLAGS.num_threads, FLAGS.build_mace,
+                frameworks, model_names, runtimes, output_dir=FLAGS.output_dir)
             report_run_statistics(stdouts, target_abi, serialno,
                                   all_prepare, all_run_avg)
     write_all_statistics(all_prepare, all_run_avg, FLAGS.output_dir)
