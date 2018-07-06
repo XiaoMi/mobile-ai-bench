@@ -18,7 +18,6 @@ import os
 import re
 import sh
 import urllib
-import yaml
 
 
 FRAMEWORKS = (
@@ -143,6 +142,34 @@ def get_target_socs_serialnos(target_socs=None):
     return serialnos
 
 
+def download_file(configs, file_name, output_dir):
+    file_path = output_dir + "/" + file_name
+    url = configs[file_name]
+    checksum = configs[file_name + "_md5_checksum"]
+    if not os.path.exists(file_path) or file_checksum(file_path) != checksum:
+        print("downloading %s..." % file_name)
+        urllib.urlretrieve(url, file_path)
+    if file_checksum(file_path) != checksum:
+        print("file %s md5 checksum not match" % file_name)
+        exit(1)
+    return file_path
+
+
+def get_mace(configs, abis, output_dir, build_mace):
+    if build_mace:
+        print("get build mace")
+        sh.bash("tools/build_mace.sh", abis, os.path.abspath(output_dir),
+                _fg=True)
+    else:
+        file_path = download_file(configs, "libmace.zip", output_dir)
+        sh.unzip("-o", file_path, "-d", "third_party/mace")
+
+
+def get_tflite(configs, output_dir):
+    file_path = download_file(configs, "tensorflow-1.9.0-rc1.zip", output_dir)
+    sh.unzip("-o", file_path, "-d", "third_party/tflite")
+
+
 def bazel_build(target,
                 abi="armeabi-v7a", frameworks=None):
     print("* Build %s with ABI %s" % (target, abi))
@@ -215,54 +242,61 @@ def prepare_device_env(serialno, abi, device_bin_path, frameworks):
             adb_push(tflite_lib_path, device_bin_path, serialno)
 
 
-def prepare_model_and_input(serialno, abi, config_file, device_bin_path,
-                            output_dir, frameworks):
-    with open(config_file) as f:
-        configs = yaml.load(f)
+def prepare_model_and_input(serialno, models_inputs, device_bin_path,
+                            output_dir):
+    file_names = [f for f in models_inputs if not f.endswith("_md5_checksum")]
+    for file_name in file_names:
+        file_path = models_inputs[file_name]
+        local_file_path = file_path
+        if file_path.startswith("http"):
+            local_file_path = \
+                download_file(models_inputs, file_name, output_dir)
+        else:
+            checksum = models_inputs[file_name + "_md5_checksum"]
+            if file_checksum(local_file_path) != checksum:
+                print("file %s md5 checksum not match" % file_name)
+                exit(1)
+        adb_push(local_file_path, device_bin_path, serialno)
 
-    for model_file in configs["models"]:
-        if model_file.endswith(".dlc") \
-                and not ("SNPE" in frameworks and abi == "armeabi-v7a"):
-            continue
-        host_model_path = configs["models"][model_file]
-        if host_model_path.startswith("http"):
-            print("downloading %s..." % model_file)
-            host_model_path = output_dir + '/' + model_file
-            urllib.urlretrieve(configs["models"][model_file], host_model_path)
-        adb_push(host_model_path, device_bin_path, serialno)
 
-    for input_file in configs["inputs"]:
-        host_input_path = configs["inputs"][input_file]
-        if host_input_path.startswith("http"):
-            print("downloading %s..." % input_file)
-            host_input_path = output_dir + '/' + input_file
-            urllib.urlretrieve(configs["inputs"][input_file], host_input_path)
-        adb_push(host_input_path, device_bin_path, serialno)
+def prepare_all_model_and_input(serialno, configs, device_bin_path, output_dir,
+                                frameworks, build_mace):
+    models_inputs = configs["models_and_inputs"]
+    if "MACE" in frameworks:
+        if build_mace:
+            # mace model files are generated from source
+            for model_file in os.listdir(output_dir):
+                if model_file.endswith(".pb") or model_file.endswith(".data"):
+                    model_file_path = output_dir + '/' + model_file
+                    adb_push(model_file_path, device_bin_path, serialno)
+        else:
+            prepare_model_and_input(serialno, models_inputs["MACE"],
+                                    device_bin_path, output_dir)
+    if "SNPE" in frameworks:
+        prepare_model_and_input(serialno, models_inputs["SNPE"],
+                                device_bin_path, output_dir)
+    if "TFLITE" in frameworks:
+        prepare_model_and_input(serialno, models_inputs["TFLITE"],
+                                device_bin_path, output_dir)
 
     # ncnn model files are generated from source
     if "NCNN" in frameworks:
         ncnn_model_path = "bazel-genfiles/external/ncnn/models/"
         adb_push(ncnn_model_path, device_bin_path, serialno)
 
-    # mace model files are generated from source
-    if "MACE" in frameworks:
-        for model_file in os.listdir(output_dir):
-            if model_file.endswith(".pb") or model_file.endswith(".data"):
-                model_file_path = output_dir + '/' + model_file
-                adb_push(model_file_path, device_bin_path, serialno)
-
 
 def adb_run(abi,
             serialno,
+            configs,
             host_bin_path,
             bin_name,
             run_interval,
             num_threads,
+            build_mace,
             frameworks=None,
             model_names=None,
             runtimes=None,
             device_bin_path="/data/local/tmp/nnbench",
-            model_and_input_config="tools/model_and_input.yml",
             output_dir="output",
             ):
     host_bin_full_path = "%s/%s" % (host_bin_path, bin_name)
@@ -282,8 +316,8 @@ def adb_run(abi,
         sh.adb("-s", serialno, "shell", "mkdir %s"
                % os.path.join(device_bin_path, "interior"))
         prepare_device_env(serialno, abi, device_bin_path, frameworks)
-        prepare_model_and_input(serialno, abi, model_and_input_config,
-                                device_bin_path, output_dir, frameworks)
+        prepare_all_model_and_input(serialno, configs, device_bin_path,
+                                    output_dir, frameworks, build_mace)
         adb_push(host_bin_full_path, device_bin_path, serialno)
 
         print("Run %s" % device_bin_full_path)
@@ -314,11 +348,3 @@ def adb_run(abi,
                         _out=process_output,
                         _err_to_out=True)
         return "".join(stdout_buff)
-
-
-def build_mace(abis, output_dir):
-    sh.bash("tools/build_mace.sh", abis, os.path.abspath(output_dir), _fg=True)
-
-
-def get_tflite():
-    sh.bash("tools/get_tflite.sh", _fg=True)
