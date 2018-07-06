@@ -21,7 +21,7 @@ benchmark:
     - CI_PROJECT_OUTPUT_PATH=/mace-build-output/$CI_PROJECT_NAME/${DATE_STR}_${CI_PIPELINE_ID}
     - mkdir -p $CI_PROJECT_OUTPUT_PATH
     - ANDROID_NDK_HOME=/opt/android-ndk-r15c
-    - python tools/benchmark.py --output_dir=$CI_PROJECT_OUTPUT_PATH --target_abis=armeabi-v7a,arm64-v8a --build_mace
+    - python tools/benchmark.py --output_dir=$CI_PROJECT_OUTPUT_PATH --target_abis=armeabi-v7a,arm64-v8a
     - if [ -f $CI_PROJECT_OUTPUT_PATH/report.csv ]; then cp $CI_PROJECT_OUTPUT_PATH/report.csv .; cat report.csv | sed 's/,/ ,/g' | column -t -s,; fi
   artifacts:
       paths:
