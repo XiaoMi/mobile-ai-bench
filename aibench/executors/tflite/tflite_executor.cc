@@ -12,11 +12,11 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "nnbench/executors/tflite/tflite_executor.h"
+#include "aibench/executors/tflite/tflite_executor.h"
 
 #include <iostream>
 
-namespace nnbench {
+namespace aibench {
 
 Status TfLiteExecutor::Init(const char *model_name, int num_threads) {
   (void)model_name;
@@ -60,4 +60,4 @@ void TfLiteExecutor::Finish() {
   interpreter_.reset();
 }
 
-}  // namespace nnbench
+}  // namespace aibench

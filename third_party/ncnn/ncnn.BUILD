@@ -35,11 +35,11 @@ NCNN_MODELS = [
 ]
 
 NCNN_CMAKE_OPTS = select({
-    "@nnbench//nnbench:android_armv7": " -DCMAKE_TOOLCHAIN_FILE=$$ANDROID_NDK_HOME/build/cmake/android.toolchain.cmake" +
+    "@aibench//aibench:android_armv7": " -DCMAKE_TOOLCHAIN_FILE=$$ANDROID_NDK_HOME/build/cmake/android.toolchain.cmake" +
                                        " -DANDROID_ABI='armeabi-v7a'" +
                                        " -DANDROID_ARM_NEON=ON" +
                                        " -DANDROID_PLATFORM=android-14",
-    "@nnbench//nnbench:android_arm64": " -DCMAKE_TOOLCHAIN_FILE=$$ANDROID_NDK_HOME/build/cmake/android.toolchain.cmake" +
+    "@aibench//aibench:android_arm64": " -DCMAKE_TOOLCHAIN_FILE=$$ANDROID_NDK_HOME/build/cmake/android.toolchain.cmake" +
                                        " -DANDROID_ABI='arm64-v8a'" +
                                        " -DANDROID_PLATFORM=android-21",
     "//conditions:default": "",

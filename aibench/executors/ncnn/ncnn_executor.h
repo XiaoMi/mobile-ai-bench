@@ -12,21 +12,38 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef NNBENCH_EXECUTORS_SNPE_SNPE_EXECUTOR_H_
-#define NNBENCH_EXECUTORS_SNPE_SNPE_EXECUTOR_H_
+#ifndef AIBENCH_EXECUTORS_NCNN_NCNN_EXECUTOR_H_
+#define AIBENCH_EXECUTORS_NCNN_NCNN_EXECUTOR_H_
 
 #include <map>
-#include <memory>
 #include <string>
 
-#include "nnbench/executors/base_executor.h"
-#include "SNPE/SNPE.hpp"
+#include "aibench/executors/base_executor.h"
+#include "ncnn/include/layer.h"
+#include "ncnn/include/mat.h"
+#include "ncnn/include/modelbin.h"
+#include "ncnn/include/net.h"
 
-namespace nnbench {
+namespace ncnn {
 
-class SnpeExecutor : public BaseExecutor {
+// always return empty weights
+class ModelBinFromEmpty : public ModelBin {
  public:
-  explicit SnpeExecutor(Runtime runtime) : BaseExecutor(SNPE, runtime) {}
+  virtual Mat load(int w, int /*type*/) const { return Mat(w); }
+};
+
+class BenchNet : public Net {
+ public:
+  int load_model();
+};
+
+}  // namespace ncnn
+
+namespace aibench {
+
+class NcnnExecutor : public BaseExecutor {
+ public:
+  NcnnExecutor() : BaseExecutor(NCNN, CPU) {}
 
   virtual Status Init(const char *model_name, int num_threads);
 
@@ -37,11 +54,9 @@ class SnpeExecutor : public BaseExecutor {
 
   virtual void Finish();
  private:
-  std::unique_ptr<zdl::SNPE::SNPE> snpe_;
-  zdl::DlSystem::TensorMap input_tensor_map_;
-  zdl::DlSystem::TensorMap output_tensor_map_;
+  ncnn::BenchNet net;
 };
 
-}  // namespace nnbench
+}  // namespace aibench
 
-#endif  // NNBENCH_EXECUTORS_SNPE_SNPE_EXECUTOR_H_
+#endif  // AIBENCH_EXECUTORS_NCNN_NCNN_EXECUTOR_H_

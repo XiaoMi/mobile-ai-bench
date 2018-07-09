@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "nnbench/executors/base_executor.h"
+#include "aibench/executors/base_executor.h"
 
 #include <numeric>
 #include <map>
@@ -20,7 +20,7 @@
 #include <string>
 #include <functional>
 
-namespace nnbench {
+namespace aibench {
 
 class BaseTensor::Impl {
  public:
@@ -77,4 +77,4 @@ int64_t BaseTensor::size() const {
 std::shared_ptr<float> BaseTensor::data() { return impl_->data; }
 
 
-}  // namespace nnbench
+}  // namespace aibench

@@ -12,26 +12,26 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef NNBENCH_BENCHMARK_BENCHMARK_H_
-#define NNBENCH_BENCHMARK_BENCHMARK_H_
+#ifndef AIBENCH_BENCHMARK_BENCHMARK_H_
+#define AIBENCH_BENCHMARK_BENCHMARK_H_
 
 #include <string>
 #include <utility>
 #include <vector>
 #include <memory>
 
-#include "nnbench/executors/base_executor.h"
+#include "aibench/executors/base_executor.h"
 
 #define BENCHMARK_CONCAT(a, b, c) a##b##c
-#define NNBENCH_BENCHMARK(executor, model_name, framework, runtime, \
+#define AIBENCH_BENCHMARK(executor, model_name, framework, runtime, \
                           model_file, input_names, input_files, input_shapes, \
                           output_names, output_shapes) \
-  static ::nnbench::benchmark::Benchmark \
+  static ::aibench::benchmark::Benchmark \
       *BENCHMARK_CONCAT(model_name, framework, runtime) = \
-    (new ::nnbench::benchmark::Benchmark(executor, #model_name, #model_file, \
+    (new ::aibench::benchmark::Benchmark(executor, #model_name, #model_file, \
          input_names, input_files, input_shapes, output_names, output_shapes))
 
-namespace nnbench {
+namespace aibench {
 namespace benchmark {
 
 class Benchmark {
@@ -65,6 +65,6 @@ class Benchmark {
 int64_t NowMicros();
 
 }  // namespace benchmark
-}  // namespace nnbench
+}  // namespace aibench
 
-#endif  // NNBENCH_BENCHMARK_BENCHMARK_H_
+#endif  // AIBENCH_BENCHMARK_BENCHMARK_H_

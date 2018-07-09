@@ -12,15 +12,15 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef NNBENCH_EXECUTORS_TFLITE_TFLITE_EXECUTOR_H_
-#define NNBENCH_EXECUTORS_TFLITE_TFLITE_EXECUTOR_H_
+#ifndef AIBENCH_EXECUTORS_TFLITE_TFLITE_EXECUTOR_H_
+#define AIBENCH_EXECUTORS_TFLITE_TFLITE_EXECUTOR_H_
 
 #include <iostream>
 #include <map>
 #include <memory>
 #include <string>
 
-#include "nnbench/executors/base_executor.h"
+#include "aibench/executors/base_executor.h"
 #include "tensorflow/contrib/lite/interpreter.h"
 #include "tensorflow/contrib/lite/kernels/register.h"
 #include "tensorflow/contrib/lite/model.h"
@@ -28,7 +28,7 @@
 #include "tensorflow/contrib/lite/string.h"
 #include "tensorflow/contrib/lite/string_util.h"
 
-namespace nnbench {
+namespace aibench {
 
 class TfLiteExecutor : public BaseExecutor {
  public:
@@ -46,6 +46,6 @@ class TfLiteExecutor : public BaseExecutor {
   std::unique_ptr<tflite::FlatBufferModel> model_;
 };
 
-}  // namespace nnbench
+}  // namespace aibench
 
-#endif  // NNBENCH_EXECUTORS_TFLITE_TFLITE_EXECUTOR_H_
+#endif  // AIBENCH_EXECUTORS_TFLITE_TFLITE_EXECUTOR_H_

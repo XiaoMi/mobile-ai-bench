@@ -197,7 +197,7 @@ def bazel_build(target,
 
 
 def bazel_target_to_bin(target):
-    # change //nnbench/a/b:c to bazel-bin/nnbench/a/b/c
+    # change //aibench/a/b:c to bazel-bin/aibench/a/b/c
     prefix, bin_name = target.split(':')
     prefix = prefix.replace('//', '/')
     if prefix.startswith('/'):
@@ -210,9 +210,9 @@ def prepare_device_env(serialno, abi, device_bin_path, frameworks):
     # for snpe
     if "SNPE" in frameworks and abi == "armeabi-v7a":
         snpe_lib_path = \
-           "bazel-mobile-nn-bench/external/snpe/lib/arm-android-gcc4.9"
+           "bazel-mobile-ai-bench/external/snpe/lib/arm-android-gcc4.9"
 
-        adb_push("bazel-mobile-nn-bench/external/snpe/lib/dsp",
+        adb_push("bazel-mobile-ai-bench/external/snpe/lib/dsp",
                  device_bin_path, serialno)
 
         if snpe_lib_path:
@@ -296,7 +296,7 @@ def adb_run(abi,
             frameworks=None,
             model_names=None,
             runtimes=None,
-            device_bin_path="/data/local/tmp/nnbench",
+            device_bin_path="/data/local/tmp/aibench",
             output_dir="output",
             ):
     host_bin_full_path = "%s/%s" % (host_bin_path, bin_name)

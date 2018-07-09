@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "nnbench/executors/mace/mace_executor.h"
+#include "aibench/executors/mace/mace_executor.h"
 
 #include <algorithm>
 #include <fstream>
@@ -21,7 +21,7 @@
 #include <string>
 #include <vector>
 
-namespace nnbench {
+namespace aibench {
 
 inline Status ReadBinaryFile(std::vector<unsigned char> *data,
                            const std::string &filename) {
@@ -127,4 +127,4 @@ void MaceExecutor::Finish() {
   engine_.reset();
 }
 
-}  // namespace nnbench
+}  // namespace aibench

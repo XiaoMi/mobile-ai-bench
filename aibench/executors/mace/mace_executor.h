@@ -12,19 +12,19 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef NNBENCH_EXECUTORS_MACE_MACE_EXECUTOR_H_
-#define NNBENCH_EXECUTORS_MACE_MACE_EXECUTOR_H_
+#ifndef AIBENCH_EXECUTORS_MACE_MACE_EXECUTOR_H_
+#define AIBENCH_EXECUTORS_MACE_MACE_EXECUTOR_H_
 
 #include <map>
 #include <memory>
 #include <string>
 #include <vector>
 
-#include "nnbench/executors/base_executor.h"
+#include "aibench/executors/base_executor.h"
 #include "mace/public/mace.h"
 #include "mace/public/mace_runtime.h"
 
-namespace nnbench {
+namespace aibench {
 
 class MaceExecutor : public BaseExecutor {
  public:
@@ -55,6 +55,6 @@ class MaceExecutor : public BaseExecutor {
   std::shared_ptr<mace::MaceEngine> engine_;
 };
 
-}  // namespace nnbench
+}  // namespace aibench
 
-#endif  // NNBENCH_EXECUTORS_MACE_MACE_EXECUTOR_H_
+#endif  // AIBENCH_EXECUTORS_MACE_MACE_EXECUTOR_H_

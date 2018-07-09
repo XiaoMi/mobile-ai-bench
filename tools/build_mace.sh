@@ -45,6 +45,6 @@ for CONF_FILE in $CONF_FILES; do
     done
 done
 
-# copy headers and library to nnbench
+# copy headers and library to aibench
 cp -r build/$(basename $COPIED_FILE .yml)/include ../third_party/mace/
 cp -r build/$(basename $COPIED_FILE .yml)/lib ../third_party/mace/
