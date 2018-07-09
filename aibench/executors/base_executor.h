@@ -12,15 +12,15 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef NNBENCH_EXECUTORS_BASE_EXECUTOR_H_
-#define NNBENCH_EXECUTORS_BASE_EXECUTOR_H_
+#ifndef AIBENCH_EXECUTORS_BASE_EXECUTOR_H_
+#define AIBENCH_EXECUTORS_BASE_EXECUTOR_H_
 
 #include <map>
 #include <memory>
 #include <string>
 #include <vector>
 
-namespace nnbench {
+namespace aibench {
 
 enum Status {
   SUCCESS = 0,
@@ -88,6 +88,6 @@ class BaseExecutor {
   Runtime runtime_;
 };
 
-}  // namespace nnbench
+}  // namespace aibench
 
-#endif  // NNBENCH_EXECUTORS_BASE_EXECUTOR_H_
+#endif  // AIBENCH_EXECUTORS_BASE_EXECUTOR_H_

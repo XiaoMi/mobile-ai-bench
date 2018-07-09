@@ -5,7 +5,7 @@ package(
 licenses(["notice"])  # Apache 2.0
 
 load(
-    "//nnbench:nnbench.bzl",
+    "//aibench:aibench.bzl",
     "if_android",
     "if_mace_enabled",
     "if_mace_dsp_enabled",
@@ -24,7 +24,7 @@ cc_library(
         "benchmark.h",
     ],
     deps = [
-        "//nnbench/executors:base_executor",
+        "//aibench/executors:base_executor",
     ],
     alwayslink = 1,
 )
@@ -34,15 +34,15 @@ cc_test(
     testonly = 1,
     srcs = ["benchmark_main.cc"],
     copts = if_mace_enabled([
-        "-DNNBENCH_ENABLE_MACE",
+        "-DAIBENCH_ENABLE_MACE",
     ]) + if_mace_dsp_enabled([
-        "-DNNBENCH_ENABLE_MACE_DSP",
+        "-DAIBENCH_ENABLE_MACE_DSP",
     ]) + if_ncnn_enabled([
-        "-DNNBENCH_ENABLE_NCNN",
+        "-DAIBENCH_ENABLE_NCNN",
     ]) + if_snpe_enabled([
-        "-DNNBENCH_ENABLE_SNPE",
+        "-DAIBENCH_ENABLE_SNPE",
     ]) + if_tflite_enabled([
-        "-DNNBENCH_ENABLE_TFLITE",
+        "-DAIBENCH_ENABLE_TFLITE",
     ]),
     linkopts = [
         "-fopenmp",
@@ -56,12 +56,12 @@ cc_test(
         "benchmark",
         "//external:gflags_nothreads",
     ] + if_mace_enabled([
-        "//nnbench/executors:mace_executor",
+        "//aibench/executors:mace_executor",
     ]) + if_ncnn_enabled([
-        "//nnbench/executors:ncnn_executor",
+        "//aibench/executors:ncnn_executor",
     ]) + if_snpe_enabled([
-        "//nnbench/executors:snpe_executor",
+        "//aibench/executors:snpe_executor",
     ]) + if_tflite_enabled([
-        "//nnbench/executors:tflite_executor",
+        "//aibench/executors:tflite_executor",
     ]),
 )

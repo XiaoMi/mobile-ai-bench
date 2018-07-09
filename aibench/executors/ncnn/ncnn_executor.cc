@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "nnbench/executors/ncnn/ncnn_executor.h"
+#include "aibench/executors/ncnn/ncnn_executor.h"
 
 #include <algorithm>
 #include <memory>
@@ -38,7 +38,7 @@ int BenchNet::load_model() {
 
 }  // namespace ncnn
 
-namespace nnbench {
+namespace aibench {
 
 Status NcnnExecutor::Init(const char *model_name, int num_threads) {
   (void)model_name;
@@ -95,4 +95,4 @@ void NcnnExecutor::Finish() {
   net.clear();
 }
 
-}  // namespace nnbench
+}  // namespace aibench

@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "nnbench/benchmark/benchmark.h"
+#include "aibench/benchmark/benchmark.h"
 
 #include <string.h>
 #include <sys/time.h>
@@ -24,34 +24,34 @@
 #include <map>
 #include <vector>
 
-namespace nnbench {
+namespace aibench {
 namespace benchmark {
 
 namespace {
 
-nnbench::Framework ParseFramework(const char *framework) {
+aibench::Framework ParseFramework(const char *framework) {
   if (strcmp(framework, "MACE") == 0) {
-    return nnbench::Framework::MACE;
+    return aibench::Framework::MACE;
   } else if (strcmp(framework, "SNPE") == 0) {
-    return nnbench::Framework::SNPE;
+    return aibench::Framework::SNPE;
   } else if (strcmp(framework, "NCNN") == 0) {
-    return nnbench::Framework::NCNN;
+    return aibench::Framework::NCNN;
   } else if (strcmp(framework, "TFLITE") == 0) {
-    return nnbench::Framework::TFLITE;
+    return aibench::Framework::TFLITE;
   } else {
-    return nnbench::Framework::MACE;
+    return aibench::Framework::MACE;
   }
 }
 
-nnbench::Runtime ParseRuntime(const char *runtime) {
+aibench::Runtime ParseRuntime(const char *runtime) {
   if (strcmp(runtime, "CPU") == 0) {
-    return nnbench::Runtime::CPU;
+    return aibench::Runtime::CPU;
   } else if (strcmp(runtime, "GPU") == 0) {
-    return nnbench::Runtime::GPU;
+    return aibench::Runtime::GPU;
   } else if (strcmp(runtime, "DSP") == 0) {
-    return nnbench::Runtime::DSP;
+    return aibench::Runtime::DSP;
   } else {
-    return nnbench::Runtime::CPU;
+    return aibench::Runtime::CPU;
   }
 }
 
@@ -106,7 +106,7 @@ Status Benchmark::Run(const char *model_name, const char *framework,
                     < rhs->executor_->GetFramework() || (
                     lhs->executor_->GetFramework()
                       == rhs->executor_->GetFramework()
-                      && lhs->executor_->GetRuntime() != nnbench::CPU)));
+                      && lhs->executor_->GetRuntime() != aibench::CPU)));
             });
 
   // Internal perf regression tools depends on the output formatting,
@@ -233,4 +233,4 @@ int64_t NowMicros() {
 }
 
 }  // namespace benchmark
-}  // namespace nnbench
+}  // namespace aibench

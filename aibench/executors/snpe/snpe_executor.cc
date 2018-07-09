@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "nnbench/executors/snpe/snpe_executor.h"
+#include "aibench/executors/snpe/snpe_executor.h"
 
 #include <algorithm>
 #include <iostream>
@@ -30,7 +30,7 @@
 #include "SNPE/SNPEBuilder.hpp"
 #include "SNPE/SNPEFactory.hpp"
 
-namespace nnbench {
+namespace aibench {
 
 namespace {
 
@@ -157,4 +157,4 @@ void SnpeExecutor::Finish() {
   output_tensor_map_.clear();
 }
 
-}  // namespace nnbench
+}  // namespace aibench

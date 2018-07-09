@@ -1,7 +1,7 @@
 MobileNNBench
 =============
 [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](LICENSE)
-[![build status](http://v9.git.n.xiaomi.com/deep-computing/mobile-nn-bench/badges/master/build.svg)](http://v9.git.n.xiaomi.com/deep-computing/mobile-nn-bench/commits/master)
+[![build status](http://v9.git.n.xiaomi.com/deep-computing/mobile-ai-bench/badges/master/build.svg)](http://v9.git.n.xiaomi.com/deep-computing/mobile-ai-bench/commits/master)
 
 In recent years, the on device deep learning applications are getting more and
 more popular. It's a challenging task for application developers to deploy their
@@ -70,12 +70,12 @@ interests.
     };
     ```
 
-3. Register a new Benchmark in `nnbench/benchmark/benchmark_main.cc`
+3. Register a new Benchmark in `aibench/benchmark/benchmark_main.cc`
 
     ```c++
-    std::unique_ptr<nnbench::NewFrameworkExecutor>
-        new_framework_executor(new nnbench::NewFrameworkExecutor());
-    NNBENCH_BENCHMARK(new_framework_executor.get(), MODEL_NAME, FRAMEWORK_NAME, CPU,
+    std::unique_ptr<aibench::NewFrameworkExecutor>
+        new_framework_executor(new aibench::NewFrameworkExecutor());
+    AIBENCH_BENCHMARK(new_framework_executor.get(), MODEL_NAME, FRAMEWORK_NAME, CPU,
                       MODEL_FILE, (std::vector<std::string>{INPUT_NAMES}),
                       (std::vector<std::string>{INPUT_FILES}),
                       (std::vector<std::vector<int64_t>>{INPUT_SHAPES}));

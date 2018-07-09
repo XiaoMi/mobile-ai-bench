@@ -149,7 +149,7 @@ def parse_args():
     parser.add_argument(
         "--target",
         type=str,
-        default="//nnbench/benchmark:model_benchmark",
+        default="//aibench/benchmark:model_benchmark",
         help="Bazel target to build")
     parser.add_argument(
         "--output_dir",

@@ -1,4 +1,4 @@
-workspace(name = "nnbench")
+workspace(name = "aibench")
 
 new_http_archive(
     name = "gtest",
@@ -18,7 +18,7 @@ new_http_archive(
     strip_prefix = "ncnn-20180427",
     type = "zip",
     urls = [
-        "https://cnbj1-fds.api.xiaomi.net/nnbench/third_party/ncnn-20180427.zip",
+        "https://cnbj1-fds.api.xiaomi.net/aibench/third_party/ncnn-20180427.zip",
         "https://codeload.github.com/Tencent/ncnn/zip/20180427",
     ],
 )
@@ -29,7 +29,7 @@ new_http_archive(
     sha256 = "b11780e5e7f591e916c69bdface4a1ef75b0c19f7b43c868bd62c0f3747d3fbb",
     strip_prefix = "snpe-1.15.0",
     urls = [
-        "https://cnbj1-fds.api.xiaomi.net/nnbench/third_party/snpe-1.15.0.zip",
+        "https://cnbj1-fds.api.xiaomi.net/aibench/third_party/snpe-1.15.0.zip",
     ],
 )
 
