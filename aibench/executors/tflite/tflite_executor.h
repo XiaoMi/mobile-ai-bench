@@ -44,6 +44,7 @@ class TfLiteExecutor : public BaseExecutor {
  private:
   std::unique_ptr<tflite::Interpreter> interpreter_;
   std::unique_ptr<tflite::FlatBufferModel> model_;
+  int num_threads_;
 };
 
 }  // namespace aibench
