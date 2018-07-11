@@ -1,4 +1,4 @@
-MobileNNBench
+MobileAIBench
 =============
 [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](LICENSE)
 [![build status](http://v9.git.n.xiaomi.com/deep-computing/mobile-ai-bench/badges/master/build.svg)](http://v9.git.n.xiaomi.com/deep-computing/mobile-ai-bench/commits/master)
