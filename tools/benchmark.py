@@ -185,6 +185,7 @@ def main(unused_args):
     all_prepare = []
     all_run_avg = []
     for target_abi in target_abis:
+        print("Prepare to run models on %s" % target_abi)
         if target_abi not in abi_types:
             print("Not supported abi: %s" % target_abi)
             continue

@@ -75,38 +75,42 @@ Benchmark::Benchmark(BaseExecutor *executor,
       input_shapes_(input_shapes),
       output_names_(output_names),
       output_shapes_(output_shapes) {
-  if (input_names.size() != input_shapes.size()
-      || (input_files.size() != input_shapes.size() && input_files.size() > 0)
-      || output_names.size() != output_shapes.size()) {
-    printf("size of input_names(%d), input_files(%d) and input_shapes(%d) "
-               "should be equal. sizeof output_names(%d) and output_shapes(%d) "
-               "should be equal.\n",
-           static_cast<int>(input_names.size()),
-           static_cast<int>(input_files.size()),
-           static_cast<int>(input_shapes.size()),
-           static_cast<int>(output_names.size()),
-           static_cast<int>(output_shapes.size()));
+  if (input_names.size() != input_shapes.size() ||
+      (input_files.size() != input_shapes.size() && input_files.size() > 0) ||
+      output_names.size() != output_shapes.size()) {
+    printf(
+        "size of input_names(%d), input_files(%d) and input_shapes(%d) "
+        "should be equal. sizeof output_names(%d) and output_shapes(%d) "
+        "should be equal.\n",
+        static_cast<int>(input_names.size()),
+        static_cast<int>(input_files.size()),
+        static_cast<int>(input_shapes.size()),
+        static_cast<int>(output_names.size()),
+        static_cast<int>(output_shapes.size()));
     abort();
   }
   Register();
 }
 
 // Run all benchmarks filtered by model_name
-Status Benchmark::Run(const char *model_name, const char *framework,
-                      const char *runtime, int run_interval, int num_threads) {
+Status Benchmark::Run(const char *model_name,
+                      const char *framework,
+                      const char *runtime,
+                      int run_interval,
+                      int num_threads) {
   if (!all_benchmarks) return SUCCESS;
 
   // sort by model name, framework and runtime
   // the compare function tends to shuffle benchmarks by runtime
   std::sort(all_benchmarks->begin(), all_benchmarks->end(),
             [](const Benchmark *lhs, const Benchmark *rhs) {
-              return lhs->model_name_ < rhs->model_name_
-                || (lhs->model_name_ == rhs->model_name_
-                  && (lhs->executor_->GetFramework()
-                    < rhs->executor_->GetFramework() || (
-                    lhs->executor_->GetFramework()
-                      == rhs->executor_->GetFramework()
-                      && lhs->executor_->GetRuntime() != aibench::CPU)));
+              return lhs->model_name_ < rhs->model_name_ ||
+                     (lhs->model_name_ == rhs->model_name_ &&
+                      (lhs->executor_->GetFramework() <
+                           rhs->executor_->GetFramework() ||
+                       (lhs->executor_->GetFramework() ==
+                            rhs->executor_->GetFramework() &&
+                        lhs->executor_->GetRuntime() != aibench::CPU)));
             });
 
   // Internal perf regression tools depends on the output formatting,
@@ -122,25 +126,25 @@ Status Benchmark::Run(const char *model_name, const char *framework,
     if (strcmp(runtime, "all") != 0 &&
         ParseRuntime(runtime) != b->executor_->GetRuntime())
       continue;
-    double init_seconds, run_seconds;
-    printf("benchmarking:%s,%d,%d\n",
-           b->model_name_.c_str(),
-           b->executor_->GetFramework(),
-           b->executor_->GetRuntime());
-    Status status = b->Run(&init_seconds, &run_seconds, num_threads);
+
+    // sleep run_interval seconds to cool off the target
+    printf("sleep %d\n", run_interval);
+    sleep(static_cast<uint32_t>(run_interval));
+
+    double init_ms, run_ms;
+    printf("benchmarking: %s,%d,%d\n", b->model_name_.c_str(),
+           b->executor_->GetFramework(), b->executor_->GetRuntime());
+    Status status = b->Run(&init_ms, &run_ms, num_threads);
     if (status != SUCCESS) {
       res = status;
+      printf("benchmark failed: %s,%d,%d\n", b->model_name_.c_str(),
+             b->executor_->GetFramework(), b->executor_->GetRuntime());
       continue;
     }
     // model_name,framework,runtime,init time,inference time
-    printf("benchmark:%s,%d,%d,%.3f,%.3f\n",
-           b->model_name_.c_str(),
-           b->executor_->GetFramework(),
-           b->executor_->GetRuntime(),
-           init_seconds * 1000,
-           run_seconds * 1000);
-    // sleep run_interval seconds to cool off the target
-    sleep(static_cast<uint32_t>(run_interval));
+    printf("benchmark: %s,%d,%d,%.3f,%.3f\n", b->model_name_.c_str(),
+           b->executor_->GetFramework(), b->executor_->GetRuntime(), init_ms,
+           run_ms);
   }
   return res;
 }
@@ -150,23 +154,28 @@ void Benchmark::Register() {
   all_benchmarks->push_back(this);
 }
 
-Status Benchmark::Run(double *init_seconds, double *run_seconds,
-                      int num_threads) {
-  static const int64_t kMinIters = 10;
-  static const int64_t kMaxIters = 1000000000;
-  static const double kMinTime = 2;
-  int64_t iters = kMinIters;
+Status Benchmark::Run(double *init_ms, double *run_ms, int num_threads) {
+  static const int64_t kMinIters = 5;
+  static const int64_t kMaxIters = 20;
+  static const double kMinTime = 2000000;  // microseconds
+  static const float quantile = 0.8;
   int64_t start_time, end_time;
   Status status;
   // Init the target's environment
   status = executor_->Init(model_file_.c_str(), num_threads);
-  if (status != SUCCESS) return status;
+  if (status != SUCCESS) {
+    executor_->Finish();
+    return status;
+  }
   // prepare
   start_time = NowMicros();
   status = executor_->Prepare(model_file_.c_str());
   end_time = NowMicros();
-  *init_seconds = (end_time - start_time) * 1e-6;
-  if (status != SUCCESS) return status;
+  *init_ms = (end_time - start_time) * 1e-3;
+  if (status != SUCCESS) {
+    executor_->Finish();
+    return status;
+  }
   // warm-up
   std::map<std::string, BaseTensor> inputs;
   std::map<std::string, BaseTensor> outputs;
@@ -202,28 +211,46 @@ Status Benchmark::Run(double *init_seconds, double *run_seconds,
                                              std::default_delete<float[]>());
     outputs[output_names_[i]] = BaseTensor(output_shapes_[i], buffer_out);
   }
-  for (int i = 0; i < 5; ++i) {
+
+  for (int i = 0; i < 2; ++i) {
     status = executor_->Run(inputs, &outputs);
   }
-  if (status != SUCCESS) return status;
-  while (true) {
-    start_time = NowMicros();
-    for (int i = 0; i < iters; ++i) {
-      executor_->Run(inputs, &outputs);
-    }
-    end_time = NowMicros();
-    const double seconds = (end_time - start_time) * 1e-6;
-    if (seconds >= kMinTime || iters >= kMaxIters) {
-      *run_seconds = seconds / iters;
-      executor_->Finish();
-      return SUCCESS;
-    }
-
-    // Update number of iterations.
-    // Overshoot by 100% in an attempt to succeed the next time.
-    double multiplier = 2.0 * kMinTime / std::max(seconds, 1e-9);
-    iters = std::min<int64_t>(multiplier * iters, kMaxIters);
+  if (status != SUCCESS) {
+    executor_->Finish();
+    return status;
   }
+
+  std::vector<int64_t> durations;
+  int64_t total_duration = 0;
+  size_t benchmark_iters = 0;
+
+  for (int i = 0; i < kMinIters || (total_duration < kMinTime && i < kMaxIters);
+       ++i) {
+    start_time = NowMicros();
+    status = executor_->Run(inputs, &outputs);
+    end_time = NowMicros();
+    durations.push_back(end_time - start_time);
+    total_duration += durations.back();
+    if (status != SUCCESS) {
+      executor_->Finish();
+      return status;
+    }
+    ++benchmark_iters;
+  }
+
+  std::sort(durations.begin(), durations.end());
+
+  size_t valid_iters = std::max(
+      static_cast<size_t>(1), static_cast<size_t>(benchmark_iters * quantile));
+  size_t start_iter = (benchmark_iters - valid_iters) / 2;
+  valid_iters = std::min(valid_iters, benchmark_iters - start_iter);
+  total_duration =
+      std::accumulate(durations.begin() + start_iter,
+                      durations.begin() + (start_iter + valid_iters), 0);
+
+  *run_ms = total_duration * 1e-3 / valid_iters;
+  executor_->Finish();
+  return SUCCESS;
 }
 
 int64_t NowMicros() {
