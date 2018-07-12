@@ -73,16 +73,23 @@ class BaseExecutor {
 
   virtual ~BaseExecutor() = default;
 
+  // If your framework needs to initialize something other than loading
+  // model or creating an engine, you can put it here, e.g., Mace needs
+  // to compile OpenCL kernel once per target.
   virtual Status Init(const char *model_name, int num_threads) = 0;
 
+  // Load model and prepare to run.
   virtual Status Prepare(const char *model_name) = 0;
 
+  // Run the model.
   virtual Status Run(const std::map<std::string, BaseTensor> &inputs,
                      std::map<std::string, BaseTensor> *outputs) = 0;
 
+  // Unload model and free the memory after running the model.
   virtual void Finish() = 0;
   Framework GetFramework() {return framework_;}
   Runtime GetRuntime() {return runtime_;}
+
  private:
   Framework framework_;
   Runtime runtime_;

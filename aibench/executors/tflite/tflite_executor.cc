@@ -20,7 +20,7 @@ namespace aibench {
 
 Status TfLiteExecutor::Init(const char *model_name, int num_threads) {
   (void)model_name;
-  (void)num_threads;
+  num_threads_ = num_threads;
   return Status::SUCCESS;
 }
 
@@ -37,7 +37,7 @@ Status TfLiteExecutor::Prepare(const char *model_name) {
     std::cout << "Failed to construct interpreter" << std::endl;
     return Status::RUNTIME_ERROR;
   }
-  interpreter_->SetNumThreads(4);
+  interpreter_->SetNumThreads(num_threads_);
   interpreter_->UseNNAPI(false);
   if (interpreter_->AllocateTensors() != kTfLiteOk) {
     std::cout << "Failed to allocate tensors!" << std::endl;

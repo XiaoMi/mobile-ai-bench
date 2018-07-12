@@ -3,61 +3,92 @@ MobileAIBench
 [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](LICENSE)
 [![build status](http://v9.git.n.xiaomi.com/deep-computing/mobile-ai-bench/badges/master/build.svg)](http://v9.git.n.xiaomi.com/deep-computing/mobile-ai-bench/commits/master)
 
-In recent years, the on device deep learning applications are getting more and
+In recent years, the on-device deep learning applications are getting more and
 more popular. It's a challenging task for application developers to deploy their
-deep learning models in their applications. They need to choose proper
+deep learning models in their applications. They need to choose a proper
 inference framework, optionally utilizing quantization or compression
-techniques regarding to the precision-performance trade-off, and finally
-run the model on one or more of heterogeneous compute devices. How to make an
-appropriate decision among these choices is a tedious and time consuming task.
+techniques regarding the precision-performance trade-off, and finally
+run the model on one or more of heterogeneous computing devices. How to make an
+appropriate decision among these choices is a tedious and time-consuming task.
 
-The puropse of this project is to provide an end-to-end neural network benchmark
-on mobile devices, which hopefully can provide insights for the developers.
+**Mobile AI Benchmark** (or **MobileAIBench** for short) is an end-to-end 
+benchmark tool to test the models' runtime in the different neural network 
+frameworks on mobile devices, which hopefully can provide insights for the 
+developers.
+
+## Environment requirement
+
+MobileAIBench supports four frameworks (Mace, Snpe, Ncnn and TensorFlow Lite) 
+currently, which may require the following dependencies:
+
+| Software  | Installation command  | Tested version  |
+| :-------: | :-------------------: | :-------------: |
+| Python  |   | 2.7  |
+| ADB  | apt-get install android-tools-adb  | Required by Android run, >= 1.0.32  |
+| Android NDK  | [NDK installation guide](https://developer.android.com/ndk/guides/setup#install) | Required by Android build, r15c |
+| Bazel  | [bazel installation guide](https://docs.bazel.build/versions/master/install.html)  | 0.13.0  |
+| CMake  | apt-get install cmake  | >= 3.11.3  |
+| FileLock  | pip install -I filelock==3.0.0  | Required by Android run  |
+| PyYaml  | pip install -I pyyaml==3.12  | 3.12.0  |
+| sh  | pip install -I sh==1.12.14  | 1.12.14  |
 
 ## How to use
+
+We provide a python script to run the benchmark tool.
 ```
 python tools/benchmark.py --output_dir=output --frameworks=all \
-                          --runtimes=all --model_names=all
+                          --runtimes=all --model_names=all \
+                          --target_abis=armeabi-v7a,arm64-v8a
 ```
 The whole benchmark may take several hours, and continuous benchmarking may heat
-the device very quickly, so you may set following arguments according to your
+the device very quickly, so you may set the following arguments according to your
 interests. 
 
-| option        | type | default     | explanation |
-| ------------- | ---: | -----------:| ------------|
-| --frameworks  | str  | all         | Frameworks(MACE/SNPE/NCNN/TENSORFLOW_LITE), comma seperated list or all. |
-| --runtimes    | str  | all         | Runtimes(CPU/GPU/DSP), comma seperated list or all. |
-| --target_abis | str  | armeabi-v7a | Target ABIs(armeabi-v7a/arm64-v8a), comma separated list. |
-| --model_names | str  | all         | Model names, comma seperated list or all. |
+| option         | type | default     | explanation |
+| :-----------:  | :--: | :----------:| ------------|
+| --output_dir   | str  | output      | Benchmark output directory. |
+| --frameworks   | str  | all         | Frameworks(MACE/SNPE/NCNN/TFLITE), comma separated list or all. |
+| --runtimes     | str  | all         | Runtimes(CPU/GPU/DSP), comma separated list or all. |
+| --target_abis  | str  | armeabi-v7a | Target ABIs(armeabi-v7a,arm64-v8a), comma separated list. |
+| --model_names  | str  | all         | Model names(InceptionV3,MobileNetV1...), comma separated list or all. |
+| --run_interval | int  | 10          | Run interval between benchmarks, seconds. |
+| --num_threads  | int  | 4           | The number of threads. |
 
 ## Architecture
 ```
-+---------------+         +------------------+      +------------------+
-|   Benchmark   |         |   BaseExecutor   | <--- | MaceGpuExecutor  |
-+---------------+         +------------------+      +------------------+
-| - executor    |-------> | - framework      |
-| - model_name  |         | - runtime        |      +------------------+
-| - model_file  |         |                  | <--- | SnpeGpuExecutor  |
-| - input_names |         +------------------+      +------------------+
-| - input_files |         | + Prepare()      |
-| - input_shapes|         | + Run()          |      +------------------+
-+---------------+         | + Finish()       | <--- |  TfLiteExecutor  |
-| - Register()  |         +------------------+      +------------------+
-| - Run()       |                                            .
-+---------------+                                            .
-                                                             .
-```
-## Adding a new NN framework
++-----------------+         +------------------+      +---------------+
+|   Benchmark     |         |   BaseExecutor   | <--- | MaceExecutor  |
++-----------------+         +------------------+      +---------------+
+| - executor      |-------> | - framework      |
+| - model_name    |         | - runtime        |      +---------------+
+| - model_file    |         |                  | <--- | SnpeExecutor  |
+| - input_names   |         +------------------+      +---------------+
+| - input_files   |         | + Init()         |
+| - input_shapes  |         | + Prepare()      |      +---------------+
+| - output_names  |         | + Run()          | <--- | NcnnExecutor  |
+| - output_shapes |         | + Finish()       |      +---------------+
++-----------------+         +------------------+               
+| - Register()    |                                   +---------------+
+| - Run()         |                              <--- | TfLiteExecutor|
++-----------------+                                   +---------------+
 
-1. Add dependencies in `third_party/new_framework` and WORKSPACE.
+```
+## Adding your new AI framework
+
+1. Add dependencies in `third_party/your_framework`, `aibench/benchmark/BUILD` and WORKSPACE.
 
 2. Define executor and implement the interfaces:
 
     ```c++
-    class NewFrameworkExecutor : public BaseExecutor {
+    class YourFrameworkExecutor : public BaseExecutor {
      public:
-      NewFrameworkExecutor() : BaseExecutor(FRAMEWORK_NAME, CPU) {}
+      YourFrameworkExecutor() : BaseExecutor(FRAMEWORK_NAME, CPU) {}
       
+      // If your framework needs to initialize something other than loading 
+      // model or creating an engine, you can put it here, e.g., Mace needs 
+      // to compile OpenCL kernel once per target.
+      virtual Status Init(const char *model_name, int num_threads);
+
       // Load model and prepare to run
       virtual Status Prepare(const char *model_name);
       
@@ -70,17 +101,27 @@ interests.
     };
     ```
 
-3. Register a new Benchmark in `aibench/benchmark/benchmark_main.cc`
+3. Register your Benchmark in `aibench/benchmark/benchmark_main.cc`:
 
     ```c++
-    std::unique_ptr<aibench::NewFrameworkExecutor>
-        new_framework_executor(new aibench::NewFrameworkExecutor());
-    AIBENCH_BENCHMARK(new_framework_executor.get(), MODEL_NAME, FRAMEWORK_NAME, CPU,
-                      MODEL_FILE, (std::vector<std::string>{INPUT_NAMES}),
-                      (std::vector<std::string>{INPUT_FILES}),
-                      (std::vector<std::vector<int64_t>>{INPUT_SHAPES}));
+    #ifdef AIBENCH_ENABLE_YOUR_FRAMEWORK
+    #include "aibench/executors/your_framework/your_framework_executor.h"
+    #endif
     ```
-   MODEL_FILE and INPUT_FILES can be configured in `tools/model_and_input.yml`
+
+    ```c++
+    #ifdef AIBENCH_ENABLE_YOUR_FRAMEWORK
+    std::unique_ptr<aibench::YourFrameworkExecutor>
+        your_model_framework_executor(new aibench::YourFrameworkExecutor());
+    AIBENCH_BENCHMARK(your_framework_executor.get(), MODEL_NAME, FRAMEWORK_NAME, CPU,
+                      MODEL_FILE, (std::vector<std::string>{INPUT_NAME}),
+                      (std::vector<std::string>{INPUT_FILE}),
+                      (std::vector<std::vector<int64_t>>{INPUT_SHAPE}),
+                      (std::vector<std::string>{OUTPUT_NAME}),
+                      (std::vector<std::vector<int64_t>>{OUTPUT_SHAPE}));
+    #endif
+    ```
+   MODEL_FILE and INPUT_FILES can be configured in `tools/model_and_input.yml`.
 
 
 ## License
