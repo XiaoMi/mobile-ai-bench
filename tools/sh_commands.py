@@ -157,7 +157,6 @@ def download_file(configs, file_name, output_dir):
 
 def get_mace(configs, abis, output_dir, build_mace):
     if build_mace:
-        print("get build mace")
         sh.bash("tools/build_mace.sh", abis, os.path.abspath(output_dir),
                 _fg=True)
     else:
@@ -223,7 +222,7 @@ def prepare_device_env(serialno, abi, device_bin_path, frameworks):
             adb_push(libgnustl_path, device_bin_path, serialno)
 
     # for mace
-    if "MACE" in frameworks:
+    if "MACE" in frameworks and abi == "armeabi-v7a":
         adb_push("third_party/nnlib/libhexagon_controller.so",
                  device_bin_path, serialno)
 
