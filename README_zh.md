@@ -5,26 +5,18 @@
 [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](LICENSE)
 [![build status](http://v9.git.n.xiaomi.com/deep-computing/mobile-ai-bench/badges/master/build.svg)](http://v9.git.n.xiaomi.com/deep-computing/mobile-ai-bench/commits/master)
 
-[FAQ](#FAQ) |
-[中文](README_zh.md)
+[English](README.md)
 
-In recent years, the on-device deep learning applications are getting more and
-more popular. It's a challenging task for application developers to deploy their
-deep learning models in their applications. They need to choose a proper
-inference framework, optionally utilizing quantization or compression
-techniques regarding the precision-performance trade-off, and finally
-run the model on one or more of heterogeneous computing devices. How to make an
-appropriate decision among these choices is a tedious and time-consuming task.
+近几年，设备上的深度学习应用越来越普遍。在应用中部署深度学习模型给开发者带来挑战。开发者们需要选择一个合适的框架，
+选择性地利用量化压缩技术与模型精度进行权衡，最终将模型部署到设备上。对比测试这些框架，并从中选择是一个繁琐耗时的工作。
 
-**Mobile AI Benchmark** (i.e. **MobileAIBench**) is an end-to-end 
-benchmark tool to test the models' runtime in the different neural network 
-frameworks on mobile devices, which hopefully can provide insights for the 
-developers.
+**MobileAIBench** 是一个端到端的测试工具，用于评测同一模型在不同框架上运行的性能表现，
+希望测评结果可以提供给开发者一些指导。
 
-## Environment requirement
 
-MobileAIBench supports four frameworks ([Mace](https://github.com/XiaoMi/mace), [Snpe](https://developer.qualcomm.com/software/qualcomm-neural-processing-sdk), [Ncnn](https://github.com/Tencent/ncnn) and [TensorFlow Lite](https://github.com/tensorflow/tensorflow/tree/master/tensorflow/contrib/lite)) 
-currently, which may require the following dependencies:
+## 准备环境
+
+MobileAIBench 现在支持四种框架 ([Mace](https://github.com/XiaoMi/mace), [Snpe](https://developer.qualcomm.com/software/qualcomm-neural-processing-sdk), [Ncnn](https://github.com/Tencent/ncnn) and [TensorFlow Lite](https://github.com/tensorflow/tensorflow/tree/master/tensorflow/contrib/lite)) 。
 
 | Software  | Installation command  | Tested version  |
 | :-------: | :-------------------: | :-------------: |
@@ -37,7 +29,7 @@ currently, which may require the following dependencies:
 | PyYaml  | pip install -I pyyaml==3.12  | 3.12.0  |
 | sh  | pip install -I sh==1.12.14  | 1.12.14  |
 
-## Architecture
+## 数据结构
 ```
 +-----------------+         +------------------+      +---------------+
 |   Benchmark     |         |   BaseExecutor   | <--- | MaceExecutor  |
@@ -57,17 +49,15 @@ currently, which may require the following dependencies:
 
 ```
 
-## How To Use
+## 如何使用
 
-### Benchmark all models on all frameworks
+### 测试所有模型在所有框架上的性能
 ```
 python tools/benchmark.py --output_dir=output --frameworks=all \
                           --runtimes=all --model_names=all \
                           --target_abis=armeabi-v7a,arm64-v8a
 ```
-The whole benchmark may take a few time, and continuous benchmarking may heat
-the device very quickly, so you may set the following arguments according to your
-interests. 
+运行时间可能比较长，如果只想测试指定模型和框架，可以添加如下选项： 
 
 | option         | type | default     | explanation |
 | :-----------:  | :--: | :----------:| ------------|
@@ -80,10 +70,10 @@ interests.
 | --num_threads  | int  | 4           | The number of threads. |
 
 
-### Adding a model to run on existing framework
-* Register model benchmark
+### 在已有框架中添加新模型评测
+* 注册模型
 
-	Register benchmark in `aibench/benchmark/benchmark_main.cc`:
+	在 `aibench/benchmark/benchmark_main.cc` 中添加:
 	```c++
 	    #ifdef AIBENCH_ENABLE_YOUR_FRAMEWORK
 	    std::unique_ptr<aibench::YourFrameworkExecutor>
@@ -106,28 +96,27 @@ interests.
 	                        "MobilenetV1/Predictions/Reshape_1"}),
 	                    (std::vector<std::vector<int64_t>>{{1, 1001}}));
 	```
-* Register model in `tools/model_list.py`.
+* 在 `tools/model_list.py` 中注册模型名称
+* 配置模型文件和输入文件 
 
-* Configure model file and input file 
+	在 `tools/model_and_input.yml` 中配置 `MODEL_FILE` 和 `INPUT_FILE`。 
 
-	Configure `MODEL_FILE` and `INPUT_FILE` in `tools/model_and_input.yml`.
-
-* Run benchmark
+* 运行测试
 	```
 	python tools/benchmark.py --output_dir=output --frameworks=MACE \
 	                          --runtimes=CPU --model_names=MobileNetV1 \
 	                          --target_abis=armeabi-v7a,arm64-v8a
 	```
 	
-* Check benchmark result
+* 查看结果
 	```bash
 	cat output/report.csv
 	```
 
 
-### Adding your new AI framework
+### 加入新的 AI 框架
 
-* Define `executor` and implement the interfaces:
+* 定义 `executor` 并实现其接口:
 
     ```c++
     class YourFrameworkExecutor : public BaseExecutor {
@@ -153,7 +142,7 @@ interests.
     };
     ```
 
-* Include your framework header in `aibench/benchmark/benchmark_main.cc`:
+* 在 `aibench/benchmark/benchmark_main.cc` 中包含头文件:
 
     ```c++
     #ifdef AIBENCH_ENABLE_YOUR_FRAMEWORK
@@ -161,26 +150,13 @@ interests.
     #endif
     ```
     
-* Add dependencies to `third_party/your_framework`, `aibench/benchmark/BUILD` and `WORKSPACE`.
-    Put macro `AIBENCH_ENABLE_YOUR_FRAMEWORK` into `aibench/benchmark/BUILD` at `model_benchmark` target. 
+* 添加依赖 `third_party/your_framework`, `aibench/benchmark/BUILD` 和 `WORKSPACE`.  
 
-* Benchmark a model on existing framework
+* 测试模型
 
-	Refer to [Adding a model to run on existing framework](#Adding a model to run on existing framework).
+	[在已有框架中添加新模型评测](#在已有框架中添加新模型评测).
     
-## FAQ
-Q: Why are benchmark results not stable on my device?
-
-A: Benchmark results highly depend on states of devices, e.g., running processes, temperature, power control policy.
-It is recommended to disable power control policy (as shown in `tools/power.sh`) if possible (e.g., rooted phone).
-Otherwise, keep your device at idle state with low temperature, and benchmark one model on one framework each time.
-
-Q: Why does NCNN take so little time during initialization?
-
-A: NCNN benchmark does not load weights from real models.
 
 ## License
 [Apache License 2.0](LICENSE).
 
-## Notice
-For [third party](third_party) dependencies, please refer to their licenses.
