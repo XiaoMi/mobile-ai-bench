@@ -16,9 +16,9 @@
 
 ## 准备环境
 
-MobileAIBench 现在支持四种框架 ([Mace](https://github.com/XiaoMi/mace), [Snpe](https://developer.qualcomm.com/software/qualcomm-neural-processing-sdk), [Ncnn](https://github.com/Tencent/ncnn) and [TensorFlow Lite](https://github.com/tensorflow/tensorflow/tree/master/tensorflow/contrib/lite)) 。
+MobileAIBench 现在支持多种框架 ([MACE](https://github.com/XiaoMi/mace), [SNPE](https://developer.qualcomm.com/software/qualcomm-neural-processing-sdk), [ncnn](https://github.com/Tencent/ncnn) 以及 [TensorFlow Lite](https://github.com/tensorflow/tensorflow/tree/master/tensorflow/contrib/lite))，需要安装以下的依赖：
 
-| Software  | Installation command  | Tested version  |
+| 依赖  | 安装命令  | 验证可用的版本  |
 | :-------: | :-------------------: | :-------------: |
 | Python  |   | 2.7  |
 | ADB  | apt-get install android-tools-adb  | Required by Android run, >= 1.0.32  |
