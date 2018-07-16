@@ -184,6 +184,12 @@ int main(int argc, char **argv) {
                     (std::vector<std::vector<int64_t>>{{224, 224, 3}}),
                     (std::vector<std::string>{}),
                     (std::vector<std::vector<int64_t>>{}));
+  AIBENCH_BENCHMARK(snpe_cpu_executor.get(), SqueezeNetV11, SNPE, CPU,
+                    squeezenet_v11.dlc, (std::vector<std::string>{"data"}),
+                    (std::vector<std::string>{}),
+                    (std::vector<std::vector<int64_t>>{{227, 227, 3}}),
+                    (std::vector<std::string>{}),
+                    (std::vector<std::vector<int64_t>>{}));
 
   std::unique_ptr<aibench::SnpeExecutor>
       snpe_gpu_executor(new aibench::SnpeExecutor(aibench::GPU));
@@ -203,6 +209,12 @@ int main(int argc, char **argv) {
                     mobilenet-v2.dlc, (std::vector<std::string>{"input:0"}),
                     (std::vector<std::string>{"chairs_224x224.raw"}),
                     (std::vector<std::vector<int64_t>>{{224, 224, 3}}),
+                    (std::vector<std::string>{}),
+                    (std::vector<std::vector<int64_t>>{}));
+  AIBENCH_BENCHMARK(snpe_gpu_executor.get(), SqueezeNetV11, SNPE, GPU,
+                    squeezenet_v11.dlc, (std::vector<std::string>{"data"}),
+                    (std::vector<std::string>{}),
+                    (std::vector<std::vector<int64_t>>{{227, 227, 3}}),
                     (std::vector<std::string>{}),
                     (std::vector<std::vector<int64_t>>{}));
   // TODO(wuchenghui): benchmark snpe + gpu + vgg16
@@ -248,6 +260,12 @@ int main(int argc, char **argv) {
                     vgg16.param, (std::vector<std::string>{"data"}),
                     (std::vector<std::string>{}),
                     (std::vector<std::vector<int64_t>>{{224, 224, 3}}),
+                    (std::vector<std::string>{}),
+                    (std::vector<std::vector<int64_t>>{}));
+  AIBENCH_BENCHMARK(ncnn_executor.get(), InceptionV3, NCNN, CPU,
+                    inception_v3.param, (std::vector<std::string>{"data"}),
+                    (std::vector<std::string>{}),
+                    (std::vector<std::vector<int64_t>>{{299, 299, 3}}),
                     (std::vector<std::string>{}),
                     (std::vector<std::vector<int64_t>>{}));
 #endif

@@ -42,6 +42,8 @@ models_and_inputs:
     mobilenet-v1.dlc_md5_checksum: a8f669ab3cfbbbf9162ea63c5f99c6c3
     mobilenet-v2.dlc: http://cnbj1.fds.api.xiaomi.com/aibench/models/mobilenet-v2-1.0.dlc
     mobilenet-v2.dlc_md5_checksum: ec7ca4679714ecb16c5b5696b9b65e9c
+    squeezenet_v11.dlc: https://cnbj1.fds.api.xiaomi.com/aibench/models/squeezenet_v11.dlc
+    squeezenet_v11.dlc_md5_checksum: 7fd8d3554136b6c62a5299c20b95da7f
     # vgg16 model file converted from tensorflow graph
     vgg16.dlc: https://cnbj1-fds.api.xiaomi.net/aibench/models/vgg16.dlc
     vgg16.dlc_md5_checksum: ca57f67905fbfaf5cf1755286970646a
@@ -59,6 +61,9 @@ models_and_inputs:
     mobilenet_v1_1.0_224.tflite_md5_checksum: 8ac1abc6bb388135b8ae9343460482fe
     mobilenet_quant_v1_224.tflite: https://cnbj1.fds.api.xiaomi.com/aibench/models/mobilenet_quant_v1_224.tflite
     mobilenet_quant_v1_224.tflite_md5_checksum: 9002c7725ac251d0b7ae189924daadba
+  NCNN:
+    inception_v3.param: https://cnbj1.fds.api.xiaomi.com/aibench/models/inception_v3.param
+    inception_v3.param_md5_checksum: d618cff6b34f8b447fa0a7e861175540
 
 # libs:
 tensorflow-1.9.0-rc1.zip: https://cnbj1.fds.api.xiaomi.com/aibench/third_party/tensorflow-1.9.0-rc1.zip

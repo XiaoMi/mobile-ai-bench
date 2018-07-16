@@ -284,6 +284,8 @@ def prepare_all_model_and_input(serialno, configs, device_bin_path, output_dir,
     if "NCNN" in frameworks:
         ncnn_model_path = "bazel-genfiles/external/ncnn/models/"
         adb_push(ncnn_model_path, device_bin_path, serialno)
+        prepare_model_and_input(serialno, models_inputs["NCNN"],
+                                device_bin_path, output_dir)
 
 
 def adb_run(abi,
