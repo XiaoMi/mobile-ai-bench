@@ -23,8 +23,7 @@ developers.
 
 ## Environment requirement
 
-MobileAIBench supports four frameworks ([Mace](https://github.com/XiaoMi/mace), [Snpe](https://developer.qualcomm.com/software/qualcomm-neural-processing-sdk), [Ncnn](https://github.com/Tencent/ncnn) and [TensorFlow Lite](https://github.com/tensorflow/tensorflow/tree/master/tensorflow/contrib/lite)) 
-currently, which may require the following dependencies:
+MobileAIBench supports several deep learning frameworks ([MACE](https://github.com/XiaoMi/mace), [SNPE](https://developer.qualcomm.com/software/qualcomm-neural-processing-sdk), [ncnn](https://github.com/Tencent/ncnn) and [TensorFlow Lite](https://github.com/tensorflow/tensorflow/tree/master/tensorflow/contrib/lite)) currently, which may require the following dependencies:
 
 | Software  | Installation command  | Tested version  |
 | :-------: | :-------------------: | :-------------: |
