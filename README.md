@@ -23,7 +23,7 @@ developers.
 
 ## Environment requirement
 
-MobileAIBench supports several deep learning frameworks ([MACE](https://github.com/XiaoMi/mace), [SNPE](https://developer.qualcomm.com/software/qualcomm-neural-processing-sdk), [ncnn](https://github.com/Tencent/ncnn) and [TensorFlow Lite](https://github.com/tensorflow/tensorflow/tree/master/tensorflow/contrib/lite)) currently, which may require the following dependencies:
+MobileAIBench supports several deep learning frameworks ([MACE](https://github.com/XiaoMi/mace), [SNPE<sup>1</sup>](https://developer.qualcomm.com/software/qualcomm-neural-processing-sdk), [ncnn](https://github.com/Tencent/ncnn) and [TensorFlow Lite](https://github.com/tensorflow/tensorflow/tree/master/tensorflow/contrib/lite)) currently, which may require the following dependencies:
 
 | Software  | Installation command  | Tested version  |
 | :-------: | :-------------------: | :-------------: |
@@ -35,6 +35,27 @@ MobileAIBench supports several deep learning frameworks ([MACE](https://github.c
 | FileLock  | pip install -I filelock==3.0.0  | Required by Android run  |
 | PyYaml  | pip install -I pyyaml==3.12  | 3.12.0  |
 | sh  | pip install -I sh==1.12.14  | 1.12.14  |
+<font size=1>1. Due to License problem of SNPE, the download link in source code
+ can't be visited outside of Xiaomi. You may download from [here](https://developer.qualcomm.com/software/qualcomm-neural-processing-sdk),
+ and modify `WORKSPACE` like following if you want to benchmark SNPE. And you need
+ to explicitly specify `SNPE` by `--frameworks`.</font>
+```bazel
+#new_http_archive(
+#    name = "snpe",
+#    build_file = "third_party/snpe/snpe.BUILD",
+#    sha256 = "b11780e5e7f591e916c69bdface4a1ef75b0c19f7b43c868bd62c0f3747d3fbb",
+#    strip_prefix = "snpe-1.15.0",
+#    urls = [
+#        "https://cnbj1-fds.api.xiaomi.net/aibench/third_party/snpe-1.15.0.zip",
+#    ],
+#)
+
+new_local_repository(
+    name = "snpe",
+    build_file = "third_party/snpe/snpe.BUILD",
+    path = "/path/to/snpe-1.15.0",
+)
+```
 
 ## Architecture
 ```
