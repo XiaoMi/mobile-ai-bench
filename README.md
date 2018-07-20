@@ -43,7 +43,8 @@ others is not rooted and failed to make such tuning (see the code for more detai
 
 **A**: ncnn benchmark uses fake model parameters and skips loading weights from filesystem.
 
-**Q: Does benchmark use all available cores of devices?
+**Q: Does benchmark use all available cores of devices?**
+
 **A**: No, it uses only available big cores, and default thread count is the number of big cores.
 Thread count can be set by adding `--num_threads` to `benchmark.py` command.
 
