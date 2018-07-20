@@ -24,6 +24,25 @@ developers.
 ## Daily Benchmark Results
 Please check *benchmark* step in [daily CI pipeline page](https://gitlab.com/llhe/mobile-ai-bench/pipelines).
 
+## FAQ
+**Q: Why are benchmark results not stable on my device?**
+
+**A**: Due to power save considerations, some SoCs have aggressive and advanced
+power control scheduling to reduce power consumption which make performance
+quite unstable (especially CPU runtime). Benchmark results highly depend on
+states of devices, e.g., running processes, temperature, power control policy.
+It is recommended to disable power control policy (as shown in `tools/power.sh`) if possible (e.g., rooted phone).
+Otherwise, keep your device at idle state with low temperature, and benchmark one model on one framework each time.
+
+**Q: Why do some devices run faster (or slower) than expected in the CI benchmark result?**
+
+**A**: Some devices is rooted and has some specialized performance tuning while some
+others is not rooted and failed to make such tuning (see the code for more details).
+
+**Q: Why is ncnn initialization time much less than others?**
+
+**A**: ncnn benchmark uses fake model parameters and skips loading weights from filesystem.
+
 ## Environment requirement
 
 MobileAIBench supports several deep learning frameworks ([MACE](https://github.com/XiaoMi/mace), [SNPE](https://developer.qualcomm.com/software/qualcomm-neural-processing-sdk), [ncnn](https://github.com/Tencent/ncnn) and [TensorFlow Lite](https://github.com/tensorflow/tensorflow/tree/master/tensorflow/contrib/lite)) currently, which may require the following dependencies:
@@ -194,17 +213,6 @@ interests.
 * Benchmark a model on existing framework
 
 	Refer to [Adding a model to run on existing framework](#Adding a model to run on existing framework).
-    
-## FAQ
-Q: Why are benchmark results not stable on my device?
-
-A: Benchmark results highly depend on states of devices, e.g., running processes, temperature, power control policy.
-It is recommended to disable power control policy (as shown in `tools/power.sh`) if possible (e.g., rooted phone).
-Otherwise, keep your device at idle state with low temperature, and benchmark one model on one framework each time.
-
-Q: Why does NCNN take so little time during initialization?
-
-A: NCNN benchmark does not load weights from real models.
 
 ## License
 [Apache License 2.0](LICENSE).

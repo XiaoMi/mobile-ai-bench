@@ -88,8 +88,8 @@ def write_statistics(f, title, statistics):
 def write_all_statistics(all_prepare, all_run_avg, output_dir):
     report_filename = output_dir + "/report.csv"
     with open(report_filename, 'w') as f:
-        write_statistics(f, "Prepare:\n", all_prepare)
-        write_statistics(f, "Run_avg:\n", all_run_avg)
+        write_statistics(f, "Prepare (See FAQ section in README for more explanations):\n", all_prepare)
+        write_statistics(f, "Run Average (See FAQ section in README for more explanations):\n", all_run_avg)
 
 
 def get_configs(config_file="tools/model_and_input.yml"):
