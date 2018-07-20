@@ -3,7 +3,7 @@
 </div>
 
 [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](LICENSE)
-[![build status](http://v9.git.n.xiaomi.com/deep-computing/mobile-ai-bench/badges/master/build.svg)](http://v9.git.n.xiaomi.com/deep-computing/mobile-ai-bench/commits/master)
+[![pipeline status](https://gitlab.com/llhe/mobile-ai-bench/badges/master/pipeline.svg)](https://gitlab.com/llhe/mobile-ai-bench/pipelines)
 
 [English](README.md)
 
@@ -13,6 +13,8 @@
 **MobileAIBench** 是一个端到端的测试工具，用于评测同一模型在不同框架上运行的性能表现，
 希望测评结果可以提供给开发者一些指导。
 
+## 每日评测结果
+请查看最新的[CI Pipeline页面](https://gitlab.com/llhe/mobile-ai-bench/pipelines)中的*benchmark*步骤的运行结果。
 
 ## 准备环境
 

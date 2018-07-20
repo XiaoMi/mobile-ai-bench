@@ -3,7 +3,7 @@
 </div>
 
 [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](LICENSE)
-[![build status](http://v9.git.n.xiaomi.com/deep-computing/mobile-ai-bench/badges/master/build.svg)](http://v9.git.n.xiaomi.com/deep-computing/mobile-ai-bench/commits/master)
+[![pipeline status](https://gitlab.com/llhe/mobile-ai-bench/badges/master/pipeline.svg)](https://gitlab.com/llhe/mobile-ai-bench/pipelines)
 
 [FAQ](#FAQ) |
 [中文](README_zh.md)
@@ -20,6 +20,9 @@ appropriate decision among these choices is a tedious and time-consuming task.
 benchmark tool to test the models' runtime in the different neural network 
 frameworks on mobile devices, which hopefully can provide insights for the 
 developers.
+
+## Daily Benchmark Results
+Please check *benchmark* step in [daily CI pipeline page](https://gitlab.com/llhe/mobile-ai-bench/pipelines).
 
 ## Environment requirement
 
