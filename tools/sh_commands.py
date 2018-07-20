@@ -225,7 +225,7 @@ def prepare_device_env(serialno, abi, device_bin_path, frameworks):
 
     # for mace
     if "MACE" in frameworks and abi == "armeabi-v7a":
-        adb_push("third_party/nnlib/libhexagon_controller.so",
+        adb_push("third_party/mace/lib/armeabi-v7a/cpu_gpu_dsp/libhexagon_controller.so",  # noqa
                  device_bin_path, serialno)
 
     # for tflite
