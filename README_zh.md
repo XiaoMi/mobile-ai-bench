@@ -16,6 +16,9 @@
 ## 每日评测结果
 请查看最新的[CI Pipeline页面](https://gitlab.com/llhe/mobile-ai-bench/pipelines)中的*benchmark*步骤的运行结果。
 
+## FAQ
+参考英文文档。
+
 ## 准备环境
 
 MobileAIBench 现在支持多种框架 ([MACE](https://github.com/XiaoMi/mace), [SNPE](https://developer.qualcomm.com/software/qualcomm-neural-processing-sdk), [ncnn](https://github.com/Tencent/ncnn) 以及 [TensorFlow Lite](https://github.com/tensorflow/tensorflow/tree/master/tensorflow/contrib/lite))，需要安装以下的依赖：
@@ -181,7 +184,6 @@ python tools/benchmark.py --output_dir=output --frameworks=all \
 
 	[在已有框架中添加新模型评测](#在已有框架中添加新模型评测).
     
-
 ## License
 [Apache License 2.0](LICENSE).
 
