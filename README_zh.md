@@ -16,7 +16,7 @@
 
 ## 准备环境
 
-MobileAIBench 现在支持多种框架 ([MACE](https://github.com/XiaoMi/mace), [SNPE](https://developer.qualcomm.com/software/qualcomm-neural-processing-sdk), [ncnn](https://github.com/Tencent/ncnn) 以及 [TensorFlow Lite](https://github.com/tensorflow/tensorflow/tree/master/tensorflow/contrib/lite))，需要安装以下的依赖：
+MobileAIBench 现在支持多种框架 ([MACE](https://github.com/XiaoMi/mace), [SNPE<sup>1</sup>](https://developer.qualcomm.com/software/qualcomm-neural-processing-sdk), [ncnn](https://github.com/Tencent/ncnn) 以及 [TensorFlow Lite](https://github.com/tensorflow/tensorflow/tree/master/tensorflow/contrib/lite))，需要安装以下的依赖：
 
 | 依赖  | 安装命令  | 验证可用的版本  |
 | :-------: | :-------------------: | :-------------: |
@@ -28,6 +28,26 @@ MobileAIBench 现在支持多种框架 ([MACE](https://github.com/XiaoMi/mace), 
 | FileLock  | pip install -I filelock==3.0.0  | Required by Android run  |
 | PyYaml  | pip install -I pyyaml==3.12  | 3.12.0  |
 | sh  | pip install -I sh==1.12.14  | 1.12.14  |
+<font size=1>1. 鉴于SNPE的许可证问题, 源码中的下载链接只能在小米内网访问。如果想测评SNPE
+，可以从[SNPE](https://developer.qualcomm.com/software/qualcomm-neural-processing-sdk)
+官网下载，然后修改`WORKSPACE`文件如下，同时必须用`--frameworks`明确指定`SNPE`。</font>
+```bazel
+#new_http_archive(
+#    name = "snpe",
+#    build_file = "third_party/snpe/snpe.BUILD",
+#    sha256 = "b11780e5e7f591e916c69bdface4a1ef75b0c19f7b43c868bd62c0f3747d3fbb",
+#    strip_prefix = "snpe-1.15.0",
+#    urls = [
+#        "https://cnbj1-fds.api.xiaomi.net/aibench/third_party/snpe-1.15.0.zip",
+#    ],
+#)
+
+new_local_repository(
+    name = "snpe",
+    build_file = "third_party/snpe/snpe.BUILD",
+    path = "/path/to/snpe-1.15.0",
+)
+```
 
 ## 数据结构
 ```

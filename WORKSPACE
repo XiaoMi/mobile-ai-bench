@@ -18,11 +18,13 @@ new_http_archive(
     strip_prefix = "ncnn-20180704",
     type = "zip",
     urls = [
-        "https://cnbj1-fds.api.xiaomi.net/aibench/third_party/ncnn-20180704.zip",
+        "https://cnbj1.fds.api.xiaomi.com/aibench/third_party/ncnn-20180704.zip",
         "https://codeload.github.com/Tencent/ncnn/zip/20180704",
     ],
 )
 
+# You need to comment following new_http_archive and uncomment following
+# new_local_repository to benchmark SNPE
 new_http_archive(
     name = "snpe",
     build_file = "third_party/snpe/snpe.BUILD",
@@ -32,6 +34,13 @@ new_http_archive(
         "https://cnbj1-fds.api.xiaomi.net/aibench/third_party/snpe-1.15.0.zip",
     ],
 )
+# You need to uncomment following new_local_repository and comment foregoing
+# new_http_archive to benchmark SNPE
+# new_local_repository(
+#     name = "snpe",
+#     build_file = "third_party/snpe/snpe.BUILD",
+#     path = "/path/to/snpe-1.15.0",
+# )
 
 http_archive(
     # v2.2.0 + fix of include path

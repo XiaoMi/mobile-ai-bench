@@ -138,6 +138,10 @@ def parse_args():
         default=4,
         help="number of threads")
     parser.add_argument(
+        "--include_snpe",
+        action="store_true",
+        help="Include SNPE for benchmark")
+    parser.add_argument(
         "--build_mace",
         action="store_true",
         help="Build mace from source")
@@ -170,8 +174,11 @@ def main(unused_args):
         os.mkdir(FLAGS.output_dir)
 
     target_abis = FLAGS.target_abis.split(',')
-    frameworks = FLAGS.frameworks.split(',') \
-        if FLAGS.frameworks != "all" else list(FRAMEWORKS)
+    if FLAGS.frameworks != "all":
+        frameworks = FLAGS.frameworks.split(',')
+    else:
+        frameworks = \
+            [f for f in FRAMEWORKS if f != "SNPE" or FLAGS.include_snpe]
     runtimes = FLAGS.runtimes.split(',')
     model_names = FLAGS.model_names.split(',')
     target = FLAGS.target
