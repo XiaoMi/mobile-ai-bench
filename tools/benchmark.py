@@ -76,8 +76,7 @@ def report_run_statistics(stdout,
     add_statistics(run_avg, all_run_avg)
 
 
-def write_statistics(f, title, statistics):
-    f.write(title)
+def write_statistics(f, statistics):
     header = "model_name,device_name,soc,abi,runtime,%s\n" \
              % ",".join(FRAMEWORKS)
     f.write(header)
@@ -86,12 +85,12 @@ def write_statistics(f, title, statistics):
 
 
 def write_all_statistics(all_prepare, all_run_avg, output_dir):
-    report_filename = output_dir + "/report.csv"
-    with open(report_filename, 'w') as f:
-        write_statistics(f, "Prepare (See FAQ for more explanations):\n",
-                         all_prepare)
-        write_statistics(f, "Run Average (See FAQ for more explanations):\n",
-                         all_run_avg)
+    prepare_report = output_dir + "/prepare_report.csv"
+    with open(prepare_report, 'w') as f:
+        write_statistics(f, all_prepare)
+    run_report = output_dir + "/run_report.csv"
+    with open(run_report, 'w') as f:
+        write_statistics(f, all_run_avg)
 
 
 def get_configs(config_file="tools/model_and_input.yml"):
