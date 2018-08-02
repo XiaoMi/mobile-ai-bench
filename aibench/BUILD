@@ -35,6 +35,7 @@ config_setting(
 config_setting(
     name = "mace_dsp_enabled",
     define_values = {
+        "dsp": "true",
         "mace": "true",
     },
     values = {
