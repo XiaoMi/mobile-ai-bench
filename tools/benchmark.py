@@ -19,6 +19,8 @@ import yaml
 
 import sh_commands
 from sh_commands import FRAMEWORKS, RUNTIMES
+from model_list import BENCHMARK_MODELS
+
 
 abi_types = [
     "armeabi-v7a",
@@ -175,8 +177,14 @@ def main(unused_args):
         frameworks = FLAGS.frameworks.split(',')
     else:
         frameworks = list(FRAMEWORKS)
-    runtimes = FLAGS.runtimes.split(',')
-    model_names = FLAGS.model_names.split(',')
+    if FLAGS.runtimes != "all":
+        runtimes = FLAGS.runtimes.split(',')
+    else:
+        runtimes = list(RUNTIMES)
+    if FLAGS.model_names != "all":
+        model_names = FLAGS.model_names.split(',')
+    else:
+        model_names = list(BENCHMARK_MODELS)
     target = FLAGS.target
     host_bin_path, bin_name = sh_commands.bazel_target_to_bin(target)
     configs = get_configs()
@@ -192,11 +200,12 @@ def main(unused_args):
         if target_abi not in abi_types:
             print("Not supported abi: %s" % target_abi)
             continue
-        sh_commands.bazel_build(target, target_abi, frameworks)
         if target_abi == "host":
             print("Unable to run target on host yet!")
             continue
         for serialno in target_devices:
+            sh_commands.bazel_build(serialno, target, target_abi, frameworks,
+                                    runtimes)
             if target_abi not in set(
                     sh_commands.adb_supported_abis(serialno)):
                 print("Skip device %s which does not support ABI %s" %

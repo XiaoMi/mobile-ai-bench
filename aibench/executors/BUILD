@@ -8,6 +8,7 @@ load(
     "//aibench:aibench.bzl",
     "if_android_arm64",
     "if_android_armv7",
+    "if_mace_dsp_enabled",
     "if_not_android",
 )
 
@@ -45,8 +46,9 @@ cc_library(
     deps = [
         ":base_executor",
     ] + if_android_armv7([
-        "//third_party/mace:libhexagon",
         "//third_party/mace:mace_armeabi-v7a",
+    ]) + if_mace_dsp_enabled([
+        "//third_party/mace:mace_armeabi-v7a-dsp",
     ]) + if_android_arm64([
         "//third_party/mace:mace_arm64-v8a",
     ]),

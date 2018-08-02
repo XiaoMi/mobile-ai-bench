@@ -19,8 +19,6 @@ import re
 import sh
 import urllib
 
-from model_list import BENCHMARK_MODELS
-
 
 FRAMEWORKS = (
     "MACE",
@@ -171,8 +169,7 @@ def get_tflite(configs, output_dir):
     sh.unzip("-o", file_path, "-d", "third_party/tflite")
 
 
-def bazel_build(target,
-                abi="armeabi-v7a", frameworks=None):
+def bazel_build(serialno, target, abi, frameworks, runtimes):
     print("* Build %s with ABI %s" % (target, abi))
     if abi == "host":
         bazel_args = (
@@ -191,6 +188,14 @@ def bazel_build(target,
         )
     for framework in frameworks:
         bazel_args += ("--define", "%s=true" % framework.lower())
+    if "DSP" in runtimes and abi == "armeabi-v7a":
+        with device_lock(serialno):
+            output = sh.adb("-s", serialno, "shell",
+                            "ls /system/lib/libcdsprpc.so")
+            if "No such file or directory" in output:
+                print("/system/lib/libcdsprpc.so does not exists! Skip DSP.")
+            else:
+                bazel_args += ("--define", "dsp=true")
     sh.bazel(
         _fg=True,
         *bazel_args)
@@ -337,12 +342,6 @@ def adb_run(abi,
         cmd = "cd %s; ADSP_LIBRARY_PATH='.;/system/lib/rfsa/adsp;/system" \
               "/vendor/lib/rfsa/adsp;/dsp'; LD_LIBRARY_PATH=. " \
               "./model_benchmark" % device_bin_path
-        if frameworks == ['all']:
-            frameworks = FRAMEWORKS
-        if runtimes == ['all']:
-            runtimes = RUNTIMES
-        if model_names == ['all']:
-            model_names = BENCHMARK_MODELS
 
         for runtime in runtimes:
             for framework in frameworks:

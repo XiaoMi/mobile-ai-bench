@@ -69,4 +69,4 @@ models_and_inputs:
 tensorflow-1.9.0-rc1.zip: https://cnbj1.fds.api.xiaomi.com/aibench/third_party/tensorflow-1.9.0-rc1.zip
 tensorflow-1.9.0-rc1.zip_md5_checksum: ef248c5c6cc463e9fb28cea43dc3b840
 libmace.zip: https://cnbj1.fds.api.xiaomi.com/aibench/third_party/libmace.zip
-libmace.zip_md5_checksum: 994dbd848db2839928033d49a4108351
+libmace.zip_md5_checksum: af303b0e79702f6b5e9f056467525c5a
