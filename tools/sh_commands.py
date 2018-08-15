@@ -103,14 +103,19 @@ def adb_push_file(src_file, dst_dir, serialno):
     src_checksum = file_checksum(src_file)
     dst_file = os.path.join(dst_dir, os.path.basename(src_file))
     stdout_buff = []
-    sh.adb("-s", serialno, "shell", "md5sum", dst_file,
-           _out=lambda line: stdout_buff.append(line))
-    dst_checksum = stdout_buff[0].split()[0]
-    if src_checksum == dst_checksum:
-        print("Equal checksum with %s and %s" % (src_file, dst_file))
-    else:
+    try:
+        sh.adb("-s", serialno, "shell", "md5sum", dst_file,
+               _out=lambda line: stdout_buff.append(line))
+    except sh.ErrorReturnCode_1:
         print("Push %s to %s" % (src_file, dst_dir))
         sh.adb("-s", serialno, "push", src_file, dst_dir)
+    else:
+        dst_checksum = stdout_buff[0].split()[0]
+        if src_checksum == dst_checksum:
+            print("Equal checksum with %s and %s" % (src_file, dst_file))
+        else:
+            print("Push %s to %s" % (src_file, dst_dir))
+            sh.adb("-s", serialno, "push", src_file, dst_dir)
 
 
 def adb_push(src_path, dst_dir, serialno):
