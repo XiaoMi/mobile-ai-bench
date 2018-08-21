@@ -33,7 +33,7 @@ MobileAIBench 现在支持多种框架 ([MACE](https://github.com/XiaoMi/mace), 
 | FileLock  | pip install -I filelock==3.0.0  | Required by Android run  |
 | PyYaml  | pip install -I pyyaml==3.12  | 3.12.0  |
 | sh  | pip install -I sh==1.12.14  | 1.12.14  |
-| SNPE (可选)  | [下载](https://developer.qualcomm.com/software/qualcomm-neural-processing-sdk)并解压 | 1.15.0  |
+| SNPE (可选)  | [下载](https://developer.qualcomm.com/software/qualcomm-neural-processing-sdk)并解压 | 1.18.0  |
 
 **备注:** 鉴于SNPE的许可不允许第三方再分发, 目前Bazel WORKSPACE配置中的链接只能在CI Server中访问。
 如果想测评SNPE(通过`--frameworks`指定`all`或者显式指定了`SNPE`)
@@ -43,17 +43,17 @@ MobileAIBench 现在支持多种框架 ([MACE](https://github.com/XiaoMi/mace), 
 #new_http_archive(
 #    name = "snpe",
 #    build_file = "third_party/snpe/snpe.BUILD",
-#    sha256 = "b11780e5e7f591e916c69bdface4a1ef75b0c19f7b43c868bd62c0f3747d3fbb",
-#    strip_prefix = "snpe-1.15.0",
+#    sha256 = "820dda1eaa5d36f7548fc803122c2c119f669a905cca03349f0480d023f7ed17",
+#    strip_prefix = "snpe-1.18.0",
 #    urls = [
-#        "https://cnbj1-fds.api.xiaomi.net/aibench/third_party/snpe-1.15.0.zip",
+#        "https://cnbj1-fds.api.xiaomi.net/aibench/third_party/snpe-1.18.0.zip",
 #    ],
 #)
 
 new_local_repository(
     name = "snpe",
     build_file = "third_party/snpe/snpe.BUILD",
-    path = "/path/to/snpe-1.15.0",
+    path = "/path/to/snpe-1.18.0",
 )
 ```
 

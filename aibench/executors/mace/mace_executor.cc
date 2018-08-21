@@ -81,7 +81,7 @@ Status MaceExecutor::CreateEngine(const char *model_name,
 Status MaceExecutor::Init(const char *model_name, int num_threads) {
   mace::DeviceType device_type = GetDeviceType(GetRuntime());
   mace::SetOpenMPThreadPolicy(num_threads,
-                              static_cast<mace::CPUAffinityPolicy>(1));
+                              static_cast<mace::CPUAffinityPolicy>(0));
   if (device_type == mace::GPU) {
     mace::SetGPUHints(
         static_cast<mace::GPUPerfHint>(3),

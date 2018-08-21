@@ -28,10 +28,10 @@ new_http_archive(
 new_http_archive(
     name = "snpe",
     build_file = "third_party/snpe/snpe.BUILD",
-    sha256 = "b11780e5e7f591e916c69bdface4a1ef75b0c19f7b43c868bd62c0f3747d3fbb",
-    strip_prefix = "snpe-1.15.0",
+    sha256 = "820dda1eaa5d36f7548fc803122c2c119f669a905cca03349f0480d023f7ed17",
+    strip_prefix = "snpe-1.18.0",
     urls = [
-        "https://cnbj1-fds.api.xiaomi.net/aibench/third_party/snpe-1.15.0.zip",
+        "https://cnbj1-fds.api.xiaomi.net/aibench/third_party/snpe-1.18.0.zip",
     ],
 )
 # You need to uncomment following new_local_repository and comment foregoing
@@ -39,7 +39,7 @@ new_http_archive(
 # new_local_repository(
 #     name = "snpe",
 #     build_file = "third_party/snpe/snpe.BUILD",
-#     path = "/path/to/snpe-1.15.0",
+#     path = "/path/to/snpe-1.18.0",
 # )
 
 http_archive(

@@ -43,10 +43,7 @@ namespace aibench {
 Status NcnnExecutor::Init(const char *model_name, int num_threads) {
   (void)model_name;
 
-  ncnn::set_cpu_powersave(0);
-  ncnn::set_omp_dynamic(0);
   ncnn::set_omp_num_threads(num_threads);
-
   return Status::SUCCESS;
 }
 
