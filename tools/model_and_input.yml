@@ -34,9 +34,9 @@ models_and_inputs:
     dog.npy_md5_checksum: 1e83988701b86bb7d8eee85e83810563
   SNPE:
     # Get inception_v3 model file from snpe/models/inception_v3/scripts/setup_inceptionv3.py
-    inception_v3.dlc: https://cnbj1-fds.api.xiaomi.net/aibench/models/inception_v3.dlc
+    inception_v3.dlc: https://cnbj1.fds.api.xiaomi.com/aibench/models/inception_v3.dlc
     inception_v3.dlc_md5_checksum: e9f24b8e365d8869dd96d7c1275fefd8
-    inception_v3_quantized.dlc: https://cnbj1-fds.api.xiaomi.net/aibench/models/inception_v3_quantized.dlc
+    inception_v3_quantized.dlc: https://cnbj1.fds.api.xiaomi.com/aibench/models/inception_v3_quantized.dlc
     inception_v3_quantized.dlc_md5_checksum: 473d402718d6a5456754bf43dfa2f6f9
     mobilenet-v1.dlc: http://cnbj1.fds.api.xiaomi.com/aibench/models/mobilenet-v1-1.0.dlc
     mobilenet-v1.dlc_md5_checksum: a8f669ab3cfbbbf9162ea63c5f99c6c3
@@ -45,14 +45,14 @@ models_and_inputs:
     squeezenet_v11.dlc: https://cnbj1.fds.api.xiaomi.com/aibench/models/squeezenet_v11.dlc
     squeezenet_v11.dlc_md5_checksum: 7fd8d3554136b6c62a5299c20b95da7f
     # vgg16 model file converted from tensorflow graph
-    vgg16.dlc: https://cnbj1-fds.api.xiaomi.net/aibench/models/vgg16.dlc
+    vgg16.dlc: https://cnbj1.fds.api.xiaomi.com/aibench/models/vgg16.dlc
     vgg16.dlc_md5_checksum: ca57f67905fbfaf5cf1755286970646a
-    vgg16_quantized.dlc: https://cnbj1-fds.api.xiaomi.net/aibench/models/vgg16_quantized.dlc
+    vgg16_quantized.dlc: https://cnbj1.fds.api.xiaomi.com/aibench/models/vgg16_quantized.dlc
     vgg16_quantized.dlc_md5_checksum: 52829c5ad81a896e60f8afc22408d753
     # inputs:
-    keyboard_299x299.dat: https://cnbj1-fds.api.xiaomi.net/aibench/inputs/keyboard_299x299.dat
+    keyboard_299x299.dat: https://cnbj1.fds.api.xiaomi.com/aibench/inputs/keyboard_299x299.dat
     keyboard_299x299.dat_md5_checksum: 5c2ffec45a4ef882c7a7233327ec6637
-    chairs_224x224.raw: https://cnbj1-fds.api.xiaomi.net/aibench/inputs/chairs_224x224.raw
+    chairs_224x224.raw: https://cnbj1.fds.api.xiaomi.com/aibench/inputs/chairs_224x224.raw
     chairs_224x224.raw_md5_checksum: 180008dfc1a6d3fc7a11eba3de5abc58
   TFLITE:
     inception_v3.tflite: https://cnbj1.fds.api.xiaomi.com/aibench/models/inception_v3.tflite
