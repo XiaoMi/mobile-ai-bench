@@ -45,7 +45,8 @@ others is not rooted and failed to make such tuning (see the code for more detai
 
 **Q: Does benchmark use all available cores of devices?**
 
-**A**: No, it uses only available big cores, and default thread count is the number of big cores.
+**A**: Most modern Android phones use [ARM big.LITTLE](https://en.wikipedia.org/wiki/ARM_big.LITTLE) architecture which can lead to significant variance between different runs of the benchmark, we use only available big cores to reduce this variance by `taskset` command for MACE/NCNN/TFLITE benchmark.
+Moreover, there are no well-defined APIs for SNPE to bind to big cores and set thread count.
 Thread count can be set by adding `--num_threads` to `benchmark.py` command.
 
 
@@ -63,7 +64,7 @@ MobileAIBench supports several deep learning frameworks ([MACE](https://github.c
 | FileLock  | pip install -I filelock==3.0.0  | Required by Android run  |
 | PyYaml  | pip install -I pyyaml==3.12  | 3.12.0  |
 | sh  | pip install -I sh==1.12.14  | 1.12.14  |
-| SNPE (optional) | [download](https://developer.qualcomm.com/software/qualcomm-neural-processing-sdk) and uncompress  | 1.15.0  |
+| SNPE (optional) | [download](https://developer.qualcomm.com/software/qualcomm-neural-processing-sdk) and uncompress  | 1.18.0  |
 
 **Note:** [SNPE](https://developer.qualcomm.com/software/qualcomm-neural-processing-sdk)
 has strict license that disallows redistribution, so the default link in the
@@ -75,17 +76,17 @@ uncompress it and modify `WORKSPACE` as the following:
 #new_http_archive(
 #    name = "snpe",
 #    build_file = "third_party/snpe/snpe.BUILD",
-#    sha256 = "b11780e5e7f591e916c69bdface4a1ef75b0c19f7b43c868bd62c0f3747d3fbb",
-#    strip_prefix = "snpe-1.15.0",
+#    sha256 = "820dda1eaa5d36f7548fc803122c2c119f669a905cca03349f0480d023f7ed17",
+#    strip_prefix = "snpe-1.18.0",
 #    urls = [
-#        "https://cnbj1-fds.api.xiaomi.net/aibench/third_party/snpe-1.15.0.zip",
+#        "https://cnbj1-fds.api.xiaomi.net/aibench/third_party/snpe-1.18.0.zip",
 #    ],
 #)
 
 new_local_repository(
     name = "snpe",
     build_file = "third_party/snpe/snpe.BUILD",
-    path = "/path/to/snpe-1.15.0",
+    path = "/path/to/snpe-1.18.0",
 )
 ```
 

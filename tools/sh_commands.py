@@ -170,7 +170,7 @@ def get_mace(configs, abis, output_dir, build_mace):
 
 
 def get_tflite(configs, output_dir):
-    file_path = download_file(configs, "tensorflow-1.9.0-rc1.zip", output_dir)
+    file_path = download_file(configs, "tensorflow-1.10.1.zip", output_dir)
     sh.unzip("-o", file_path, "-d", "third_party/tflite")
 
 
@@ -195,12 +195,16 @@ def bazel_build(serialno, target, abi, frameworks, runtimes):
         bazel_args += ("--define", "%s=true" % framework.lower())
     if "DSP" in runtimes and abi == "armeabi-v7a":
         with device_lock(serialno):
-            output = sh.adb("-s", serialno, "shell",
-                            "ls /system/lib/libcdsprpc.so")
-            if "No such file or directory" in output:
+            try:
+                output = sh.adb("-s", serialno, "shell",
+                                "ls /system/lib/libcdsprpc.so")
+            except sh.ErrorReturnCode_1:
                 print("/system/lib/libcdsprpc.so does not exists! Skip DSP.")
             else:
-                bazel_args += ("--define", "dsp=true")
+                if "No such file or directory" in output:
+                    print("/system/lib/libcdsprpc.so does not exists! Skip DSP.")  # noqa
+                else:
+                    bazel_args += ("--define", "dsp=true")
     sh.bazel(
         _fg=True,
         *bazel_args)
@@ -298,6 +302,25 @@ def prepare_all_model_and_input(serialno, configs, device_bin_path, output_dir,
                                 device_bin_path, output_dir)
 
 
+def get_cpu_mask(serialno):
+    freq_list = []
+    cpu_id = 0
+    cpu_mask = ''
+    while (True):
+        try:
+            freq_list.append(
+                int(sh.adb("-s", serialno, "shell",
+                           "cat /sys/devices/system/cpu/cpu%d"
+                           "/cpufreq/cpuinfo_max_freq" % cpu_id)))
+        except (ValueError, sh.ErrorReturnCode_1):
+            break
+        else:
+            cpu_id += 1
+    for freq in freq_list:
+        cpu_mask = '1' + cpu_mask if freq == max(freq_list) else '0' + cpu_mask
+    return(str(hex(int(cpu_mask, 2)))[2:])
+
+
 def adb_run(abi,
             serialno,
             configs,
@@ -344,9 +367,10 @@ def adb_run(abi,
 
         stdout_buff = []
         process_output = make_output_processor(stdout_buff)
+        cpu_mask = get_cpu_mask(serialno)
         cmd = "cd %s; ADSP_LIBRARY_PATH='.;/system/lib/rfsa/adsp;/system" \
               "/vendor/lib/rfsa/adsp;/dsp'; LD_LIBRARY_PATH=. " \
-              "./model_benchmark" % device_bin_path
+              "taskset " % device_bin_path + cpu_mask + " ./model_benchmark"
 
         for runtime in runtimes:
             for framework in frameworks:
