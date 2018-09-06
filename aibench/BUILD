@@ -57,9 +57,6 @@ config_setting(
     define_values = {
         "snpe": "true",
     },
-    values = {
-        "cpu": "armeabi-v7a",
-    },
     visibility = ["//visibility:public"],
 )
 

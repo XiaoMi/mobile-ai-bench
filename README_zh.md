@@ -38,7 +38,7 @@ MobileAIBench 现在支持多种框架 ([MACE](https://github.com/XiaoMi/mace), 
 **备注:** 鉴于SNPE的许可不允许第三方再分发, 目前Bazel WORKSPACE配置中的链接只能在CI Server中访问。
 如果想测评SNPE(通过`--frameworks`指定`all`或者显式指定了`SNPE`)
 ，需从[官方地址](https://developer.qualcomm.com/software/qualcomm-neural-processing-sdk)
-下载并解压，然后修改`WORKSPACE`文件如下。
+下载并解压，[复制libgnustl_shared.so](https://developer.qualcomm.com/docs/snpe/setup.html)，然后修改`WORKSPACE`文件如下。
 ```python
 #new_http_archive(
 #    name = "snpe",

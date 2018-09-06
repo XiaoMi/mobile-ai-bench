@@ -77,6 +77,8 @@ cc_library(
         "@snpe//:snpe_x86_64",
     ]) + if_android_armv7([
         "@snpe//:snpe_armeabi-v7a",
+    ])+ if_android_arm64([
+        "@snpe//:snpe_arm64-v8a",
     ]),
 )
 

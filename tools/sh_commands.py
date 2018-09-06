@@ -223,12 +223,14 @@ def bazel_target_to_bin(target):
 
 def prepare_device_env(serialno, abi, device_bin_path, frameworks):
     # for snpe
-    if "SNPE" in frameworks and abi == "armeabi-v7a":
-        snpe_lib_path = \
-           "bazel-mobile-ai-bench/external/snpe/lib/arm-android-gcc4.9"
-
-        adb_push("bazel-mobile-ai-bench/external/snpe/lib/dsp",
-                 device_bin_path, serialno)
+    if "SNPE" in frameworks:
+        snpe_lib_path = ""
+        if abi == "armeabi-v7a":
+            snpe_lib_path = \
+                "bazel-mobile-ai-bench/external/snpe/lib/arm-android-gcc4.9"
+        elif abi == "arm64-v8a":
+            snpe_lib_path = \
+                "bazel-mobile-ai-bench/external/snpe/lib/aarch64-android-gcc4.9"  # noqa
 
         if snpe_lib_path:
             adb_push(snpe_lib_path, device_bin_path, serialno)
@@ -236,6 +238,9 @@ def prepare_device_env(serialno, abi, device_bin_path, frameworks):
                 "/sources/cxx-stl/gnu-libstdc++/4.9/libs/%s/" \
                 "libgnustl_shared.so" % abi
             adb_push(libgnustl_path, device_bin_path, serialno)
+
+        adb_push("bazel-mobile-ai-bench/external/snpe/lib/dsp",
+                 device_bin_path, serialno)
 
     # for mace
     if "MACE" in frameworks and abi == "armeabi-v7a":
