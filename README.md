@@ -71,7 +71,8 @@ has strict license that disallows redistribution, so the default link in the
 Bazel `WORKSPACE` file is only accessible by the CI server. To benchmark SNPE
 in your local system (i.e. set `--frameworks` with `all` or `SNPE` explicitly),
 you need to download the SDK [here](https://developer.qualcomm.com/software/qualcomm-neural-processing-sdk),
-uncompress it and modify `WORKSPACE` as the following:
+uncompress it, [copy libgnustl_shared.so](https://developer.qualcomm.com/docs/snpe/setup.html)
+ and modify `WORKSPACE` as the following:
 ```python
 #new_http_archive(
 #    name = "snpe",
