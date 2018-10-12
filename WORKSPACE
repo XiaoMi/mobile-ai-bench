@@ -14,12 +14,12 @@ new_http_archive(
 new_http_archive(
     name = "ncnn",
     build_file = "third_party/ncnn/ncnn.BUILD",
-    sha256 = "9beeb52117f62091e68feca60f3cf5ec5e727d0d166908fdee7505d3b3db6353",
-    strip_prefix = "ncnn-20180704",
+    sha256 = "de85593597a6b0a3c602c25c5c752d8c216f34da19042c7fd93f323916f5537b",
+    strip_prefix = "ncnn-20180830",
     type = "zip",
     urls = [
-        "https://cnbj1.fds.api.xiaomi.com/aibench/third_party/ncnn-20180704.zip",
-        "https://codeload.github.com/Tencent/ncnn/zip/20180704",
+        "https://cnbj1.fds.api.xiaomi.com/aibench/third_party/ncnn-20180830.zip",
+        "https://codeload.github.com/Tencent/ncnn/zip/20180830",
     ],
 )
 

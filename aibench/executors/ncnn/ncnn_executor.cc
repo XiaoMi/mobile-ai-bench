@@ -25,7 +25,7 @@ namespace ncnn {
 int BenchNet::load_model() {
   ModelBinFromEmpty mb;
   for (size_t i = 0; i < layers.size(); ++i) {
-    Layer* layer = layers[i];
+    Layer *layer = layers[i];
     int ret = layer->load_model(mb);
     if (ret != 0) {
       fprintf(stderr, "layer load_model %d failed\n", static_cast<int>(i));
@@ -41,9 +41,23 @@ int BenchNet::load_model() {
 namespace aibench {
 
 Status NcnnExecutor::Init(const char *model_name, int num_threads) {
-  (void)model_name;
+  static ncnn::UnlockedPoolAllocator g_blob_pool_allocator;
+  static ncnn::PoolAllocator g_workspace_pool_allocator;
 
+  (void) model_name;
+  ncnn::set_cpu_powersave(0);
+  ncnn::set_omp_dynamic(0);
   ncnn::set_omp_num_threads(num_threads);
+
+  g_blob_pool_allocator.clear();
+  g_workspace_pool_allocator.clear();
+
+  ncnn::Option opt;
+  opt.lightmode = true;
+  opt.num_threads = num_threads;
+  opt.blob_allocator = &g_blob_pool_allocator;
+  opt.workspace_allocator = &g_workspace_pool_allocator;
+  ncnn::set_default_option(opt);
   return Status::SUCCESS;
 }
 
@@ -65,7 +79,7 @@ Status NcnnExecutor::Prepare(const char *model_name) {
 
 Status NcnnExecutor::Run(const std::map<std::string, BaseTensor> &inputs,
                          std::map<std::string, BaseTensor> *outputs) {
-  (void)outputs;
+  (void) outputs;
   // check inputs and outputs
   auto input = inputs.find("data");
   if (input == inputs.end()) {

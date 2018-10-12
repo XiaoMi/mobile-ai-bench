@@ -3,6 +3,7 @@ licenses(["notice"])
 exports_files(["LICENSE.txt"])
 
 NCNN_HEADERS = [
+    "include/allocator.h",
     "include/benchmark.h",
     "include/blob.h",
     "include/cpu.h",

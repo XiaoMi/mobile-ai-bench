@@ -2,36 +2,46 @@ models_and_inputs:
   MACE:
     # models:
     inception_v3.data: https://cnbj1.fds.api.xiaomi.com/aibench/models/inception_v3.data
-    inception_v3.data_md5_checksum: 95a880bb1bfec88d3394cb4a543d84b2
+    inception_v3.data_md5_checksum: 77621718743522c5a1d20e646e807f1f
     inception_v3.pb: https://cnbj1.fds.api.xiaomi.com/aibench/models/inception_v3.pb
-    inception_v3.pb_md5_checksum: 78ace777e729de0f2cf1556a56c61ebb
+    inception_v3.pb_md5_checksum: 6021abbf682c4b38d1e29382ace94992
     inception_v3_dsp.data: https://cnbj1.fds.api.xiaomi.com/aibench/models/inception_v3_dsp.data
-    inception_v3_dsp.data_md5_checksum: 274bbf729f2507a7da09a08053b94a29
+    inception_v3_dsp.data_md5_checksum: 6344ce8dc91cc1e76f4479ec6c3a361e
     inception_v3_dsp.pb: https://cnbj1.fds.api.xiaomi.com/aibench/models/inception_v3_dsp.pb
-    inception_v3_dsp.pb_md5_checksum: c06e1347db68b0b1b241bfc1c31888b1
+    inception_v3_dsp.pb_md5_checksum: c603a1cb441d9e2e4bf83b8d2cd66361
     mobilenet_v1.data: https://cnbj1.fds.api.xiaomi.com/aibench/models/mobilenet_v1.data
-    mobilenet_v1.data_md5_checksum: df3734de9834a8c6ed4dac488ea9a64b
+    mobilenet_v1.data_md5_checksum: 1b444f432c9850d583f1bfd4613c3143
     mobilenet_v1.pb: https://cnbj1.fds.api.xiaomi.com/aibench/models/mobilenet_v1.pb
-    mobilenet_v1.pb_md5_checksum: 71a17285ba8d433f9037c6a404dcbb83
+    mobilenet_v1.pb_md5_checksum: 4a5afc9eff2fbdd6874d60cc4ba7f01e
+    mobilenet_v1_quantize_retrain.data: https://cnbj1.fds.api.xiaomi.com/aibench/models/mobilenet_v1_quantize_retrain.data
+    mobilenet_v1_quantize_retrain.data_md5_checksum: d1c584cfc9fe2646b836c297ad232df9
+    mobilenet_v1_quantize_retrain.pb: https://cnbj1.fds.api.xiaomi.com/aibench/models/mobilenet_v1_quantize_retrain.pb
+    mobilenet_v1_quantize_retrain.pb_md5_checksum: 788b88d9bd61fbe6bb7381f3e6d82848
     mobilenet_v2.data: https://cnbj1.fds.api.xiaomi.com/aibench/models/mobilenet_v2.data
-    mobilenet_v2.data_md5_checksum: 2867692277d72ee3eb26b3330b4ea251
+    mobilenet_v2.data_md5_checksum: a6f98848e318d0f66cf502f926807f2e
     mobilenet_v2.pb: https://cnbj1.fds.api.xiaomi.com/aibench/models/mobilenet_v2.pb
-    mobilenet_v2.pb_md5_checksum: 283f796fa7daefa89a231a3a1fa76291
+    mobilenet_v2.pb_md5_checksum: 4eb692d4bc8d51a584961522c59019b6
+    mobilenet_v2_quantize_retrain.data: https://cnbj1.fds.api.xiaomi.com/aibench/models/mobilenet_v2_quantize_retrain.data
+    mobilenet_v2_quantize_retrain.data_md5_checksum: e4fa7a5b8ae666cc9d0712dfe1b325a8
+    mobilenet_v2_quantize_retrain.pb: https://cnbj1.fds.api.xiaomi.com/aibench/models/mobilenet_v2_quantize_retrain.pb
+    mobilenet_v2_quantize_retrain.pb_md5_checksum: c631de2e640270ca65adedcada5cccbd
     squeezenet_v11.data: https://cnbj1.fds.api.xiaomi.com/aibench/models/squeezenet_v11.data
     squeezenet_v11.data_md5_checksum: 3b3c943e25e3c23dbffbfb4c8cc306ff
     squeezenet_v11.pb: https://cnbj1.fds.api.xiaomi.com/aibench/models/squeezenet_v11.pb
-    squeezenet_v11.pb_md5_checksum: 2087c99079d448e86280b2974a1f03fb
+    squeezenet_v11.pb_md5_checksum: 72e6ac30cc071ab187a9ff531d1aae3b
     vgg16_caffe_gpu.data: https://cnbj1.fds.api.xiaomi.com/aibench/models/vgg16_caffe_gpu.data
     vgg16_caffe_gpu.data_md5_checksum: 49edceecc999a04b2d8f3414e2b80124
     vgg16_caffe_gpu.pb: https://cnbj1.fds.api.xiaomi.com/aibench/models/vgg16_caffe_gpu.pb
-    vgg16_caffe_gpu.pb_md5_checksum: 609bf57538b26b4b3054e4967f9a3764
+    vgg16_caffe_gpu.pb_md5_checksum: 8b0d889f619eb9d5c34bd3d71e8df645
     vgg16.data: https://cnbj1.fds.api.xiaomi.com/aibench/models/vgg16.data
-    vgg16.data_md5_checksum: 081b1e296cf8e92c5f10c9aa092dbeb9
+    vgg16.data_md5_checksum: da93a8a6d8dec0e5a3ff6e84e22d9d04
     vgg16.pb: https://cnbj1.fds.api.xiaomi.com/aibench/models/vgg16.pb
-    vgg16.pb_md5_checksum: 2c48e3de3750355966399a4675f21448
+    vgg16.pb_md5_checksum: 7cb28c0ae240d4d6e33d5dd9d7cd10fa
     # inputs:
     dog.npy: https://cnbj1.fds.api.xiaomi.com/mace/inputs/dog.npy
     dog.npy_md5_checksum: 1e83988701b86bb7d8eee85e83810563
+    input_n01440764_15071.JPEG_input: http://cnbj1.fds.api.xiaomi.com/mace/miai-models/mobilenet-v1/input_n01440764_15071.JPEG_input
+    input_n01440764_15071.JPEG_input_md5_checksum: f707d380e0e2bfeb7681c312ca56c3ac
   SNPE:
     # Get inception_v3 model file from snpe/models/inception_v3/scripts/setup_inceptionv3.py
     inception_v3.dlc: https://cnbj1.fds.api.xiaomi.com/aibench/models/inception_v3.dlc
@@ -57,10 +67,16 @@ models_and_inputs:
   TFLITE:
     inception_v3.tflite: https://cnbj1.fds.api.xiaomi.com/aibench/models/inception_v3.tflite
     inception_v3.tflite_md5_checksum: b09e7cedafccf20f1ab91c6aa8d21d9a
+    inception_v3_quant.tflite: https://cnbj1.fds.api.xiaomi.com/aibench/models/inception_v3_quant.tflite
+    inception_v3_quant.tflite_md5_checksum: eee364b713cef15f8fe7f66eacfdf1af
     mobilenet_v1_1.0_224.tflite: https://cnbj1.fds.api.xiaomi.com/aibench/models/mobilenet_v1_1.0_224.tflite
     mobilenet_v1_1.0_224.tflite_md5_checksum: 8ac1abc6bb388135b8ae9343460482fe
     mobilenet_quant_v1_224.tflite: https://cnbj1.fds.api.xiaomi.com/aibench/models/mobilenet_quant_v1_224.tflite
     mobilenet_quant_v1_224.tflite_md5_checksum: 9002c7725ac251d0b7ae189924daadba
+    mobilenet_v2_1.0_224.tflite: https://cnbj1.fds.api.xiaomi.com/aibench/models/mobilenet_v2_1.0_224.tflite
+    mobilenet_v2_1.0_224.tflite_md5_checksum: d8065bc96469fdc4f3fdb05b878c6bbc
+    mobilenet_v2_1.0_224_quant.tflite: https://cnbj1.fds.api.xiaomi.com/aibench/models/mobilenet_v2_1.0_224_quant.tflite
+    mobilenet_v2_1.0_224_quant.tflite_md5_checksum: 72bd6012812f0c1ff3c8fbc4101e0981
   NCNN:
     inception_v3.param: https://cnbj1.fds.api.xiaomi.com/aibench/models/inception_v3.param
     inception_v3.param_md5_checksum: d618cff6b34f8b447fa0a7e861175540
@@ -68,5 +84,6 @@ models_and_inputs:
 # libs:
 tensorflow-1.10.1.zip: https://cnbj1.fds.api.xiaomi.com/aibench/third_party/tensorflow-1.10.1.zip
 tensorflow-1.10.1.zip_md5_checksum: f2fbb31f4b27ff8004b079ca6ab09fe1
-libmace.zip: https://cnbj1.fds.api.xiaomi.com/aibench/third_party/libmace.zip
-libmace.zip_md5_checksum: af303b0e79702f6b5e9f056467525c5a
+libmace-a372fa5e.zip: https://cnbj1.fds.api.xiaomi.com/aibench/third_party/libmace-a372fa5e.zip
+libmace-a372fa5e.zip_md5_checksum: 8fe21fd9abbdaeb59d51626ab39f6b78
+
