@@ -31,16 +31,22 @@
 #include "aibench/executors/tflite/tflite_executor.h"
 #endif
 
-DEFINE_string(model_name, "all", "the model to benchmark");
-DEFINE_string(framework, "all", "the framework to benchmark");
-DEFINE_string(runtime, "all", "the runtime to benchmark");
-DEFINE_string(product_soc, "", "product model and target soc");
-DEFINE_int32(run_interval, 10, "run interval between benchmarks, seconds");
-DEFINE_int32(num_threads, 4, "number of threads");
+DEFINE_string(model_name,
+"all", "the model to benchmark");
+DEFINE_string(framework,
+"all", "the framework to benchmark");
+DEFINE_string(runtime,
+"all", "the runtime to benchmark");
+DEFINE_string(product_soc,
+"", "product model and target soc");
+DEFINE_int32(run_interval,
+10, "run interval between benchmarks, seconds");
+DEFINE_int32(num_threads,
+4, "number of threads");
 
 int main(int argc, char **argv) {
   std::string usage = "run benchmark, e.g. " + std::string(argv[0]) +
-                      " --model_name=all";
+      " --model_name=all";
   gflags::SetUsageMessage(usage);
   gflags::ParseCommandLineFlags(&argc, &argv, true);
 
@@ -56,6 +62,18 @@ int main(int argc, char **argv) {
                     (std::vector<std::string>{
                         "MobilenetV1/Predictions/Reshape_1"}),
                     (std::vector<std::vector<int64_t>>{{1, 1001}}));
+  std::unique_ptr<aibench::MaceExecutor> mobilenetv1quant_mace_cpu_executor(
+      new aibench::MaceExecutor(aibench::CPU, FLAGS_product_soc, {"input"},
+                                {"MobilenetV1/Predictions/Softmax:0"}));
+  AIBENCH_BENCHMARK(mobilenetv1quant_mace_cpu_executor.get(), MobileNetV1Quant,
+                    MACE, CPU, mobilenet_v1_quantize_retrain,
+                    (std::vector<std::string>{"input"}),
+                    (std::vector<std::string>{
+                      "input_n01440764_15071.JPEG_input"}),
+                    (std::vector<std::vector<int64_t>>{{1, 224, 224, 3}}),
+                    (std::vector<std::string>{
+                        "MobilenetV1/Predictions/Softmax:0"}),
+                    (std::vector<std::vector<int64_t>>{{1, 1001}}));
   std::unique_ptr<aibench::MaceExecutor> mobilenetv2_mace_cpu_executor(
       new aibench::MaceExecutor(aibench::CPU, FLAGS_product_soc, {"input"},
                                 {"MobilenetV2/Predictions/Reshape_1"}));
@@ -65,6 +83,18 @@ int main(int argc, char **argv) {
                     (std::vector<std::vector<int64_t>>{{1, 224, 224, 3}}),
                     (std::vector<std::string>{
                         "MobilenetV2/Predictions/Reshape_1"}),
+                    (std::vector<std::vector<int64_t>>{{1, 1001}}));
+  std::unique_ptr<aibench::MaceExecutor> mobilenetv2quant_mace_cpu_executor(
+      new aibench::MaceExecutor(aibench::CPU, FLAGS_product_soc, {"input"},
+                                {"output"}));
+  AIBENCH_BENCHMARK(mobilenetv2quant_mace_cpu_executor.get(), MobileNetV2Quant,
+                    MACE, CPU, mobilenet_v2_quantize_retrain,
+                    (std::vector<std::string>{"input"}),
+                    (std::vector<std::string>{
+                      "input_n01440764_15071.JPEG_input"}),
+                    (std::vector<std::vector<int64_t>>{{1, 224, 224, 3}}),
+                    (std::vector<std::string>{
+                        "output"}),
                     (std::vector<std::vector<int64_t>>{{1, 1001}}));
   std::unique_ptr<aibench::MaceExecutor> squeezenetv11_mace_cpu_executor(
       new aibench::MaceExecutor(aibench::CPU, FLAGS_product_soc, {"data"},
@@ -279,11 +309,32 @@ int main(int argc, char **argv) {
                     (std::vector<std::vector<int64_t>>{{1, 224, 224, 3}}),
                     (std::vector<std::string>{}),
                     (std::vector<std::vector<int64_t>>{}));
+  AIBENCH_BENCHMARK(tflite_executor.get(), MobileNetV2Quant, TFLITE, CPU,
+                    mobilenet_v2_1.0_224_quant.tflite,
+                    (std::vector<std::string>{"Placeholder"}),
+                    (std::vector<std::string>{}),
+                    (std::vector<std::vector<int64_t>>{{1, 224, 224, 3}}),
+                    (std::vector<std::string>{}),
+                    (std::vector<std::vector<int64_t>>{}));
   AIBENCH_BENCHMARK(tflite_executor.get(), MobileNetV1, TFLITE, CPU,
                     mobilenet_v1_1.0_224.tflite,
                     (std::vector<std::string>{"input"}),
                     (std::vector<std::string>{}),
                     (std::vector<std::vector<int64_t>>{{1, 224, 224, 3}}),
+                    (std::vector<std::string>{}),
+                    (std::vector<std::vector<int64_t>>{}));
+  AIBENCH_BENCHMARK(tflite_executor.get(), MobileNetV2, TFLITE, CPU,
+                    mobilenet_v2_1.0_224.tflite,
+                    (std::vector<std::string>{"input"}),
+                    (std::vector<std::string>{}),
+                    (std::vector<std::vector<int64_t>>{{1, 224, 224, 3}}),
+                    (std::vector<std::string>{}),
+                    (std::vector<std::vector<int64_t>>{}));
+  AIBENCH_BENCHMARK(tflite_executor.get(), InceptionV3Quant, TFLITE, CPU,
+                    inception_v3_quant.tflite,
+                    (std::vector<std::string>{"Placeholder"}),
+                    (std::vector<std::string>{}),
+                    (std::vector<std::vector<int64_t>>{{1, 299, 299, 3}}),
                     (std::vector<std::string>{}),
                     (std::vector<std::vector<int64_t>>{}));
   AIBENCH_BENCHMARK(tflite_executor.get(), InceptionV3, TFLITE, CPU,

@@ -22,7 +22,6 @@
 
 #include "aibench/executors/base_executor.h"
 #include "mace/public/mace.h"
-#include "mace/public/mace_runtime.h"
 
 namespace aibench {
 
@@ -53,6 +52,8 @@ class MaceExecutor : public BaseExecutor {
   std::vector<std::string> input_names_;
   std::vector<std::string> output_names_;
   std::shared_ptr<mace::MaceEngine> engine_;
+  int num_threads_;
+  std::shared_ptr<mace::GPUContext> gpu_context_;
 };
 
 }  // namespace aibench

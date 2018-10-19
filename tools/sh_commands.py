@@ -165,8 +165,9 @@ def get_mace(configs, abis, output_dir, build_mace):
         sh.bash("tools/build_mace.sh", abis, os.path.abspath(output_dir),
                 _fg=True)
     else:
-        file_path = download_file(configs, "libmace.zip", output_dir)
+        file_path = download_file(configs, "libmace-a372fa5e.zip", output_dir)
         sh.unzip("-o", file_path, "-d", "third_party/mace")
+        pass
 
 
 def get_tflite(configs, output_dir):

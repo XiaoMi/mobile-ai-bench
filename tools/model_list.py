@@ -15,8 +15,11 @@
 
 BENCHMARK_MODELS = (
     "MobileNetV1",
+    "MobileNetV1Quant",
     "MobileNetV2",
+    "MobileNetV2Quant",
     "SqueezeNetV11",
     "InceptionV3",
+    "InceptionV3Quant",
     "VGG16"
 )
