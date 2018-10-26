@@ -17,6 +17,7 @@ import hashlib
 import os
 import re
 import sh
+import time
 import urllib
 
 
@@ -263,8 +264,7 @@ def prepare_device_env(serialno, abi, device_bin_path, frameworks):
             adb_push(tflite_lib_path, device_bin_path, serialno)
 
 
-def prepare_model_and_input(serialno, models_inputs, device_bin_path,
-                            output_dir):
+def prepare_model_and_input(models_inputs, output_dir, push_list):
     file_names = [f for f in models_inputs if not f.endswith("_md5_checksum")]
     for file_name in file_names:
         file_path = models_inputs[file_name]
@@ -277,11 +277,11 @@ def prepare_model_and_input(serialno, models_inputs, device_bin_path,
             if file_checksum(local_file_path) != checksum:
                 print("file %s md5 checksum not match" % file_name)
                 exit(1)
-        adb_push(local_file_path, device_bin_path, serialno)
+        push_list.append(local_file_path)
 
 
-def prepare_all_model_and_input(serialno, configs, device_bin_path, output_dir,
-                                frameworks, build_mace):
+def prepare_all_model_and_input(configs, output_dir, frameworks, build_mace,
+                                push_list):
     models_inputs = configs["models_and_inputs"]
     if "MACE" in frameworks:
         if build_mace:
@@ -289,23 +289,25 @@ def prepare_all_model_and_input(serialno, configs, device_bin_path, output_dir,
             for model_file in os.listdir(output_dir):
                 if model_file.endswith(".pb") or model_file.endswith(".data"):
                     model_file_path = output_dir + '/' + model_file
-                    adb_push(model_file_path, device_bin_path, serialno)
+                    push_list.append(model_file_path)
         else:
-            prepare_model_and_input(serialno, models_inputs["MACE"],
-                                    device_bin_path, output_dir)
+            prepare_model_and_input(models_inputs["MACE"], output_dir,
+                                    push_list)
     if "SNPE" in frameworks:
-        prepare_model_and_input(serialno, models_inputs["SNPE"],
-                                device_bin_path, output_dir)
+        prepare_model_and_input(models_inputs["SNPE"], output_dir, push_list)
     if "TFLITE" in frameworks:
-        prepare_model_and_input(serialno, models_inputs["TFLITE"],
-                                device_bin_path, output_dir)
+        prepare_model_and_input(models_inputs["TFLITE"], output_dir, push_list)
 
     # ncnn model files are generated from source
     if "NCNN" in frameworks:
         ncnn_model_path = "bazel-genfiles/external/ncnn/models/"
-        adb_push(ncnn_model_path, device_bin_path, serialno)
-        prepare_model_and_input(serialno, models_inputs["NCNN"],
-                                device_bin_path, output_dir)
+        push_list.append(ncnn_model_path)
+        prepare_model_and_input(models_inputs["NCNN"], output_dir, push_list)
+
+
+def push_all_model_and_input(serialno, device_bin_path, push_list):
+    for path in push_list:
+        adb_push(path, device_bin_path, serialno)
 
 
 def get_cpu_mask(serialno):
@@ -335,66 +337,87 @@ def adb_run(abi,
             run_interval,
             num_threads,
             build_mace,
+            max_time_per_lock,
             frameworks=None,
             model_names=None,
             runtimes=None,
             device_bin_path="/data/local/tmp/aibench",
             output_dir="output",
             ):
-    host_bin_full_path = "%s/%s" % (host_bin_path, bin_name)
-    device_bin_full_path = "%s/%s" % (device_bin_path, bin_name)
-    props = adb_getprop_by_serialno(serialno)
-    print(
-        "====================================================================="
-    )
-    print("Trying to lock device %s" % serialno)
-    with device_lock(serialno):
-        print("Run on device: %s, %s, %s" %
-              (serialno, props["ro.board.platform"],
-               props["ro.product.model"]))
-        try:
-            sh.bash("tools/power.sh",
-                    serialno, props["ro.board.platform"],
-                    _fg=True)
-        except Exception, e:
-            print("Config power exception %s" % str(e))
+    push_list = []
+    prepare_all_model_and_input(configs, output_dir, frameworks, build_mace,
+                                push_list)
+    stdout_buff = []
+    process_output = make_output_processor(stdout_buff)
+    benchmark_items = []
+    for runtime in runtimes:
+        for framework in frameworks:
+            for model_name in model_names:
+                benchmark_items.append((runtime, framework, model_name))
+    i = 0
+    while i < len(benchmark_items):
+        print(
+            "============================================================="
+        )
+        print("Trying to lock device %s" % serialno)
+        with device_lock(serialno):
+            start_time = time.time()
+            props = adb_getprop_by_serialno(serialno)
+            print("Run on device: %s, %s, %s" %
+                  (serialno, props["ro.board.platform"],
+                   props["ro.product.model"]))
+            try:
+                sh.bash("tools/power.sh",
+                        serialno, props["ro.board.platform"],
+                        _fg=True)
+            except Exception, e:
+                print("Config power exception %s" % str(e))
 
-        sh.adb("-s", serialno, "shell", "mkdir -p %s" % device_bin_path)
-        sh.adb("-s", serialno, "shell", "rm -rf %s"
-               % os.path.join(device_bin_path, "interior"))
-        sh.adb("-s", serialno, "shell", "mkdir %s"
-               % os.path.join(device_bin_path, "interior"))
-        prepare_device_env(serialno, abi, device_bin_path, frameworks)
-        prepare_all_model_and_input(serialno, configs, device_bin_path,
-                                    output_dir, frameworks, build_mace)
-        adb_push(host_bin_full_path, device_bin_path, serialno)
+            sh.adb("-s", serialno, "shell", "mkdir -p %s"
+                   % device_bin_path)
+            sh.adb("-s", serialno, "shell", "rm -rf %s"
+                   % os.path.join(device_bin_path, "interior"))
+            sh.adb("-s", serialno, "shell", "mkdir %s"
+                   % os.path.join(device_bin_path, "interior"))
 
-        print("Run %s" % device_bin_full_path)
+            prepare_device_env(serialno, abi, device_bin_path, frameworks)
+            push_all_model_and_input(serialno, device_bin_path, push_list)
 
-        stdout_buff = []
-        process_output = make_output_processor(stdout_buff)
-        cpu_mask = get_cpu_mask(serialno)
-        cmd = "cd %s; ADSP_LIBRARY_PATH='.;/system/lib/rfsa/adsp;/system" \
-              "/vendor/lib/rfsa/adsp;/dsp'; LD_LIBRARY_PATH=. " \
-              "taskset " % device_bin_path + cpu_mask + " ./model_benchmark"
+            host_bin_full_path = "%s/%s" % (host_bin_path, bin_name)
+            device_bin_full_path = "%s/%s" % (device_bin_path, bin_name)
+            adb_push(host_bin_full_path, device_bin_path, serialno)
+            print("Run %s" % device_bin_full_path)
 
-        for runtime in runtimes:
-            for framework in frameworks:
-                for model_name in model_names:
-                    print(framework, runtime, model_name)
-                    args = "--run_interval=%d --num_threads=%d " \
-                           "--framework=%s --runtime=%s --model_name=%s " \
-                           "--product_soc=%s.%s" % \
-                           (run_interval, num_threads, framework, runtime,
-                            model_name,
-                            props["ro.product.model"].replace(" ", ""),
-                            props["ro.board.platform"])
-                    sh.adb(
-                        "-s",
-                        serialno,
-                        "shell",
-                        "%s %s" % (cmd, args),
-                        _tty_in=True,
-                        _out=process_output,
-                        _err_to_out=True)
-        return "".join(stdout_buff)
+            cpu_mask = get_cpu_mask(serialno)
+            cmd = "cd %s; ADSP_LIBRARY_PATH='.;/system/lib/rfsa/adsp;" \
+                  "/system/vendor/lib/rfsa/adsp;/dsp';" \
+                  " LD_LIBRARY_PATH=. taskset " \
+                  % device_bin_path + cpu_mask + " ./model_benchmark"
+
+            elapse_minutes = 0  # run at least one model
+            while elapse_minutes < max_time_per_lock \
+                    and i < len(benchmark_items):
+                runtime, framework, model_name = benchmark_items[i]
+                i += 1
+                print(framework, runtime, model_name)
+                args = "--run_interval=%d --num_threads=%d " \
+                       "--framework=%s --runtime=%s --model_name=%s " \
+                       "--product_soc=%s.%s" % \
+                       (run_interval, num_threads, framework, runtime,
+                        model_name,
+                        props["ro.product.model"].replace(" ", ""),
+                        props["ro.board.platform"])
+                sh.adb(
+                    "-s",
+                    serialno,
+                    "shell",
+                    "%s %s" % (cmd, args),
+                    _tty_in=True,
+                    _out=process_output,
+                    _err_to_out=True)
+                elapse_minutes = (time.time() - start_time) / 60
+            print("Elapse time: %f minutes." % elapse_minutes)
+        # Sleep awhile so that other pipelines can get the device lock.
+        time.sleep(10)
+
+    return "".join(stdout_buff)

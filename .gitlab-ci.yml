@@ -21,7 +21,7 @@ benchmark:
     - CI_PROJECT_OUTPUT_PATH=/mace-build-output/$CI_PROJECT_NAME/${DATE_STR}_${CI_PIPELINE_ID}
     - mkdir -p $CI_PROJECT_OUTPUT_PATH
     - ANDROID_NDK_HOME=/opt/android-ndk-r15c
-    - python tools/benchmark.py --output_dir=$CI_PROJECT_OUTPUT_PATH --target_abis=armeabi-v7a,arm64-v8a
+    - python tools/benchmark.py --output_dir=$CI_PROJECT_OUTPUT_PATH --target_abis=armeabi-v7a,arm64-v8a --max_time_per_lock=30
     - >
       cp $CI_PROJECT_OUTPUT_PATH/*_report.csv .;
       echo "------------------------------------------------------------------";
