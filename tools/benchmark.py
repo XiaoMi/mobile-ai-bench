@@ -159,6 +159,12 @@ def parse_args():
         type=str,
         default="output",
         help="benchmark output directory")
+    parser.add_argument(
+        "--max_time_per_lock",
+        type=int,
+        default=300,
+        help="Max run time(in minutes) after every device lock for other "
+             "pipelines to get device lock.")
     return parser.parse_known_args()
 
 
@@ -214,7 +220,8 @@ def main(unused_args):
             stdouts = sh_commands.adb_run(
                 target_abi, serialno, configs, host_bin_path, bin_name,
                 FLAGS.run_interval, FLAGS.num_threads, FLAGS.build_mace,
-                frameworks, model_names, runtimes, output_dir=FLAGS.output_dir)
+                FLAGS.max_time_per_lock, frameworks, model_names, runtimes,
+                output_dir=FLAGS.output_dir)
             report_run_statistics(stdouts, target_abi, serialno,
                                   all_prepare, all_run_avg)
     write_all_statistics(all_prepare, all_run_avg, FLAGS.output_dir)
