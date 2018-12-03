@@ -31,3 +31,20 @@ cc_library(
     deps = ["tflite_headers"],
 )
 
+cc_library(
+    name = "tflite_aarch64",
+	srcs = [
+        "tensorflow/contrib/lite/lib/aarch64/libtensorflowLite.so"
+    ],
+    visibility = ["//visibility:public"],
+    deps = ["tflite_headers"],
+)
+
+cc_library(
+    name = "tflite_armhf",
+	srcs = [
+        "tensorflow/contrib/lite/lib/armhf/libtensorflowLite.so"
+    ],
+    visibility = ["//visibility:public"],
+    deps = ["tflite_headers"],
+)

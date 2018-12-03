@@ -25,6 +25,7 @@
 #include <functional>
 #include <map>
 #include <vector>
+#include <numeric>
 
 #include "mace/utils/logging.h"
 

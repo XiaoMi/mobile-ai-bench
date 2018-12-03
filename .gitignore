@@ -13,3 +13,6 @@ third_party/tflite/tensorflow/
 cmake-build-debug/
 dataset/
 CMakeLists.txt
+.python-version
+*~
+*swp

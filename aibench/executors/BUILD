@@ -8,7 +8,11 @@ load(
     "//aibench:aibench.bzl",
     "if_android_arm64",
     "if_android_armv7",
+    "if_armhf_linux",
+    "if_aarch64_linux",
+    "if_mace_dsp_enabled",
     "if_not_android",
+    "if_android",
 )
 
 cc_library(
@@ -42,9 +46,9 @@ cc_library(
         "-Wextra",
         "-Wno-missing-field-initializers",
     ],
-    linkopts = [
+    linkopts = if_android([
         "-llog",
-    ],
+    ]),
     deps = [
         ":base_executor",
         "//third_party/mace:mace",
@@ -70,12 +74,14 @@ cc_library(
     ],
     deps = [
         ":base_executor",
-    ] + if_not_android([
-        "@snpe//:snpe_x86_64",
-    ]) + if_android_armv7([
+    ] + if_android_armv7([
         "@snpe//:snpe_armeabi-v7a",
     ])+ if_android_arm64([
         "@snpe//:snpe_arm64-v8a",
+    ]) + if_aarch64_linux([
+        "@snpe//:snpe_aarch64",
+    ]) + if_armhf_linux([
+        "@snpe//:snpe_armhf",
     ]),
 )
 
@@ -112,5 +118,9 @@ cc_library(
         "//third_party/tflite:tflite_armeabi-v7a",
     ]) + if_android_arm64([
         "//third_party/tflite:tflite_arm64-v8a",
-    ]),
+    ]) + if_armhf_linux([
+        "//third_party/tflite:tflite_armhf",
+    ]) + if_aarch64_linux([
+        "//third_party/tflite:tflite_aarch64",
+    ])
 )

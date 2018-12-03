@@ -18,9 +18,22 @@ def if_android_armv7(a):
         "//conditions:default": [],
     })
 
+
 def if_android_arm64(a):
     return select({
         "//aibench:android_arm64": a,
+        "//conditions:default": [],
+    })
+
+def if_armhf_linux(a):
+    return select({
+        "//aibench:armhf_linux": a,
+        "//conditions:default": [],
+    })
+
+def if_aarch64_linux(a):
+    return select({
+        "//aibench:aarch64_linux": a,
         "//conditions:default": [],
     })
 
@@ -45,5 +58,11 @@ def if_snpe_enabled(a):
 def if_tflite_enabled(a):
     return select({
         "//aibench:tflite_enabled": a,
+        "//conditions:default": [],
+    })
+
+def if_opencv_enabled(a):
+    return select({
+        "//aibench:opencv_enabled": a,
         "//conditions:default": [],
     })

@@ -23,6 +23,7 @@
 #include <string>
 #include <utility>
 #include <vector>
+#include <numeric>
 
 #include "mace/utils/logging.h"
 #include "aibench/benchmark/imagenet/imagenet_preprocessor.h"

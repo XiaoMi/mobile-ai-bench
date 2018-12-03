@@ -22,8 +22,6 @@
 #include "mace/utils/logging.h"
 #include "mace/utils/utils.h"
 #include "aibench/benchmark/benchmark.h"
-#include "aibench/benchmark/imagenet/imagenet_preprocessor.h"
-#include "aibench/benchmark/imagenet/imagenet_postprocessor.h"
 #include "aibench/proto/aibench.pb.h"
 #include "aibench/proto/base.pb.h"
 
@@ -38,6 +36,11 @@
 #endif
 #ifdef AIBENCH_ENABLE_TFLITE
 #include "aibench/executors/tflite/tflite_executor.h"
+#endif
+
+#ifdef AIBENCH_ENABLE_OPENCV
+#include "aibench/benchmark/imagenet/imagenet_preprocessor.h"
+#include "aibench/benchmark/imagenet/imagenet_postprocessor.h"
 #endif
 
 namespace aibench {
@@ -168,10 +171,12 @@ class PreProcessorFactory {
 
     switch (type) {
       case PreProcessor_PreProcessorType_DefaultProcessor:
+      #ifdef AIBENCH_ENABLE_OPENCV
         processor.reset(new ImageNetPreProcessor(data_formats,
                                                  input_means,
                                                  input_var,
                                                  channel_order));
+      #endif
         break;
       default:
         LOG(FATAL) << "Not supported PreProcessor type: " << type;
@@ -189,7 +194,9 @@ class PostProcessorFactory {
 
     switch (type) {
       case PostProcessor_PostProcessorType_ImageClassification:
+      #ifdef AIBENCH_ENABLE_OPENCV
         processor.reset(new ImageNetPostProcessor());
+      #endif
         break;
       default:
         LOG(FATAL) << "Not supported PostProcessor type: " << type;

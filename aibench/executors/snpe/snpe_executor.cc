@@ -50,7 +50,7 @@ std::unique_ptr<zdl::SNPE::SNPE> BuildSnpeRuntime(
 
   std::unique_ptr<zdl::DlContainer::IDlContainer> container =
       zdl::DlContainer::IDlContainer::open(
-      zdl::DlSystem::String(model_name));
+      zdl::DlSystem::String(model_name.c_str()));
   zdl::SNPE::SNPEBuilder snpe_builder(container.get());
   std::unique_ptr<zdl::SNPE::SNPE> snpe =
       snpe_builder.setOutputLayers({})

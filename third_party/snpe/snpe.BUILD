@@ -40,3 +40,26 @@ cc_library(
     deps = ["snpe_hdr"],
     visibility = ["//visibility:public"],
 )
+
+cc_library(
+    name = "snpe_armhf",
+    srcs = [
+        "lib/arm-linux-gcc4.8hf/libSNPE.so",
+        "lib/arm-linux-gcc4.8hf/libsymphony-cpu.so",
+    ],
+    deps = ["snpe_hdr"],
+    visibility = ["//visibility:public"],
+)
+
+cc_library(
+    name = "snpe_aarch64",
+    srcs = [
+        "lib/aarch64-linux-gcc4.9/libSNPE.so",
+        "lib/aarch64-linux-gcc4.9/libsymphony-cpu.so",
+    ],
+    deps = ["snpe_hdr"],
+    visibility = ["//visibility:public"],
+)
+
+
+

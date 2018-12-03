@@ -10,10 +10,13 @@ load(
     "if_not_android",
     "if_android_arm64",
     "if_android_armv7",
+    "if_armhf_linux",
+    "if_aarch64_linux",
     "if_mace_enabled",
     "if_ncnn_enabled",
     "if_snpe_enabled",
     "if_tflite_enabled",
+    "if_opencv_enabled",
 )
 
 cc_library(
@@ -21,22 +24,22 @@ cc_library(
     testonly = 1,
     srcs = [
         "benchmark.cc",
+    ] + if_android([
         "imagenet/imagenet_preprocessor.cc",
         "imagenet/imagenet_postprocessor.cc",
-    ],
+    ]),
     hdrs = [
         "benchmark.h",
+    ] + if_android([
         "imagenet/imagenet_preprocessor.h",
         "imagenet/imagenet_postprocessor.h",
-    ],
+    ]),
     deps = [
         "//aibench/executors:base_executor",
         "@mace//mace/utils",
-    ] + if_not_android([
-        "@opencv//:opencv_x86_64",
-    ]) + if_android_armv7([
+    ] + if_android_armv7([
         "@opencv//:opencv_armeabi-v7a",
-    ])+ if_android_arm64([
+    ]) + if_android_arm64([
         "@opencv//:opencv_arm64-v8a",
     ]),
     alwayslink = 1,
@@ -54,6 +57,8 @@ cc_test(
         "-DAIBENCH_ENABLE_SNPE",
     ]) + if_tflite_enabled([
         "-DAIBENCH_ENABLE_TFLITE",
+    ]) + if_opencv_enabled([
+        "-DAIBENCH_ENABLE_OPENCV",
     ]),
     linkopts = [
         "-fopenmp",
