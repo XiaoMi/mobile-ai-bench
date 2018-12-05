@@ -1,39 +1,21 @@
-licenses(["notice"])
+package(
+    default_visibility = ["//visibility:public"],
+)
+
+licenses(["notice"])  # Apache 2.0
 
 exports_files(["LICENSE"])
 
 cc_library(
-    name = "mace_headers",
-    hdrs = glob([
-        "include/mace/public/*.h",
-    ]),
-    strip_include_prefix = "include",
-)
-
-cc_library(
-    name = "mace_armeabi-v7a",
-    srcs = glob([
-        "lib/armeabi-v7a/cpu_gpu/libmace.a",
-    ]),
-    visibility = ["//visibility:public"],
-    deps = ["mace_headers"],
-)
-
-cc_library(
-    name = "mace_armeabi-v7a-dsp",
-    srcs = glob([
-        "lib/armeabi-v7a/cpu_gpu_dsp/libhexagon_controller.so",
-        "lib/armeabi-v7a/cpu_gpu_dsp/libmace.a",
-    ]),
-    visibility = ["//visibility:public"],
-    deps = ["mace_headers"],
-)
-
-cc_library(
-    name = "mace_arm64-v8a",
-    srcs = glob([
-        "lib/arm64-v8a/cpu_gpu/libmace.a",
-    ]),
-    visibility = ["//visibility:public"],
-    deps = ["mace_headers"],
+    name = "mace",
+    deps = [
+        "@mace//mace/codegen:generated_version",
+        "@mace//mace/core",
+        "@mace//mace/ops",
+        "@mace//mace/libmace",
+        "@mace//mace/utils",
+        "@mace//mace/proto:mace_cc",
+        "@mace//mace/codegen:generated_opencl",
+        "@com_google_protobuf//:protobuf_lite",
+    ],
 )

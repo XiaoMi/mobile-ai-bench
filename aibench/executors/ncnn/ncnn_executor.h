@@ -43,11 +43,12 @@ namespace aibench {
 
 class NcnnExecutor : public BaseExecutor {
  public:
-  NcnnExecutor() : BaseExecutor(NCNN, CPU) {}
+  explicit NcnnExecutor(const std::string &model_file)
+      : BaseExecutor(NCNN, CPU, model_file, "") {}
 
-  virtual Status Init(const char *model_name, int num_threads);
+  virtual Status Init(int num_threads);
 
-  virtual Status Prepare(const char *model_name);
+  virtual Status Prepare();
 
   virtual Status Run(const std::map<std::string, BaseTensor> &inputs,
                      std::map<std::string, BaseTensor> *outputs);

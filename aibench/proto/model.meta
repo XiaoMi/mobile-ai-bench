@@ -1,105 +1,129 @@
 models {
-	type: MobileNetV1
-	category: ImageClassification
-	pre_processor {
-		type: DefaultProcessor
-		mean: 127.5
-		mean: 127.5
-		mean: 127.5
-		var: 127.5
-	}
-	post_processor {
-		type: ImageClassification
-	}
-	metric_evaluator: {
-		type: ImageClassification
-	}
-	input_shape: 1
-	input_shape: 224
-	input_shape: 224
-	input_shape: 3
-	output_shape: 1
-	output_shape: 1001
-	channel_order: RGB
-	data_format: NHWC
+  model_name: MobileNetV1
+  category: ImageClassification
+  pre_processor {
+    type: DefaultProcessor
+    input_mean: {
+      mean: 127.5
+      mean: 127.5
+      mean: 127.5
+    }
+    var: 127.5
+  }
+  post_processor {
+    type: ImageClassification
+  }
+  metric_evaluator: {
+    type: ImageClassification
+  }
+  input_shape: {
+    shape: 1
+    shape: 224
+    shape: 224
+    shape: 3
+  }
+  output_shape: {
+    shape: 1
+    shape: 1001
+  }
+  channel_order: RGB
+  data_format: NHWC
 }
 
 models {
-	type: MobileNetV2
-	category: ImageClassification
-	pre_processor {
-		type: DefaultProcessor
-		mean: 127.5
-		mean: 127.5
-		mean: 127.5
-		var: 127.5
-	}
-	post_processor {
-		type: ImageClassification
-	}
-	metric_evaluator: {
-		type: ImageClassification
-	}
-	input_shape: 1
-	input_shape: 224
-	input_shape: 224
-	input_shape: 3
-	output_shape: 1
-	output_shape: 1001
-	channel_order: RGB
-	data_format: NHWC
+  model_name: MobileNetV2
+  category: ImageClassification
+  pre_processor {
+    type: DefaultProcessor
+    input_mean: {
+      mean: 127.5
+      mean: 127.5
+      mean: 127.5
+    }
+    var: 127.5
+  }
+  post_processor {
+    type: ImageClassification
+  }
+  metric_evaluator: {
+    type: ImageClassification
+  }
+  input_shape: {
+    shape: 1
+    shape: 224
+    shape: 224
+    shape: 3
+  }
+  output_shape: {
+    shape: 1
+    shape: 1001
+  }
+  channel_order: RGB
+  data_format: NHWC
 }
 
 models {
-	type: InceptionV3
-	category: ImageClassification
-	pre_processor {
-		type: DefaultProcessor
-		mean: 127.5
-		mean: 127.5
-		mean: 127.5
-		var: 127.5
-	}
-	post_processor {
-		type: ImageClassification
-	}
-	metric_evaluator: {
-		type: ImageClassification
-	}
-	input_shape: 1
-	input_shape: 299
-	input_shape: 299
-	input_shape: 3
-	output_shape: 1
-	output_shape: 1001
-	channel_order: RGB
-	data_format: NHWC
+  model_name: InceptionV3
+  category: ImageClassification
+  pre_processor {
+    type: DefaultProcessor
+    input_mean: {
+      mean: 127.5
+      mean: 127.5
+      mean: 127.5
+    }
+    var: 127.5
+  }
+  post_processor {
+    type: ImageClassification
+  }
+  metric_evaluator: {
+    type: ImageClassification
+  }
+  input_shape: {
+    shape: 1
+    shape: 299
+    shape: 299
+    shape: 3
+  }
+  output_shape: {
+    shape: 1
+    shape: 1001
+  }
+  channel_order: RGB
+  data_format: NHWC
 }
 
 models {
-	type: SqueezeNetV11
-	category: ImageClassification
-	pre_processor {
-		type: DefaultProcessor
-		mean: 104
-		mean: 117
-		mean: 123
-		var: 1
-	}
-	post_processor {
-		type: ImageClassification
-	}
-	metric_evaluator: {
-		type: ImageClassification
-	}
-	input_shape: 1
-	input_shape: 227
-	input_shape: 227
-	input_shape: 3
-	output_shape: 1
-	output_shape: 1
-	output_shape: 1
-	output_shape: 1000
-	channel_order: BGR
-	data_format: NHWC
+  model_name: SqueezeNetV11
+  category: ImageClassification
+  pre_processor {
+    type: DefaultProcessor
+    input_mean: {
+      mean: 104
+      mean: 117
+      mean: 123
+    }
+    var: 1
+  }
+  post_processor {
+    type: ImageClassification
+  }
+  metric_evaluator: {
+    type: ImageClassification
+  }
+  input_shape: {
+    shape: 1
+    shape: 227
+    shape: 227
+    shape: 3
+  }
+  output_shape: {
+    shape: 1
+    shape: 1
+    shape: 1
+    shape: 1000
+  }
+  channel_order: BGR
+  data_format: NHWC
 }

@@ -18,16 +18,15 @@
 
 namespace aibench {
 
-Status TfLiteExecutor::Init(const char *model_name, int num_threads) {
-  (void)model_name;
+Status TfLiteExecutor::Init(int num_threads) {
   num_threads_ = num_threads;
   return Status::SUCCESS;
 }
 
-Status TfLiteExecutor::Prepare(const char *model_name) {
-  model_ = tflite::FlatBufferModel::BuildFromFile(model_name);
+Status TfLiteExecutor::Prepare() {
+  model_ = tflite::FlatBufferModel::BuildFromFile(GetModelFile().c_str());
   if (!model_) {
-    std::cout << "Failed to mmap model_" << model_name << std::endl;
+    std::cout << "Failed to mmap model_" << GetModelFile() << std::endl;
     return Status::RUNTIME_ERROR;
   }
   tflite::ops::builtin::BuiltinOpResolver resolver;

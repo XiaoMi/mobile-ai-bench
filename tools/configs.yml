@@ -1,0 +1,7 @@
+# libs:
+tensorflow-1.10.1.zip: https://cnbj1.fds.api.xiaomi.com/aibench/third_party/tensorflow-1.10.1.zip
+tensorflow-1.10.1.zip_md5_checksum: f2fbb31f4b27ff8004b079ca6ab09fe1
+
+# inputs:
+imagenet_less.zip: https://cnbj1-fds.api.xiaomi.net/aibench/inputs/imagenet_less.zip
+imagenet_less.zip_md5_checksum: e0f7a6b64ed07a0ed0402d61b79cebe2

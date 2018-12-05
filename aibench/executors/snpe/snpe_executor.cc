@@ -35,15 +35,15 @@ namespace aibench {
 namespace {
 
 std::unique_ptr<zdl::SNPE::SNPE> BuildSnpeRuntime(
-    const char *model_name, zdl::DlSystem::Runtime_t runtime) {
-  std::cout << "building snpe with model_name: " << model_name << " runtime:"
-            << static_cast<int>(runtime) << std::endl;
+    const std::string &model_name, zdl::DlSystem::Runtime_t device_type) {
+  std::cout << "building snpe with model_name: " << model_name
+            << " device_type:" << static_cast<int>(device_type) << std::endl;
   zdl::DlSystem::UDLBundle udl_bundle;
   // 0xdeadbeaf to test cookie
   udl_bundle.cookie = reinterpret_cast<void *>(0xdeadbeaf);
 
-  if (!zdl::SNPE::SNPEFactory::isRuntimeAvailable(runtime)) {
-    std::cerr << "SNPE Runtime " << static_cast<int>(runtime)
+  if (!zdl::SNPE::SNPEFactory::isRuntimeAvailable(device_type)) {
+    std::cerr << "SNPE DeviceType " << static_cast<int>(device_type)
               << " not available! " << std::endl;
     return nullptr;
   }
@@ -54,7 +54,7 @@ std::unique_ptr<zdl::SNPE::SNPE> BuildSnpeRuntime(
   zdl::SNPE::SNPEBuilder snpe_builder(container.get());
   std::unique_ptr<zdl::SNPE::SNPE> snpe =
       snpe_builder.setOutputLayers({})
-          .setRuntimeProcessor(runtime)
+          .setRuntimeProcessor(device_type)
           .setUdlBundle(udl_bundle)
           .setUseUserSuppliedBuffers(false)
           .build();
@@ -109,8 +109,8 @@ Status ProcessOutput(const zdl::DlSystem::TensorMap &output_tensor_map,
   return Status::SUCCESS;
 }
 
-zdl::DlSystem::Runtime_t GetSnpeRuntime(const Runtime &runtime) {
-  switch (runtime) {
+zdl::DlSystem::Runtime_t GetSnpeRuntime(const DeviceType &device_type) {
+  switch (device_type) {
     case CPU: return zdl::DlSystem::Runtime_t::CPU;
     case GPU: return zdl::DlSystem::Runtime_t::GPU;
     case DSP: return zdl::DlSystem::Runtime_t::DSP;
@@ -120,15 +120,14 @@ zdl::DlSystem::Runtime_t GetSnpeRuntime(const Runtime &runtime) {
 
 }  // namespace
 
-Status SnpeExecutor::Init(const char *model_name, int num_threads) {
-  (void)model_name;
+Status SnpeExecutor::Init(int num_threads) {
   (void)num_threads;
   return Status::SUCCESS;
 }
 
-Status SnpeExecutor::Prepare(const char *model_name) {
-  zdl::DlSystem::Runtime_t runtime = GetSnpeRuntime(GetRuntime());
-  snpe_ = BuildSnpeRuntime(model_name, runtime);
+Status SnpeExecutor::Prepare() {
+  zdl::DlSystem::Runtime_t device_type = GetSnpeRuntime(GetDeviceType());
+  snpe_ = BuildSnpeRuntime(GetModelFile(), device_type);
   if (snpe_ == nullptr) return Status::RUNTIME_ERROR;
   return Status::SUCCESS;
 }

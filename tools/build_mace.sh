@@ -19,17 +19,15 @@ cd mace/
 
 MODELS=(
     "inception-v3"
-    "inception-v3-dsp"
     "mobilenet-v1"
     "mobilenet-v1-quantize-retrain"
     "mobilenet-v2"
     "mobilenet-v2-quantize-retrain"
     "squeezenet-v11"
-    "vgg16-caffe-gpu"
-    "vgg16-tensorflow-cpu"
 )
 
 # convert models to pb and data
+TIMESTAMP=$(date +%s)
 for CONF_FILE in $CONF_FILES; do
     for MODEL in "${MODELS[@]}"; do
         if [ "$(basename $CONF_FILE .yml)" == "$MODEL" ]; then
@@ -38,14 +36,10 @@ for CONF_FILE in $CONF_FILES; do
             RESULT=$?
             set -e
             if [ $RESULT == 0 ]; then
-                cp builds/$(basename $CONF_FILE .yml)/model/*.pb $2
-                cp builds/$(basename $CONF_FILE .yml)/model/*.data $2
+                FILE_NAME=$(basename $CONF_FILE .yml)
+                cp builds/${FILE_NAME}/model/*.pb ../output/${FILE_NAME}_${TIMESTAMP}.pb
+                cp builds/${FILE_NAME}/model/*.data ../output/${FILE_NAME}_${TIMESTAMP}.data
             fi
         fi
     done
 done
-
-# build and copy includes and libs to aibench
-bash tools/build-standalone-lib.sh
-cp -r builds/include ../third_party/mace/
-cp -r builds/lib ../third_party/mace/

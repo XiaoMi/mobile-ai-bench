@@ -7,6 +7,9 @@ licenses(["notice"])  # Apache 2.0
 load(
     "//aibench:aibench.bzl",
     "if_android",
+    "if_not_android",
+    "if_android_arm64",
+    "if_android_armv7",
     "if_mace_enabled",
     "if_mace_dsp_enabled",
     "if_ncnn_enabled",
@@ -19,13 +22,24 @@ cc_library(
     testonly = 1,
     srcs = [
         "benchmark.cc",
+        "imagenet/imagenet_preprocessor.cc",
+        "imagenet/imagenet_postprocessor.cc",
     ],
     hdrs = [
         "benchmark.h",
+        "imagenet/imagenet_preprocessor.h",
+        "imagenet/imagenet_postprocessor.h",
     ],
     deps = [
         "//aibench/executors:base_executor",
-    ],
+        "@mace//mace/utils",
+    ] + if_not_android([
+        "@opencv//:opencv_x86_64",
+    ]) + if_android_armv7([
+        "@opencv//:opencv_armeabi-v7a",
+    ])+ if_android_arm64([
+        "@opencv//:opencv_arm64-v8a",
+    ]),
     alwayslink = 1,
 )
 

@@ -25,6 +25,32 @@ new_http_archive(
 )
 
 new_http_archive(
+    name = "opencv",
+    build_file = "third_party/opencv/opencv.BUILD",
+    sha256 = "315bf15ea001e0a153b460969eca513295a73a768409099ff6b856700e95bf91",
+    strip_prefix = "OpenCV-android-sdk",
+    urls = [
+        "https://cnbj1.fds.api.xiaomi.com/aibench/third_party/opencv-3.4.4-android-sdk.zip",
+        "https://sourceforge.net/projects/opencvlibrary/files/3.4.4/opencv-3.4.4-android-sdk.zip/download",
+    ],
+)
+
+http_archive(
+    name = "mace",
+    sha256 = "1983eed6316e2baf414d8bd6ec91e58c93087725b9f2a9fe2273b692a981f94d",
+    strip_prefix = "mace-ce465fa60864a2166d4c160c5294f2e3d7c1e8a6",
+    type = "zip",
+    urls = [
+        "https://cnbj1.fds.api.xiaomi.com/aibench/third_party/mace-ce465fa60864a2166d4c160c5294f2e3d7c1e8a6.zip",
+        "https://codeload.github.com/XiaoMi/mace/zip/ce465fa60864a2166d4c160c5294f2e3d7c1e8a6",
+    ]
+)
+
+load("//third_party/mace:workspace.bzl", "mace_workspace")
+
+mace_workspace()
+
+new_http_archive(
     name = "ncnn",
     build_file = "third_party/ncnn/ncnn.BUILD",
     sha256 = "de85593597a6b0a3c602c25c5c752d8c216f34da19042c7fd93f323916f5537b",

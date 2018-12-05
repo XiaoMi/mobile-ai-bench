@@ -15,21 +15,13 @@
 #ifndef AIBENCH_BENCHMARK_BENCHMARK_H_
 #define AIBENCH_BENCHMARK_BENCHMARK_H_
 
+#include <map>
+#include <memory>
 #include <string>
 #include <utility>
 #include <vector>
-#include <memory>
 
 #include "aibench/executors/base_executor.h"
-
-#define BENCHMARK_CONCAT(a, b, c) a##b##c
-#define AIBENCH_BENCHMARK(executor, model_name, framework, runtime, \
-                          model_file, input_names, input_files, input_shapes, \
-                          output_names, output_shapes) \
-  static ::aibench::benchmark::Benchmark \
-      *BENCHMARK_CONCAT(model_name, framework, runtime) = \
-    (new ::aibench::benchmark::Benchmark(executor, #model_name, #model_file, \
-         input_names, input_files, input_shapes, output_names, output_shapes))
 
 namespace aibench {
 namespace benchmark {
@@ -37,29 +29,112 @@ namespace benchmark {
 class Benchmark {
  public:
   Benchmark(BaseExecutor *executor,
-            const char *model_name,
-            const char *model_file,
-            std::vector<std::string> input_names,
-            std::vector<std::string> input_files,
-            std::vector<std::vector<int64_t>> input_shapes,
-            std::vector<std::string> output_names,
-            std::vector<std::vector<int64_t>> output_shapes);
+            const ModelName &model_name,
+            const bool quantize,
+            const std::vector<std::string> &input_names,
+            const std::vector<std::vector<int64_t>> &input_shapes,
+            const std::vector<std::string> &output_names,
+            const std::vector<std::vector<int64_t>> &output_shapes,
+            const int run_interval,
+            const int num_threads);
 
-  static Status Run(const char *model_name, const char *framework,
-                    const char *runtime, int run_interval, int num_threads);
+  virtual Status Run() = 0;
+  virtual ~Benchmark() = default;
 
- private:
+ protected:
+  virtual std::string GetBenchmarkInfo() const;
+  Status LogResult(const std::string &result);
+
   BaseExecutor *executor_;
-  std::string model_name_;
-  std::string model_file_;
+  ModelName model_name_;
+  bool quantize_;
   std::vector<std::string> input_names_;
-  std::vector<std::string> input_files_;
   std::vector<std::vector<int64_t>> input_shapes_;
   std::vector<std::string> output_names_;
   std::vector<std::vector<int64_t>> output_shapes_;
+  int run_interval_;
+  int num_threads_;
+};
 
-  void Register();
-  Status Run(double *init_seconds, double *run_seconds, int num_threads);
+class PerformanceBenchmark : public Benchmark {
+ public:
+  PerformanceBenchmark(BaseExecutor *executor,
+                       const ModelName &model_name,
+                       const bool quantize,
+                       const std::vector<std::string> &input_names,
+                       const std::vector<std::vector<int64_t>> &input_shapes,
+                       const std::vector<std::string> &output_names,
+                       const std::vector<std::vector<int64_t>> &output_shapes,
+                       const int run_interval,
+                       const int num_threads)
+      : Benchmark(executor,
+                  model_name,
+                  quantize,
+                  input_names,
+                  input_shapes,
+                  output_names,
+                  output_shapes,
+                  run_interval,
+                  num_threads) {}
+
+ public:
+  Status Run() override;
+
+ private:
+  Status Run(double *init_seconds, double *run_seconds);
+};
+
+class PreProcessor {
+ public:
+  virtual Status Run(const std::string &filename,
+                     std::map<std::string, BaseTensor> *inputs) = 0;
+};
+class PostProcessor {
+ public:
+  virtual Status Run(const std::string &filename,
+                     const std::map<std::string, BaseTensor> &outputs) = 0;
+  virtual std::string GetResult() = 0;
+};
+
+class PrecisionBenchmark : public Benchmark {
+ public:
+  PrecisionBenchmark(
+      BaseExecutor *executor,
+      const ModelName &model_name,
+      const bool quantize,
+      const std::vector<std::string> &input_names,
+      const std::vector<std::vector<int64_t>> &input_shapes,
+      const std::vector<std::string> &output_names,
+      const std::vector<std::vector<int64_t>> &output_shapes,
+      const int run_interval,
+      const int num_threads,
+      std::unique_ptr<PreProcessor> pre_processor,
+      std::unique_ptr<PostProcessor> post_processor,
+      const MetricEvaluator_MetricEvaluatorType metric_evaluator_type)
+      : Benchmark(executor,
+                  model_name,
+                  quantize,
+                  input_names,
+                  input_shapes,
+                  output_names,
+                  output_shapes,
+                  run_interval,
+                  num_threads),
+        pre_processor_(std::move(pre_processor)),
+        post_processor_(std::move(post_processor)),
+        metric_evaluator_type_(metric_evaluator_type) {}
+
+  Status Run() override;
+
+ protected:
+  std::string GetBenchmarkInfo() const override;
+
+ private:
+  Status Evaluate();
+
+  std::unique_ptr<PreProcessor> pre_processor_;
+  std::unique_ptr<PostProcessor> post_processor_;
+  MetricEvaluator_MetricEvaluatorType metric_evaluator_type_;
 };
 
 int64_t NowMicros();

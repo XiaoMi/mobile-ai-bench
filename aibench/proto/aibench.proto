@@ -8,7 +8,7 @@ import "aibench/proto/base.proto";
 
 
 message ModelInfo {
-  optional ModelType model_type = 1;
+  optional ModelName model_name = 1;
   optional bool quantize = 2 [default = false];
   optional string model_path = 3;
   optional string model_checksum = 4;
@@ -20,7 +20,7 @@ message ModelInfo {
 }
 
 message BenchInfo {
-  optional string executor = 1;
+  optional ExecutorType executor = 1;
   repeated ModelInfo models = 2;
 }
 
@@ -29,14 +29,17 @@ message ModelBaseInfo {
     ImageClassification = 1;
     ObjectDetection = 2;
   }
+  message TensorShape {
+    repeated int32 shape = 1;
+  }
 
-  optional ModelType type = 1;
+  optional ModelName model_name = 1;
   optional ModelCategory category = 2;
   optional PreProcessor pre_processor = 3;
   optional PostProcessor post_processor = 4;
   optional MetricEvaluator metric_evaluator = 5;
-  repeated int32 input_shape = 6;
-  repeated int32 output_shape = 7;
+  repeated TensorShape input_shape = 6;
+  repeated TensorShape output_shape = 7;
   repeated ChannelOrder channel_order = 8;
   repeated DataFormat data_format = 9;
 }

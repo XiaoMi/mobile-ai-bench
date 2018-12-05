@@ -4,6 +4,18 @@ package aibench;
 
 option optimize_for = LITE_RUNTIME;
 
+enum BenchmarkOption {
+  Performance = 1;
+  Precision = 2;
+}
+
+enum ExecutorType {
+  MACE = 1;
+  SNPE = 2;
+  TFLITE = 3;
+  NCNN = 4;
+}
+
 enum DeviceType {
   CPU = 1;
   GPU = 2;
@@ -11,13 +23,12 @@ enum DeviceType {
   NPU = 4;
 }
 
-enum ModelType {
+enum ModelName {
   MobileNetV1 = 1;
   MobileNetV2 = 2;
   InceptionV3 = 3;
   SqueezeNetV11 = 4;
 }
-
 
 enum ChannelOrder {
   RGB = 1;
@@ -34,7 +45,11 @@ message PreProcessor {
     DefaultProcessor = 1;
   }
   optional PreProcessorType type = 1;
-  repeated float mean = 2;
+
+  message MeanValue {
+    repeated float mean = 1;
+  }
+  repeated MeanValue input_mean = 2;
   repeated float var = 3;
 }
 

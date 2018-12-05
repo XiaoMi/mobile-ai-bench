@@ -20,25 +20,15 @@
 #include <string>
 #include <vector>
 
+#include "aibench/proto/aibench.pb.h"
+#include "aibench/proto/base.pb.h"
+
 namespace aibench {
 
 enum Status {
   SUCCESS = 0,
   RUNTIME_ERROR = 1,
   NOT_SUPPORTED = 2
-};
-
-enum Framework {
-  MACE = 0,
-  SNPE = 1,
-  NCNN = 2,
-  TFLITE = 3
-};
-
-enum Runtime {
-  CPU = 0,
-  GPU = 1,
-  DSP = 2
 };
 
 // input/output tensor
@@ -68,18 +58,24 @@ class BaseTensor {
 
 class BaseExecutor {
  public:
-  explicit BaseExecutor(Framework framework, Runtime runtime)
-      : framework_(framework), runtime_(runtime) {}
+  explicit BaseExecutor(ExecutorType executor,
+                        DeviceType device_type,
+                        const std::string &model_file,
+                        const std::string &weight_file)
+      : executor_(executor),
+        device_type_(device_type),
+        model_file_(model_file),
+        weight_file_(weight_file) {}
 
   virtual ~BaseExecutor() = default;
 
-  // If your framework needs to initialize something other than loading
+  // If your executor needs to initialize something other than loading
   // model or creating an engine, you can put it here, e.g., Mace needs
   // to compile OpenCL kernel once per target.
-  virtual Status Init(const char *model_name, int num_threads) = 0;
+  virtual Status Init(int num_threads) = 0;
 
   // Load model and prepare to run.
-  virtual Status Prepare(const char *model_name) = 0;
+  virtual Status Prepare() = 0;
 
   // Run the model.
   virtual Status Run(const std::map<std::string, BaseTensor> &inputs,
@@ -87,12 +83,16 @@ class BaseExecutor {
 
   // Unload model and free the memory after running the model.
   virtual void Finish() = 0;
-  Framework GetFramework() {return framework_;}
-  Runtime GetRuntime() {return runtime_;}
+  ExecutorType GetExecutorType() {return executor_;}
+  DeviceType GetDeviceType() {return device_type_;}
+  std::string &GetModelFile() {return model_file_;}
+  std::string &GetWeightFile() {return weight_file_;}
 
  private:
-  Framework framework_;
-  Runtime runtime_;
+  ExecutorType executor_;
+  DeviceType device_type_;
+  std::string model_file_;
+  std::string weight_file_;
 };
 
 }  // namespace aibench
