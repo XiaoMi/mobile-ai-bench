@@ -1,5 +1,18 @@
 workspace(name = "aibench")
 
+# proto_library rules implicitly depend on @com_google_protobuf//:protoc,
+# which is the proto-compiler.
+# This statement defines the @com_google_protobuf repo.
+http_archive(
+    name = "com_google_protobuf",
+    sha256 = "d7a221b3d4fb4f05b7473795ccea9e05dab3b8721f6286a95fffbffc2d926f8b",
+    strip_prefix = "protobuf-3.6.1",
+    urls = [
+        "https://cnbj1.fds.api.xiaomi.com/mace/third-party/protobuf/protobuf-3.6.1.zip",
+        "https://github.com/google/protobuf/archive/v3.6.1.zip",
+    ],
+)
+
 new_http_archive(
     name = "gtest",
     build_file = "third_party/googletest/googletest.BUILD",
@@ -51,6 +64,23 @@ http_archive(
         "https://cnbj1.fds.api.xiaomi.com/mace/third-party/gflags/gflags-30dbc81fb5ffdc98ea9b14b1918bfe4e8779b26e.zip",
         "https://github.com/gflags/gflags/archive/30dbc81fb5ffdc98ea9b14b1918bfe4e8779b26e.zip",
     ],
+)
+
+new_http_archive(
+    name = "six_archive",
+    build_file = "third_party/six/six.BUILD",
+    sha256 = "105f8d68616f8248e24bf0e9372ef04d3cc10104f1980f54d57b2ce73a5ad56a",
+    strip_prefix = "six-1.10.0",
+    urls = [
+        "https://cnbj1.fds.api.xiaomi.com/mace/third-party/six/six-1.10.0.tar.gz",
+        "http://mirror.bazel.build/pypi.python.org/packages/source/s/six/six-1.10.0.tar.gz",
+        "https://pypi.python.org/packages/source/s/six/six-1.10.0.tar.gz",
+    ],
+)
+
+bind(
+    name = "six",
+    actual = "@six_archive//:six",
 )
 
 bind(

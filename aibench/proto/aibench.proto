@@ -1,0 +1,51 @@
+syntax = "proto2";
+
+package aibench;
+
+option optimize_for = LITE_RUNTIME;
+
+import "aibench/proto/base.proto";
+
+
+message ModelInfo {
+  optional ModelType model_type = 1;
+  optional bool quantize = 2 [default = false];
+  optional string model_path = 3;
+  optional string model_checksum = 4;
+  optional string weight_path = 5;
+  optional string weight_checksum = 6;
+  repeated DeviceType devices = 7;
+  repeated string input_names = 8;
+  repeated string output_names = 9;
+}
+
+message BenchInfo {
+  optional string executor = 1;
+  repeated ModelInfo models = 2;
+}
+
+message ModelBaseInfo {
+  enum ModelCategory {
+    ImageClassification = 1;
+    ObjectDetection = 2;
+  }
+
+  optional ModelType type = 1;
+  optional ModelCategory category = 2;
+  optional PreProcessor pre_processor = 3;
+  optional PostProcessor post_processor = 4;
+  optional MetricEvaluator metric_evaluator = 5;
+  repeated int32 input_shape = 6;
+  repeated int32 output_shape = 7;
+  repeated ChannelOrder channel_order = 8;
+  repeated DataFormat data_format = 9;
+}
+
+message BenchFactory {
+  repeated BenchInfo benchmarks = 1;
+}
+
+message ModelFactory {
+  repeated ModelBaseInfo models = 1;
+}
+
