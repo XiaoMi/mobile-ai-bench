@@ -1,0 +1,57 @@
+syntax = "proto2";
+
+package aibench;
+
+option optimize_for = LITE_RUNTIME;
+
+enum DeviceType {
+  CPU = 1;
+  GPU = 2;
+  DSP = 3;
+  NPU = 4;
+}
+
+enum ModelType {
+  MobileNetV1 = 1;
+  MobileNetV2 = 2;
+  InceptionV3 = 3;
+  SqueezeNetV11 = 4;
+}
+
+
+enum ChannelOrder {
+  RGB = 1;
+  BGR = 2;
+}
+
+enum DataFormat {
+  NHWC = 1;
+  NCHW = 2;
+}
+
+message PreProcessor {
+  enum PreProcessorType {
+    DefaultProcessor = 1;
+  }
+  optional PreProcessorType type = 1;
+  repeated float mean = 2;
+  repeated float var = 3;
+}
+
+message PostProcessor {
+  enum PostProcessorType {
+    ImageClassification = 1;
+    SSDDetection = 2;
+    YOLOV3Detection = 3;
+  }
+  optional PostProcessorType type = 1;
+  optional float threashold = 2 [default = 0.5];
+}
+
+message MetricEvaluator {
+  enum MetricEvaluatorType {
+    ImageClassification = 1;
+    COCOObjectDetection = 2;
+  }
+  optional MetricEvaluatorType type = 1;
+}
