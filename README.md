@@ -8,10 +8,6 @@
 [FAQ](#FAQ) |
 [中文](README_zh.md)
 
-近年来，智能手机以及IoT设备上的离线深度学习应用变得越来越普遍。在设备上部署深度学习模型给开发者带来挑战，对于手机应用开发者，需要在众多深度学习框架中选择一款合适的框架，对于IoT硬件开发者而言，则还需要从不同的芯片方案中做出选择。同时，除了软硬件的选择之外，开发者还需要从模型量化压缩与模型精度角度进行权衡，最终将模型部署到设备上。对比测试这些不同的芯片，框架以及量化方案，并从中选择最佳组合是一个非常繁琐耗时的工作。
-
-**MobileAIBench** 是一个端到端的测试工具，用于评测相同的模型在不同硬件和软件框架上运行的性能和精度表现，对开发者的技术选型给出客观参考数据。
-
 In recent years, the on-device deep learning applications are getting more and
 more popular on mobile phones or IoT devices. It's a challenging task for the developers to deploy their
 deep learning models in their mobile applications or IoT devices.
