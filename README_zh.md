@@ -7,11 +7,9 @@
 
 [English](README.md)
 
-近几年，设备上的深度学习应用越来越普遍。在应用中部署深度学习模型给开发者带来挑战。开发者们需要选择一个合适的框架，
-选择性地利用量化压缩技术与模型精度进行权衡，最终将模型部署到设备上。对比测试这些框架，并从中选择是一个繁琐耗时的工作。
+近年来，智能手机以及IoT设备上的离线深度学习应用变得越来越普遍。在设备上部署深度学习模型给开发者带来挑战，对于手机应用开发者，需要在众多深度学习框架中选择一款合适的框架，对于IoT硬件开发者而言，则还需要从不同的芯片方案中做出选择。同时，除了软硬件的选择之外，开发者还需要从模型量化压缩与模型精度角度进行权衡，最终将模型部署到设备上。对比测试这些不同的芯片，框架以及量化方案，并从中选择最佳组合是一个非常繁琐耗时的工作。
 
-**MobileAIBench** 是一个端到端的测试工具，用于评测同一模型在不同框架上运行的性能表现，
-希望测评结果可以提供给开发者一些指导。
+**MobileAIBench** 是一个端到端的测试工具，用于评测相同的模型在不同硬件和软件框架上运行的性能和精度表现，对开发者的技术选型给出客观参考数据。
 
 ## 每日评测结果
 请查看最新的[CI Pipeline页面](https://gitlab.com/llhe/mobile-ai-bench/pipelines)中的*benchmark*步骤的运行结果。
@@ -70,7 +68,7 @@ new_local_repository(
 | - input_shapes  |         | + Prepare()      |      +---------------+
 | - output_names  |         | + Run()          | <--- | NcnnExecutor  |
 | - output_shapes |         | + Finish()       |      +---------------+
-+-----------------+         +------------------+               
++-----------------+         +------------------+
 | - Register()    |                                   +---------------+
 | - Run()         |                              <--- | TfLiteExecutor|
 +-----------------+                                   +---------------+
@@ -178,12 +176,12 @@ python tools/benchmark.py --output_dir=output --frameworks=all \
     #endif
     ```
     
-* 添加依赖 `third_party/your_framework`, `aibench/benchmark/BUILD` 和 `WORKSPACE`.  
+* 添加依赖 `third_party/your_framework`, `aibench/benchmark/BUILD` 和 `WORKSPACE`。
 
 * 测试模型
 
-	[在已有框架中添加新模型评测](#在已有框架中添加新模型评测).
+	[在已有框架中添加新模型评测](#在已有框架中添加新模型评测)。
     
 ## License
-[Apache License 2.0](LICENSE).
+[Apache License 2.0](LICENSE)。
 
