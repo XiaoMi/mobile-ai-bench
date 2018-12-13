@@ -10,4 +10,6 @@ third_party/mace/include/
 third_party/mace/lib/
 third_party/tflite/flatbuffers/
 third_party/tflite/tensorflow/
-
+cmake-build-debug/
+dataset/
+CMakeLists.txt
