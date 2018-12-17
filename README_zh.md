@@ -34,7 +34,7 @@ MobileAIBench 现在支持多种框架 ([MACE](https://github.com/XiaoMi/mace), 
 | SNPE (可选)  | [下载](https://developer.qualcomm.com/software/qualcomm-neural-processing-sdk)并解压 | 1.18.0  |
 
 **备注:** 鉴于SNPE的许可不允许第三方再分发, 目前Bazel WORKSPACE配置中的链接只能在CI Server中访问。
-如果想测评SNPE(通过`--frameworks`指定`all`或者显式指定了`SNPE`)
+如果想测评SNPE(通过`--executors`指定`all`或者显式指定了`SNPE`)
 ，需从[官方地址](https://developer.qualcomm.com/software/qualcomm-neural-processing-sdk)
 下载并解压，[复制libgnustl_shared.so](https://developer.qualcomm.com/docs/snpe/setup.html)，然后修改`WORKSPACE`文件如下。
 ```python
@@ -60,84 +60,91 @@ new_local_repository(
 +-----------------+         +------------------+      +---------------+
 |   Benchmark     |         |   BaseExecutor   | <--- | MaceExecutor  |
 +-----------------+         +------------------+      +---------------+
-| - executor      |-------> | - framework      |
-| - model_name    |         | - runtime        |      +---------------+
-| - model_file    |         |                  | <--- | SnpeExecutor  |
+| - executor      |-------> | - executor       |
+| - model_name    |         | - device_type    |      +---------------+
+| - quantize      |         |                  | <--- | SnpeExecutor  |
 | - input_names   |         +------------------+      +---------------+
-| - input_files   |         | + Init()         |
-| - input_shapes  |         | + Prepare()      |      +---------------+
-| - output_names  |         | + Run()          | <--- | NcnnExecutor  |
-| - output_shapes |         | + Finish()       |      +---------------+
-+-----------------+         +------------------+
-| - Register()    |                                   +---------------+
+| - input_shapes  |         | + Init()         |
+| - output_names  |         | + Prepare()      |      +---------------+
+| - output_shapes |         | + Run()          | <--- | NcnnExecutor  |
+| - run_interval  |         | + Finish()       |      +---------------+
+| - num_threads   |         |                  |
++-----------------+         +------------------+      +---------------+
 | - Run()         |                              <--- | TfLiteExecutor|
 +-----------------+                                   +---------------+
-
+        ^     ^             +--------------------+     
+        |     |             |PerformanceBenchmark|      
+        |     --------------+--------------------+       
+        |                   | - Run()            |       
+        |                   +--------------------+ 
+        |
+        |                   +---------------+      +---------------------+                           
++--------------------+ ---> |PreProcessor   | <--- |ImageNetPreProcessor |                       
+| PrecisionBenchmark |      +---------------+      +---------------------+                         
++--------------------+                           
+| - pre_processor    |      +---------------+      +---------------------+                         
+| - post_processor   | ---> |PostProcessor  | <--- |ImageNetPostProcessor|                       
+| - metric_evaluator |      +---------------+      +---------------------+                    
++--------------------+                       
+| - Run()            |      +---------------+                     
++--------------------+ ---> |MetricEvaluator|                     
+                            +---------------+    
 ```
 
 ## 如何使用
 
 ### 测试所有模型在所有框架上的性能
+
+```bash
+bash tools/benchmark.sh --benchmark_option=Performance \
+                        --target_abis=armeabi-v7a,arm64-v8a
 ```
-python tools/benchmark.py --output_dir=output --frameworks=all \
-                          --runtimes=all --model_names=all \
-                          --target_abis=armeabi-v7a,arm64-v8a
-```
-运行时间可能比较长，如果只想测试指定模型和框架，可以添加如下选项： 
+
+运行时间可能比较长，如果只想测试指定模型和框架，可以添加如下选项。当前只有MACE支持精度测试。 
 
 | option         | type | default     | explanation |
 | :-----------:  | :--: | :----------:| ------------|
+| --benchmark_option | str | Performance | Benchmark options, Performace/Precision. |
 | --output_dir   | str  | output      | Benchmark output directory. |
-| --frameworks   | str  | all         | Frameworks(MACE/SNPE/NCNN/TFLITE), comma separated list or all. |
-| --runtimes     | str  | all         | Runtimes(CPU/GPU/DSP), comma separated list or all. |
+| --executors    | str  | all         | Executors(MACE/SNPE/NCNN/TFLITE), comma separated list or all. |
+| --device_types | str  | all         | DeviceTypes(CPU/GPU/DSP), comma separated list or all. |
 | --target_abis  | str  | armeabi-v7a | Target ABIs(armeabi-v7a,arm64-v8a), comma separated list. |
 | --model_names  | str  | all         | Model names(InceptionV3,MobileNetV1...), comma separated list or all. |
 | --run_interval | int  | 10          | Run interval between benchmarks, seconds. |
 | --num_threads  | int  | 4           | The number of threads. |
+| --input_dir    | str  | ""          | Input data directory for precision benchmark. |
 
 
 ### 在已有框架中添加新模型评测
-* 注册模型
 
-	在 `aibench/benchmark/benchmark_main.cc` 中添加:
-	```c++
-	    #ifdef AIBENCH_ENABLE_YOUR_FRAMEWORK
-	    std::unique_ptr<aibench::YourFrameworkExecutor>
-	        your_framework_executor(new aibench::YourFrameworkExecutor());
-	    AIBENCH_BENCHMARK(your_framework_executor.get(), MODEL_NAME, FRAMEWORK_NAME, RUNTIME,
-	                      MODEL_FILE, (std::vector<std::string>{INPUT_NAME}),
-	                      (std::vector<std::string>{INPUT_FILE}),
-	                      (std::vector<std::vector<int64_t>>{INPUT_SHAPE}),
-	                      (std::vector<std::string>{OUTPUT_NAME}),
-	                      (std::vector<std::vector<int64_t>>{OUTPUT_SHAPE}));
-	    #endif
-	```
-	e.g.
-	```c++
-	  AIBENCH_BENCHMARK(mobilenetv1_mace_cpu_executor.get(), MobileNetV1, MACE,
-	                    CPU, mobilenet_v1, (std::vector<std::string>{"input"}),
-	                    (std::vector<std::string>{"dog.npy"}),
-	                    (std::vector<std::vector<int64_t>>{{1, 224, 224, 3}}),
-	                    (std::vector<std::string>{
-	                        "MobilenetV1/Predictions/Reshape_1"}),
-	                    (std::vector<std::vector<int64_t>>{{1, 1001}}));
-	```
-* 在 `tools/model_list.py` 中注册模型名称
-* 配置模型文件和输入文件 
+* 在`aibench/proto/base.proto`添加新模型名。
 
-	在 `tools/model_and_input.yml` 中配置 `MODEL_FILE` 和 `INPUT_FILE`。 
+* 在 `aibench/proto/model.meta`配置模型信息。
+
+* 在`aibench/proto/benchmark.meta`配置benchmark信息。 
 
 * 运行测试
-	```
-	python tools/benchmark.py --output_dir=output --frameworks=MACE \
-	                          --runtimes=CPU --model_names=MobileNetV1 \
-	                          --target_abis=armeabi-v7a,arm64-v8a
-	```
-	
+    性能benchmark:
+
+    ```bash
+    bash tools/benchmark.sh --benchmark_option=Performance \
+                            --executors=MACE --device_types=CPU --model_names=MobileNetV1 \
+                            --target_abis=armeabi-v7a,arm64-v8a
+    ```
+
+    精度benchmark。当前仅支持以ImageNet图像为输入测试MACE精度。
+
+    ```bash
+    bash tools/benchmark.sh --benchmark_option=Precision --input_dir=/path/to/inputs \
+                            --executors=MACE --device_types=CPU --model_names=MobileNetV1 \
+                            --target_abis=armeabi-v7a,arm64-v8a
+    ```
+    
 * 查看结果
-	```bash
-	cat output/report.csv
-	```
+
+    ```bash
+    cat output/report.csv
+    ```
 
 
 ### 加入新的 AI 框架
@@ -145,18 +152,18 @@ python tools/benchmark.py --output_dir=output --frameworks=all \
 * 定义 `executor` 并实现其接口:
 
     ```c++
-    class YourFrameworkExecutor : public BaseExecutor {
+    class YourExecutor : public BaseExecutor {
      public:
-      YourFrameworkExecutor() : BaseExecutor(FRAMEWORK_NAME, RUNTIME) {}
+      YourExecutor() :
+          BaseExecutor(executor_type, device_type, model_file, weight_file) {}
       
-      // Init method should invoke the initializing process for your framework 
+      // Init method should invoke the initializing process for your executor 
       // (e.g.  Mace needs to compile OpenCL kernel once per target). It will be
-      // called only once when creating framework engine.
-      virtual Status Init(const char *model_name, int num_threads);
-
-      // Load model and prepare to run. It will be called only once before 
+      // called only once when creating executor engine.
+      virtual Status Init(int num_threads);
+       // Load model and prepare to run. It will be called only once before 
       // benchmarking the model.
-      virtual Status Prepare(const char *model_name);
+      virtual Status Prepare();
       
       // Run the model. It will be called more than once.
       virtual Status Run(const std::map<std::string, BaseTensor> &inputs,
@@ -171,16 +178,16 @@ python tools/benchmark.py --output_dir=output --frameworks=all \
 * 在 `aibench/benchmark/benchmark_main.cc` 中包含头文件:
 
     ```c++
-    #ifdef AIBENCH_ENABLE_YOUR_FRAMEWORK
-    #include "aibench/executors/your_framework/your_framework_executor.h"
+    #ifdef AIBENCH_ENABLE_YOUR_EXECUTOR
+    #include "aibench/executors/your_executor/your_executor.h"
     #endif
     ```
     
-* 添加依赖 `third_party/your_framework`, `aibench/benchmark/BUILD` 和 `WORKSPACE`。
+* 添加依赖 `third_party/your_executor`, `aibench/benchmark/BUILD` 和 `WORKSPACE`。
 
 * 测试模型
 
-	[在已有框架中添加新模型评测](#在已有框架中添加新模型评测)。
+    [在已有框架中添加新模型评测](#在已有框架中添加新模型评测)。
     
 ## License
 [Apache License 2.0](LICENSE)。
