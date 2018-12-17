@@ -12,6 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import copy
 import filelock
 import hashlib
 import os
@@ -20,20 +21,17 @@ import sh
 import time
 import urllib
 
-
-FRAMEWORKS = (
-    "MACE",
-    "SNPE",
-    "NCNN",
-    "TFLITE"
-)
+from aibench.proto import base_pb2
+from aibench.proto import aibench_pb2
+from aibench.python.utils.common import aibench_check
+from google.protobuf import text_format
 
 
-RUNTIMES = (
-    "CPU",
-    "GPU",
-    "DSP"
-)
+class AIBenchKeyword(object):
+    device_type = 'device_type'
+    executor = 'executor'
+    model_name = 'model_name'
+    quantize = 'quantize'
 
 
 def strip_invalid_utf8(str):
@@ -101,6 +99,9 @@ def file_checksum(fname):
 
 
 def adb_push_file(src_file, dst_dir, serialno):
+    if not os.path.isfile(src_file):
+        print("Not file, skip pushing " + src_file)
+        return
     src_checksum = file_checksum(src_file)
     dst_file = os.path.join(dst_dir, os.path.basename(src_file))
     stdout_buff = []
@@ -127,6 +128,14 @@ def adb_push(src_path, dst_dir, serialno):
         adb_push_file(src_path, dst_dir, serialno)
 
 
+def adb_pull(src_path, dst_path, serialno):
+    print("Pull %s to %s" % (src_path, dst_path))
+    try:
+        sh.adb("-s", serialno, "pull", src_path, dst_path)
+    except Exception as e:
+        print("Error msg: %s" % e.stderr)
+
+
 def get_soc_serialnos_map():
     serialnos = adb_devices()
     soc_serialnos_map = {}
@@ -148,27 +157,17 @@ def get_target_socs_serialnos(target_socs=None):
     return serialnos
 
 
-def download_file(configs, file_name, output_dir):
-    file_path = output_dir + "/" + file_name
-    url = configs[file_name]
-    checksum = configs[file_name + "_md5_checksum"]
+def download_file(configs, filename, output_dir):
+    file_path = output_dir + "/" + filename
+    url = configs[filename]
+    checksum = configs[filename + "_md5_checksum"]
     if not os.path.exists(file_path) or file_checksum(file_path) != checksum:
-        print("downloading %s..." % file_name)
+        print("downloading %s..." % filename)
         urllib.urlretrieve(url, file_path)
     if file_checksum(file_path) != checksum:
-        print("file %s md5 checksum not match" % file_name)
+        print("file %s md5 checksum not match" % filename)
         exit(1)
     return file_path
-
-
-def get_mace(configs, abis, output_dir, build_mace):
-    if build_mace:
-        sh.bash("tools/build_mace.sh", abis, os.path.abspath(output_dir),
-                _fg=True)
-    else:
-        file_path = download_file(configs, "libmace-a372fa5e.zip", output_dir)
-        sh.unzip("-o", file_path, "-d", "third_party/mace")
-        pass
 
 
 def get_tflite(configs, output_dir):
@@ -176,7 +175,7 @@ def get_tflite(configs, output_dir):
     sh.unzip("-o", file_path, "-d", "third_party/tflite")
 
 
-def bazel_build(serialno, target, abi, frameworks, runtimes):
+def bazel_build(serialno, target, abi, executors, device_types):
     print("* Build %s with ABI %s" % (target, abi))
     if abi == "host":
         bazel_args = (
@@ -193,9 +192,15 @@ def bazel_build(serialno, target, abi, frameworks, runtimes):
             "--action_env=ANDROID_NDK_HOME=%s"
             % os.environ["ANDROID_NDK_HOME"],
         )
-    for framework in frameworks:
-        bazel_args += ("--define", "%s=true" % framework.lower())
-    if "DSP" in runtimes and abi == "armeabi-v7a":
+    for executor in executors:
+        bazel_args += ("--define", "%s=true"
+                       % base_pb2.ExecutorType.Name(executor).lower())
+    bazel_args += ("--define", "neon=true")
+    bazel_args += ("--define", "openmp=true")
+    bazel_args += ("--define", "opencl=true")
+    bazel_args += ("--define", "quantize=true")
+
+    if base_pb2.DSP in device_types and abi == "armeabi-v7a":
         with device_lock(serialno):
             try:
                 output = sh.adb("-s", serialno, "shell",
@@ -207,6 +212,7 @@ def bazel_build(serialno, target, abi, frameworks, runtimes):
                     print("/system/lib/libcdsprpc.so does not exists! Skip DSP.")  # noqa
                 else:
                     bazel_args += ("--define", "dsp=true")
+                    bazel_args += ("--define", "hexagon=true")
     sh.bazel(
         _fg=True,
         *bazel_args)
@@ -223,9 +229,16 @@ def bazel_target_to_bin(target):
     return host_bin_path, bin_name
 
 
-def prepare_device_env(serialno, abi, device_bin_path, frameworks):
+def prepare_device_env(serialno, abi, device_bin_path, executors):
+    opencv_lib_path = ""
+    if abi == "armeabi-v7a":
+        opencv_lib_path = "bazel-mobile-ai-bench/external/opencv/sdk/native/libs/armeabi-v7a/libopencv_java3.so"  # noqa
+    elif abi == "arm64-v8a":
+        opencv_lib_path = "bazel-mobile-ai-bench/external/opencv/sdk/native/libs/arm64-v8a/libopencv_java3.so"  # noqa
+    if opencv_lib_path:
+        adb_push(opencv_lib_path, device_bin_path, serialno)
     # for snpe
-    if "SNPE" in frameworks:
+    if base_pb2.SNPE in executors:
         snpe_lib_path = ""
         if abi == "armeabi-v7a":
             snpe_lib_path = \
@@ -245,12 +258,12 @@ def prepare_device_env(serialno, abi, device_bin_path, frameworks):
                  device_bin_path, serialno)
 
     # for mace
-    if "MACE" in frameworks and abi == "armeabi-v7a":
-        adb_push("third_party/mace/lib/armeabi-v7a/cpu_gpu_dsp/libhexagon_controller.so",  # noqa
+    if base_pb2.MACE in executors and abi == "armeabi-v7a":
+        adb_push("third_party/mace/nnlib/libhexagon_controller.so",  # noqa
                  device_bin_path, serialno)
 
     # for tflite
-    if "TFLITE" in frameworks:
+    if base_pb2.TFLITE in executors:
         tflite_lib_path = ""
         if abi == "armeabi-v7a":
             tflite_lib_path = \
@@ -264,57 +277,135 @@ def prepare_device_env(serialno, abi, device_bin_path, frameworks):
             adb_push(tflite_lib_path, device_bin_path, serialno)
 
 
-def prepare_model_and_input(models_inputs, output_dir, push_list):
-    file_names = [f for f in models_inputs if not f.endswith("_md5_checksum")]
-    for file_name in file_names:
-        file_path = models_inputs[file_name]
+def get_model_file(file_path, checksum, output_dir, push_list):
+    filename = file_path.split('/')[-1]
+    if file_path.startswith("http"):
+        local_file_path = output_dir + '/' + filename
+        if not os.path.exists(local_file_path) \
+                or file_checksum(local_file_path) != checksum:
+            print("downloading %s..." % filename)
+            urllib.urlretrieve(file_path, local_file_path)
+        aibench_check(file_checksum(local_file_path) == checksum,
+                      "file %s md5 checksum not match" % filename)
+    else:
         local_file_path = file_path
-        if file_path.startswith("http"):
-            local_file_path = \
-                download_file(models_inputs, file_name, output_dir)
-        else:
-            checksum = models_inputs[file_name + "_md5_checksum"]
-            if file_checksum(local_file_path) != checksum:
-                print("file %s md5 checksum not match" % file_name)
-                exit(1)
-        push_list.append(local_file_path)
+        aibench_check(file_checksum(local_file_path) == checksum,
+                      "file %s md5 checksum not match" % filename)
+
+    push_list.append(local_file_path)
 
 
-def prepare_all_model_and_input(configs, output_dir, frameworks, build_mace,
-                                push_list):
-    models_inputs = configs["models_and_inputs"]
-    if "MACE" in frameworks:
-        if build_mace:
-            # mace model files are generated from source
-            for model_file in os.listdir(output_dir):
-                if model_file.endswith(".pb") or model_file.endswith(".data"):
-                    model_file_path = output_dir + '/' + model_file
-                    push_list.append(model_file_path)
-        else:
-            prepare_model_and_input(models_inputs["MACE"], output_dir,
-                                    push_list)
-    if "SNPE" in frameworks:
-        prepare_model_and_input(models_inputs["SNPE"], output_dir, push_list)
-    if "TFLITE" in frameworks:
-        prepare_model_and_input(models_inputs["TFLITE"], output_dir, push_list)
+def get_model(model_info, output_dir, push_list):
+    get_model_file(model_info.model_path, model_info.model_checksum,
+                   output_dir, push_list)
 
-    # ncnn model files are generated from source
-    if "NCNN" in frameworks:
-        ncnn_model_path = "bazel-genfiles/external/ncnn/models/"
-        push_list.append(ncnn_model_path)
-        prepare_model_and_input(models_inputs["NCNN"], output_dir, push_list)
+    if model_info.weight_path != "":
+        get_model_file(model_info.weight_path, model_info.weight_checksum,
+                       output_dir, push_list)
 
 
-def push_all_model_and_input(serialno, device_bin_path, push_list):
+def get_proto(push_list, output_dir):
+    bench_factory = aibench_pb2.BenchFactory()
+    model_factory = aibench_pb2.ModelFactory()
+    try:
+        with open("aibench/proto/benchmark.meta", "rb") as fin:
+            file_content = fin.read()
+            text_format.Parse(file_content, bench_factory)
+            filepath = output_dir + "/benchmark.pb"
+            with open(filepath, "wb") as fout:
+                fout.write(bench_factory.SerializeToString())
+                push_list.append(filepath)
+        with open("aibench/proto/model.meta", "rb") as fin:
+            file_content = fin.read()
+            text_format.Parse(file_content, model_factory)
+            filepath = output_dir + "/model.pb"
+            with open(filepath, "wb") as fout:
+                fout.write(model_factory.SerializeToString())
+                push_list.append(filepath)
+    except text_format.ParseError as e:
+        raise IOError("Cannot parse file.", e)
+
+    return bench_factory, model_factory
+
+
+def prepare_all_models(executors, model_names, device_types, output_dir):
+    push_list = []
+    bench_factory, model_factory = get_proto(push_list, output_dir)
+
+    executors = executors.split(',') \
+        if executors != "all" else base_pb2.ExecutorType.keys()
+    executors = [base_pb2.ExecutorType.Value(e) for e in executors]
+    model_names = model_names.split(',') \
+        if model_names != "all" else base_pb2.ModelName.keys()
+    model_names = [base_pb2.ModelName.Value(m) for m in model_names]
+    device_types = device_types.split(',') \
+        if device_types != "all" else base_pb2.DeviceType.keys()
+    device_types = [base_pb2.DeviceType.Value(d) for d in device_types]
+
+    model_infos = []
+    for benchmark in bench_factory.benchmarks:
+        if benchmark.executor not in executors:
+            continue
+        for model in benchmark.models:
+            if model.model_name not in model_names:
+                continue
+            model_info = {
+                AIBenchKeyword.executor: benchmark.executor,
+                AIBenchKeyword.model_name: model.model_name,
+                AIBenchKeyword.quantize: model.quantize,
+            }
+            downloaded = False
+            for device in model.devices:
+                if device not in device_types:
+                    continue
+                if not downloaded:
+                    get_model(model, output_dir, push_list)
+                    downloaded = True
+                info = copy.deepcopy(model_info)
+                info[AIBenchKeyword.device_type] = device
+                model_infos.append(info)
+    return executors, device_types, push_list, model_infos
+
+
+def push_all_models(serialno, device_bin_path, push_list):
     for path in push_list:
         adb_push(path, device_bin_path, serialno)
+
+
+def prepare_datasets(configs, output_dir, input_dir):
+    if input_dir.startswith("http"):
+        file_path = download_file(configs, "imagenet_less.zip", output_dir)
+        sh.unzip("-o", file_path, "-d", output_dir)
+        return output_dir + "/imagenet_less"
+    else:
+        return input_dir
+
+
+def push_precision_files(serialno, device_bin_path, input_dir):
+    sh.adb("-s", serialno, "shell", "mkdir -p %s" % device_bin_path)
+    adb_push("aibench/benchmark/imagenet/imagenet_blacklist.txt",
+             device_bin_path, serialno)
+    adb_push("aibench/benchmark/imagenet/imagenet_groundtruth_labels.txt",
+             device_bin_path, serialno)
+    adb_push("aibench/benchmark/imagenet/mobilenet_model_labels.txt",
+             device_bin_path, serialno)
+    if input_dir != "":
+        imagenet_input_path = device_bin_path + "/inputs/"
+        print("Pushing images from %s to %s ..."
+              % (input_dir, imagenet_input_path))
+        sh.adb("-s", serialno, "shell", "mkdir -p %s" % imagenet_input_path)
+        sh.adb("-s", serialno, "push", input_dir, imagenet_input_path)
+        base_dir = os.path.basename(input_dir) \
+            if input_dir[-1] != '/' else os.path.basename(input_dir[:-1])
+        sh.adb("-s", serialno, "shell", "mv %s/* %s"
+               % (imagenet_input_path + base_dir, imagenet_input_path))
 
 
 def get_cpu_mask(serialno):
     freq_list = []
     cpu_id = 0
     cpu_mask = ''
-    while (True):
+    while True:
         try:
             freq_list.append(
                 int(sh.adb("-s", serialno, "shell",
@@ -326,46 +417,40 @@ def get_cpu_mask(serialno):
             cpu_id += 1
     for freq in freq_list:
         cpu_mask = '1' + cpu_mask if freq == max(freq_list) else '0' + cpu_mask
-    return(str(hex(int(cpu_mask, 2)))[2:])
+    return str(hex(int(cpu_mask, 2)))[2:]
 
 
 def adb_run(abi,
             serialno,
-            configs,
             host_bin_path,
             bin_name,
+            benchmark_option,
+            input_dir,
             run_interval,
             num_threads,
-            build_mace,
             max_time_per_lock,
-            frameworks=None,
-            model_names=None,
-            runtimes=None,
-            device_bin_path="/data/local/tmp/aibench",
-            output_dir="output",
+            push_list,
+            benchmark_list,
+            executors,
+            device_bin_path,
+            output_dir,
             ):
-    push_list = []
-    prepare_all_model_and_input(configs, output_dir, frameworks, build_mace,
-                                push_list)
-    stdout_buff = []
-    process_output = make_output_processor(stdout_buff)
-    benchmark_items = []
-    for runtime in runtimes:
-        for framework in frameworks:
-            for model_name in model_names:
-                benchmark_items.append((runtime, framework, model_name))
+    sh.adb("-s", serialno, "shell", "rm -rf %s"
+           % os.path.join(device_bin_path, "result.txt"))
+    props = adb_getprop_by_serialno(serialno)
+    product_model = props["ro.product.model"]
+    target_soc = props["ro.board.platform"]
+
     i = 0
-    while i < len(benchmark_items):
+    while i < len(benchmark_list):
         print(
             "============================================================="
         )
         print("Trying to lock device %s" % serialno)
         with device_lock(serialno):
             start_time = time.time()
-            props = adb_getprop_by_serialno(serialno)
             print("Run on device: %s, %s, %s" %
-                  (serialno, props["ro.board.platform"],
-                   props["ro.product.model"]))
+                  (serialno, product_model, target_soc))
             try:
                 sh.bash("tools/power.sh",
                         serialno, props["ro.board.platform"],
@@ -380,8 +465,10 @@ def adb_run(abi,
             sh.adb("-s", serialno, "shell", "mkdir %s"
                    % os.path.join(device_bin_path, "interior"))
 
-            prepare_device_env(serialno, abi, device_bin_path, frameworks)
-            push_all_model_and_input(serialno, device_bin_path, push_list)
+            prepare_device_env(serialno, abi, device_bin_path, executors)
+            push_all_models(serialno, device_bin_path, push_list)
+            if benchmark_option == base_pb2.Precision:
+                push_precision_files(serialno, device_bin_path, input_dir)
 
             host_bin_full_path = "%s/%s" % (host_bin_path, bin_name)
             device_bin_full_path = "%s/%s" % (device_bin_path, bin_name)
@@ -396,28 +483,39 @@ def adb_run(abi,
 
             elapse_minutes = 0  # run at least one model
             while elapse_minutes < max_time_per_lock \
-                    and i < len(benchmark_items):
-                runtime, framework, model_name = benchmark_items[i]
+                    and i < len(benchmark_list):
+                item = benchmark_list[i]
                 i += 1
-                print(framework, runtime, model_name)
-                args = "--run_interval=%d --num_threads=%d " \
-                       "--framework=%s --runtime=%s --model_name=%s " \
-                       "--product_soc=%s.%s" % \
-                       (run_interval, num_threads, framework, runtime,
-                        model_name,
-                        props["ro.product.model"].replace(" ", ""),
-                        props["ro.board.platform"])
+                print(
+                    base_pb2.ExecutorType.Name(item[AIBenchKeyword.executor]),
+                    base_pb2.ModelName.Name(item[AIBenchKeyword.model_name]),
+                    base_pb2.DeviceType.Name(
+                        item[AIBenchKeyword.device_type]),
+                    "Quantized" if item[AIBenchKeyword.quantize] else "Float")
+                args = [
+                    "--run_interval=%d" % run_interval,
+                    "--num_threads=%d " % num_threads,
+                    "--benchmark_option=%s" % benchmark_option,
+                    "--executor=%d" % item[AIBenchKeyword.executor],
+                    "--device_type=%d" % item[AIBenchKeyword.device_type],
+                    "--model_name=%d" % item[AIBenchKeyword.model_name],
+                    "--quantize=%s" % item[AIBenchKeyword.quantize],
+                    ]
+                args = ' '.join(args)
                 sh.adb(
                     "-s",
                     serialno,
                     "shell",
                     "%s %s" % (cmd, args),
-                    _tty_in=True,
-                    _out=process_output,
-                    _err_to_out=True)
+                    _fg=True)
                 elapse_minutes = (time.time() - start_time) / 60
             print("Elapse time: %f minutes." % elapse_minutes)
         # Sleep awhile so that other pipelines can get the device lock.
-        time.sleep(10)
+        time.sleep(run_interval)
 
-    return "".join(stdout_buff)
+    src_path = device_bin_path + "/result.txt"
+    dest_path = output_dir + "/" + product_model + "_" + target_soc + "_" \
+        + abi + "_" + "result.txt"
+    adb_pull(src_path, dest_path, serialno)
+
+    return dest_path

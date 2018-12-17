@@ -40,11 +40,10 @@ int BenchNet::load_model() {
 
 namespace aibench {
 
-Status NcnnExecutor::Init(const char *model_name, int num_threads) {
+Status NcnnExecutor::Init(int num_threads) {
   static ncnn::UnlockedPoolAllocator g_blob_pool_allocator;
   static ncnn::PoolAllocator g_workspace_pool_allocator;
 
-  (void) model_name;
   ncnn::set_cpu_powersave(0);
   ncnn::set_omp_dynamic(0);
   ncnn::set_omp_num_threads(num_threads);
@@ -61,10 +60,10 @@ Status NcnnExecutor::Init(const char *model_name, int num_threads) {
   return Status::SUCCESS;
 }
 
-Status NcnnExecutor::Prepare(const char *model_name) {
+Status NcnnExecutor::Prepare() {
   int ret;
 
-  ret = net.load_param(model_name);
+  ret = net.load_param(GetModelFile().c_str());
   if (ret != 0) {
     return Status::NOT_SUPPORTED;
   }
@@ -88,9 +87,9 @@ Status NcnnExecutor::Run(const std::map<std::string, BaseTensor> &inputs,
   // transform inputs
   const std::vector<int64_t> &shape = input->second.shape();
   const std::shared_ptr<float> data = input->second.data();
-  ncnn::Mat in(static_cast<int>(shape[0]),
-               static_cast<int>(shape[1]),
+  ncnn::Mat in(static_cast<int>(shape[1]),
                static_cast<int>(shape[2]),
+               static_cast<int>(shape[3]),
                data.get());
 
   // Execute the network inference and retrieve the result

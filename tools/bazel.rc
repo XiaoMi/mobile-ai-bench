@@ -1,9 +1,20 @@
 build --verbose_failures
 build --copt=-std=c++11
-build --copt=-O3
+build --copt=-fPIC
+build --copt=-D_GLIBCXX_USE_C99_MATH_TR1
+build --copt=-DMACE_OBFUSCATE_LITERALS
+build --copt=-DGEMMLOWP_USE_OPENMP
+build --copt=-DMACE_USE_NNLIB_CAF
 build --copt=-ffast-math
 build --copt=-Ofast
 build --strategy=CppCompile=standalone
+
+build -c opt
+build --copt=-O3
+build --linkopt=-Wl,--strip-all
+build --copt=-ffunction-sections
+build --copt=-fdata-sections
+build --linkopt=-Wl,--gc-sections
 
 # By default, we don't distinct target and host platfroms.
 # When doing cross compilation, use --config=cross_compile to distinct them.

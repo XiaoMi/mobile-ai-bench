@@ -31,3 +31,26 @@ py_test(
         ":utils",
     ],
 )
+
+py_library(
+    name = "benchmark_lib",
+    srcs = [
+        "sh_commands.py",
+        "utils/common.py",
+    ],
+    srcs_version = "PY2AND3",
+    deps = [
+        "//aibench/proto:aibench_proto_py",
+    ],
+)
+
+py_binary(
+    name = "benchmark",
+    srcs = [
+        "benchmark.py",
+    ],
+    srcs_version = "PY2AND3",
+    deps = [
+        "benchmark_lib",
+    ],
+)

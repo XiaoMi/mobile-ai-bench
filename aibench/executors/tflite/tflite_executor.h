@@ -32,11 +32,12 @@ namespace aibench {
 
 class TfLiteExecutor : public BaseExecutor {
  public:
-  TfLiteExecutor() : BaseExecutor(TFLITE, CPU) {}
+  explicit TfLiteExecutor(const std::string &model_file)
+      : BaseExecutor(TFLITE, CPU, model_file, "") {}
 
-  virtual Status Init(const char *model_name, int num_threads);
+  virtual Status Init(int num_threads);
 
-  virtual Status Prepare(const char *model_name);
+  virtual Status Prepare();
 
   virtual Status Run(const std::map<std::string, BaseTensor> &inputs,
                      std::map<std::string, BaseTensor> *outputs);

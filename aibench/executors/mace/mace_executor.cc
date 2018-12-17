@@ -21,6 +21,8 @@
 #include <string>
 #include <vector>
 
+#include "mace/utils/logging.h"
+
 namespace aibench {
 
 inline Status ReadBinaryFile(std::vector<unsigned char> *data,
@@ -44,8 +46,8 @@ inline Status ReadBinaryFile(std::vector<unsigned char> *data,
   return Status::SUCCESS;
 }
 
-mace::DeviceType GetDeviceType(const Runtime &runtime) {
-  switch (runtime) {
+mace::DeviceType GetMaceDeviceType(const DeviceType &device_type) {
+  switch (device_type) {
     case CPU: return mace::DeviceType::CPU;
     case GPU: return mace::DeviceType::GPU;
     case DSP: return mace::DeviceType::HEXAGON;
@@ -53,9 +55,8 @@ mace::DeviceType GetDeviceType(const Runtime &runtime) {
   }
 }
 
-Status MaceExecutor::CreateEngine(const char *model_name,
-                                  std::shared_ptr<mace::MaceEngine> *engine) {
-  mace::DeviceType device_type = GetDeviceType(GetRuntime());
+Status MaceExecutor::CreateEngine(std::shared_ptr<mace::MaceEngine> *engine) {
+  mace::DeviceType device_type = GetMaceDeviceType(GetDeviceType());
   mace::MaceEngineConfig config(device_type);
   config.SetCPUThreadPolicy(num_threads_,
                             mace::CPUAffinityPolicy::AFFINITY_BIG_ONLY,
@@ -74,45 +75,39 @@ Status MaceExecutor::CreateEngine(const char *model_name,
         mace::GPUPriorityHint::PRIORITY_HIGH);
   }
   std::vector<unsigned char> model_pb_data;
-  std::string model_pb_file(model_name);
-  model_pb_file.append(".pb");
-  if (ReadBinaryFile(&model_pb_data, model_pb_file) != Status::SUCCESS) {
-    std::cout << "Failed to read file: " << model_name << std::endl;
-    return Status::RUNTIME_ERROR;
+  if (ReadBinaryFile(&model_pb_data, GetModelFile()) != Status::SUCCESS) {
+    LOG(FATAL) << "Failed to read file: " << GetModelFile();
   }
-  std::string model_data_file(model_name);
-  model_data_file.append(".data");
   mace::MaceStatus create_engine_status;
   create_engine_status = mace::CreateMaceEngineFromProto(model_pb_data,
-                                                         model_data_file,
+                                                         GetWeightFile(),
                                                          input_names_,
                                                          output_names_,
                                                          config,
                                                          engine);
-  return create_engine_status == mace::MACE_SUCCESS ? Status::SUCCESS
-                                                    : Status::RUNTIME_ERROR;
+  return create_engine_status ==
+      mace::MaceStatus::MACE_SUCCESS ? Status::SUCCESS : Status::RUNTIME_ERROR;
 }
 
-Status MaceExecutor::Init(const char *model_name, int num_threads) {
+Status MaceExecutor::Init(int num_threads) {
   num_threads_ = num_threads;
-  mace::DeviceType device_type = GetDeviceType(GetRuntime());
+  mace::DeviceType device_type = GetMaceDeviceType(GetDeviceType());
   if (device_type == mace::DeviceType::GPU) {
     // Mace needs to compile opencl kernel once per new target, and since then
     // compiled code is stored on the target, which will speedup following run.
     std::shared_ptr<mace::MaceEngine> engine;
-    CreateEngine(model_name, &engine);
+    CreateEngine(&engine);
   }
   return Status::SUCCESS;
 }
 
-Status MaceExecutor::Prepare(const char *model_name) {
-  CreateEngine(model_name, &engine_);
+Status MaceExecutor::Prepare() {
+  CreateEngine(&engine_);
   return Status::SUCCESS;
 }
 
 Status MaceExecutor::Run(const std::map<std::string, BaseTensor> &inputs,
                          std::map<std::string, BaseTensor> *outputs) {
-  (void) outputs;
   std::map<std::string, mace::MaceTensor> mace_inputs;
   std::map<std::string, mace::MaceTensor> mace_outputs;
   for (const auto &input : inputs) {
@@ -124,8 +119,8 @@ Status MaceExecutor::Run(const std::map<std::string, BaseTensor> &inputs,
                                                   output.second.data());
   }
   mace::MaceStatus run_status = engine_->Run(mace_inputs, &mace_outputs);
-  return run_status == mace::MACE_SUCCESS ? Status::SUCCESS
-                                          : Status::RUNTIME_ERROR;
+  return run_status ==
+      mace::MaceStatus::MACE_SUCCESS ? Status::SUCCESS : Status::RUNTIME_ERROR;
 }
 
 void MaceExecutor::Finish() {

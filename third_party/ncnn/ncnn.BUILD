@@ -53,6 +53,7 @@ genrule(
     cmd = "workdir=$$(mktemp -d -t ncnn-build.XXXXXXXXXX);" +
           "cp -aL $$(dirname $(location CMakeLists.txt))/* $$workdir;" +
           "pushd $$workdir;" +
+          "sed -i -e 's/fno-rtti/frtti/g' CMakeLists.txt;" +
           "mkdir build;" +
           "pushd build;" +
           "cmake " + NCNN_CMAKE_OPTS + " ..;" +

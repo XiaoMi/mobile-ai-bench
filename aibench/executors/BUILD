@@ -25,6 +25,9 @@ cc_library(
         "-Wextra",
         "-Wno-missing-field-initializers",
     ],
+    deps = [
+        "//aibench/proto:aibench_proto_cc",
+    ],
 )
 
 cc_library(
@@ -45,13 +48,8 @@ cc_library(
     ],
     deps = [
         ":base_executor",
-    ] + if_android_armv7([
-        "//third_party/mace:mace_armeabi-v7a",
-    ]) + if_mace_dsp_enabled([
-        "//third_party/mace:mace_armeabi-v7a-dsp",
-    ]) + if_android_arm64([
-        "//third_party/mace:mace_arm64-v8a",
-    ]),
+        "//third_party/mace:mace",
+    ],
 )
 
 cc_library(
@@ -94,7 +92,6 @@ cc_library(
         "-Werror",
         "-Wextra",
         "-Wno-missing-field-initializers",
-        "-fno-rtti",  # ncnn builds with -fno-rtti
     ],
     deps = [
         ":base_executor",

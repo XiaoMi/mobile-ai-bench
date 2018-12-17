@@ -12,7 +12,7 @@ cpplint:
 pycodestyle:
   stage: pycodestyle
   script:
-    - pycodestyle $(find tools -name "*.py")
+    - pycodestyle $(find aibench/python -name "*.py")
 
 benchmark:
   stage: benchmark
@@ -21,18 +21,31 @@ benchmark:
     - CI_PROJECT_OUTPUT_PATH=/mace-build-output/$CI_PROJECT_NAME/${DATE_STR}_${CI_PIPELINE_ID}
     - mkdir -p $CI_PROJECT_OUTPUT_PATH
     - ANDROID_NDK_HOME=/opt/android-ndk-r15c
-    - python tools/benchmark.py --output_dir=$CI_PROJECT_OUTPUT_PATH --target_abis=armeabi-v7a,arm64-v8a --max_time_per_lock=30
+    - DAY_OF_WEEK=`date +%u`
+    - >
+      if [ $DAY_OF_WEEK -lt 6 ]; then
+        bash tools/benchmark.sh --output_dir=$CI_PROJECT_OUTPUT_PATH --benchmark_option=Precision --target_abis=armeabi-v7a,arm64-v8a --max_time_per_lock=30 --executors=MACE --input_dir=http --num_targets=1;
+        bash tools/benchmark.sh --output_dir=$CI_PROJECT_OUTPUT_PATH --target_abis=armeabi-v7a,arm64-v8a --max_time_per_lock=30 --num_targets=1;
+      else
+        bash tools/benchmark.sh --output_dir=$CI_PROJECT_OUTPUT_PATH --benchmark_option=Precision --target_abis=armeabi-v7a,arm64-v8a --max_time_per_lock=30 --executors=MACE --input_dir=http;
+        bash tools/benchmark.sh --output_dir=$CI_PROJECT_OUTPUT_PATH --target_abis=armeabi-v7a,arm64-v8a --max_time_per_lock=30;
+      fi
     - >
       cp $CI_PROJECT_OUTPUT_PATH/*_report.csv .;
       echo "------------------------------------------------------------------";
-      echo "Run Time Average (See FAQ section in README for more explanations)";
-      echo "------------------------------------------------------------------";
-      cat run_report.csv | sed 's/,/ ,/g' | column -t -s,;
-      echo "------------------------------------------------------------------";
       echo "Prepare Time (see FAQ section in README for more explanations)";
       echo "------------------------------------------------------------------";
-      cat prepare_report.csv | sed 's/,/ ,/g' | column -t -s,;
+      python -c 'import prettytable,sys;print(prettytable.from_csv(sys.stdin));'<prepare_report.csv;
+      echo "------------------------------------------------------------------";
+      echo "Run Time Average (See FAQ section in README for more explanations)";
+      echo "------------------------------------------------------------------";
+      python -c 'import prettytable,sys;print(prettytable.from_csv(sys.stdin));'<run_report.csv;
+      echo "------------------------------------------------------------------";
+      echo "ImageNet Precision (see FAQ section in README for more explanations)";
+      echo "------------------------------------------------------------------";
+      python -c 'import prettytable,sys;print(prettytable.from_csv(sys.stdin));'<precision_report.csv;
   artifacts:
       paths:
         - prepare_report.csv
         - run_report.csv
+        - precision_report.csv

@@ -12,36 +12,33 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef AIBENCH_EXECUTORS_SNPE_SNPE_EXECUTOR_H_
-#define AIBENCH_EXECUTORS_SNPE_SNPE_EXECUTOR_H_
+#ifndef AIBENCH_BENCHMARK_IMAGENET_IMAGENET_POSTPROCESSOR_H_
+#define AIBENCH_BENCHMARK_IMAGENET_IMAGENET_POSTPROCESSOR_H_
 
 #include <map>
-#include <memory>
 #include <string>
+#include <vector>
 
-#include "aibench/executors/base_executor.h"
-#include "SNPE/SNPE.hpp"
+#include "aibench/benchmark/benchmark.h"
 
 namespace aibench {
+namespace benchmark {
 
-class SnpeExecutor : public BaseExecutor {
+class ImageNetPostProcessor : public PostProcessor {
  public:
-  explicit SnpeExecutor(DeviceType device_type,
-                        const std::string &model_file)
-      : BaseExecutor(SNPE, device_type, model_file, "") {}
+  ImageNetPostProcessor();
+  Status Run(const std::string &filename,
+             const std::map<std::string, BaseTensor> &outputs) override;
+  std::string GetResult() override;
 
-  virtual Status Init(int num_threads);
-
-  virtual Status Prepare();
-
-  virtual Status Run(const std::map<std::string, BaseTensor> &inputs,
-                     std::map<std::string, BaseTensor> *outputs);
-
-  virtual void Finish();
  private:
-  std::unique_ptr<zdl::SNPE::SNPE> snpe_;
+  std::vector<std::string> groundtruth_labels_;
+  std::vector<std::string> model_labels_;
+  int total_count_;
+  int correct_count_;
 };
 
+}  // namespace benchmark
 }  // namespace aibench
 
-#endif  // AIBENCH_EXECUTORS_SNPE_SNPE_EXECUTOR_H_
+#endif  // AIBENCH_BENCHMARK_IMAGENET_IMAGENET_POSTPROCESSOR_H_

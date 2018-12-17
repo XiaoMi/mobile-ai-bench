@@ -12,12 +12,21 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+#include <fcntl.h>
+#include <unistd.h>
+#include <sstream>
 #include <string>
-#include <iostream>
 
 #include "gflags/gflags.h"
+#include "google/protobuf/message_lite.h"
+#include "mace/utils/logging.h"
+#include "mace/utils/utils.h"
 #include "aibench/benchmark/benchmark.h"
-#include "aibench/executors/base_executor.h"
+#include "aibench/benchmark/imagenet/imagenet_preprocessor.h"
+#include "aibench/benchmark/imagenet/imagenet_postprocessor.h"
+#include "aibench/proto/aibench.pb.h"
+#include "aibench/proto/base.pb.h"
+
 #ifdef AIBENCH_ENABLE_MACE
 #include "aibench/executors/mace/mace_executor.h"
 #endif
@@ -31,323 +40,269 @@
 #include "aibench/executors/tflite/tflite_executor.h"
 #endif
 
-DEFINE_string(model_name,
-"all", "the model to benchmark");
-DEFINE_string(framework,
-"all", "the framework to benchmark");
-DEFINE_string(runtime,
-"all", "the runtime to benchmark");
-DEFINE_string(product_soc,
-"", "product model and target soc");
-DEFINE_int32(run_interval,
-10, "run interval between benchmarks, seconds");
-DEFINE_int32(num_threads,
-4, "number of threads");
+namespace aibench {
+namespace benchmark {
 
-int main(int argc, char **argv) {
+DEFINE_int32(benchmark_option,
+             Performance, "benchmark option");
+DEFINE_int32(run_interval,
+             10, "run interval between benchmarks, seconds");
+DEFINE_int32(num_threads,
+             4, "number of threads");
+DEFINE_int32(executor,
+             MACE, "the executor to benchmark");
+DEFINE_int32(model_name,
+             MobileNetV1, "the model to benchmark");
+DEFINE_int32(device_type,
+             CPU, "the device_type to benchmark");
+DEFINE_bool(quantize,
+            false, "quantized or float");
+
+namespace {
+
+std::string GetFileName(const std::string &path) {
+  auto index = path.find_last_of('/');
+  return index != std::string::npos ? path.substr(index + 1) : path;
+}
+
+Status GetBenchInfo(const std::string &filename,
+                    std::vector<std::string> *input_names,
+                    std::vector<std::string> *output_names,
+                    std::string *model_file,
+                    std::string *weight_file) {
+  std::vector<unsigned char> file_buffer;
+  if (!mace::ReadBinaryFile(&file_buffer, filename)) {
+    LOG(FATAL) << "Failed to read file: " << filename;
+  }
+  BenchFactory bench_factory;
+  bench_factory.ParseFromArray(file_buffer.data(), file_buffer.size());
+  for (const auto &benchmark : bench_factory.benchmarks()) {
+    if (benchmark.executor() != FLAGS_executor) continue;
+    for (const auto &model : benchmark.models()) {
+      if (model.model_name() != FLAGS_model_name) continue;
+      if (model.quantize() != FLAGS_quantize) continue;
+      for (const auto &device : model.devices()) {
+        if (device != FLAGS_device_type) continue;
+        model_file->assign(GetFileName(model.model_path()));
+        if (model.has_weight_path()) {
+          weight_file->assign(GetFileName(model.weight_path()));
+        }
+        input_names->assign(model.input_names().begin(),
+                            model.input_names().end());
+        output_names->assign(model.output_names().begin(),
+                             model.output_names().end());
+        return Status::SUCCESS;
+      }
+    }
+  }
+  return Status::NOT_SUPPORTED;
+}
+
+Status GetModelBaseInfo(
+    const std::string &filename,
+    ChannelOrder *channel_order,
+    std::vector<DataFormat> *data_formats,
+    std::vector<std::vector<int64_t>> *input_shapes,
+    std::vector<std::vector<int64_t>> *output_shapes,
+    std::vector<std::vector<float>> *input_means,
+    std::vector<float> *input_var,
+    PreProcessor_PreProcessorType *pre_type,
+    PostProcessor_PostProcessorType *post_type,
+    MetricEvaluator_MetricEvaluatorType *metric_type) {
+  std::vector<unsigned char> file_buffer;
+  if (!mace::ReadBinaryFile(&file_buffer, filename)) {
+    LOG(FATAL) << "Failed to read file: " << filename;
+  }
+  ModelFactory model_factory;
+  model_factory.ParseFromArray(file_buffer.data(), file_buffer.size());
+  for (const auto &model : model_factory.models()) {
+    if (model.model_name() != FLAGS_model_name) continue;
+    *channel_order = model.channel_order(0);
+    data_formats->resize(model.data_format_size());
+    for (int i = 0; i < model.data_format_size(); ++i) {
+      (*data_formats)[i] = model.data_format(i);
+    }
+    input_shapes->resize(model.input_shape_size());
+    for (int i = 0; i < model.input_shape_size(); ++i) {
+      (*input_shapes)[i].assign(model.input_shape(i).shape().begin(),
+                                model.input_shape(i).shape().end());
+    }
+    output_shapes->resize(model.output_shape_size());
+    for (int i = 0; i < model.output_shape_size(); ++i) {
+      (*output_shapes)[i].assign(model.output_shape(i).shape().begin(),
+                                 model.output_shape(i).shape().end());
+    }
+    const aibench::PreProcessor &pre_processor = model.pre_processor();
+    *pre_type = pre_processor.type();
+    input_means->resize(pre_processor.input_mean_size());
+    for (int i = 0; i < pre_processor.input_mean_size(); ++i) {
+      (*input_means)[i].assign(pre_processor.input_mean(i).mean().begin(),
+                               pre_processor.input_mean(i).mean().end());
+    }
+    input_var->assign(pre_processor.var().begin(), pre_processor.var().end());
+    *post_type = model.post_processor().type();
+    *metric_type = model.metric_evaluator().type();
+    return SUCCESS;
+  }
+
+  return NOT_SUPPORTED;
+}
+
+class PreProcessorFactory {
+ public:
+  static std::unique_ptr<PreProcessor> CreatePreProcessor(
+      PreProcessor_PreProcessorType type,
+      const std::vector<DataFormat> &data_formats,
+      const std::vector<std::vector<float>> &input_means,
+      const std::vector<float> &input_var,
+      const ChannelOrder channel_order) {
+    std::unique_ptr<PreProcessor> processor;
+
+    switch (type) {
+      case PreProcessor_PreProcessorType_DefaultProcessor:
+        processor.reset(new ImageNetPreProcessor(data_formats,
+                                                 input_means,
+                                                 input_var,
+                                                 channel_order));
+        break;
+      default:
+        LOG(FATAL) << "Not supported PreProcessor type: " << type;
+    }
+
+    return std::move(processor);
+  }
+};
+
+class PostProcessorFactory {
+ public:
+  static std::unique_ptr<PostProcessor> CreatePostProcessor(
+      PostProcessor_PostProcessorType type) {
+    std::unique_ptr<PostProcessor> processor;
+
+    switch (type) {
+      case PostProcessor_PostProcessorType_ImageClassification:
+        processor.reset(new ImageNetPostProcessor());
+        break;
+      default:
+        LOG(FATAL) << "Not supported PostProcessor type: " << type;
+    }
+
+    return std::move(processor);
+  }
+};
+
+}  // namespace
+
+int Main(int argc, char **argv) {
   std::string usage = "run benchmark, e.g. " + std::string(argv[0]) +
-      " --model_name=all";
+      " [flags]";
   gflags::SetUsageMessage(usage);
   gflags::ParseCommandLineFlags(&argc, &argv, true);
 
-  // define all benchmarks here
-#ifdef AIBENCH_ENABLE_MACE
-  std::unique_ptr<aibench::MaceExecutor> mobilenetv1_mace_cpu_executor(
-      new aibench::MaceExecutor(aibench::CPU, FLAGS_product_soc, {"input"},
-                                {"MobilenetV1/Predictions/Reshape_1"}));
-  AIBENCH_BENCHMARK(mobilenetv1_mace_cpu_executor.get(), MobileNetV1, MACE,
-                    CPU, mobilenet_v1, (std::vector<std::string>{"input"}),
-                    (std::vector<std::string>{"dog.npy"}),
-                    (std::vector<std::vector<int64_t>>{{1, 224, 224, 3}}),
-                    (std::vector<std::string>{
-                        "MobilenetV1/Predictions/Reshape_1"}),
-                    (std::vector<std::vector<int64_t>>{{1, 1001}}));
-  std::unique_ptr<aibench::MaceExecutor> mobilenetv1quant_mace_cpu_executor(
-      new aibench::MaceExecutor(aibench::CPU, FLAGS_product_soc, {"input"},
-                                {"MobilenetV1/Predictions/Softmax:0"}));
-  AIBENCH_BENCHMARK(mobilenetv1quant_mace_cpu_executor.get(), MobileNetV1Quant,
-                    MACE, CPU, mobilenet_v1_quantize_retrain,
-                    (std::vector<std::string>{"input"}),
-                    (std::vector<std::string>{
-                      "input_n01440764_15071.JPEG_input"}),
-                    (std::vector<std::vector<int64_t>>{{1, 224, 224, 3}}),
-                    (std::vector<std::string>{
-                        "MobilenetV1/Predictions/Softmax:0"}),
-                    (std::vector<std::vector<int64_t>>{{1, 1001}}));
-  std::unique_ptr<aibench::MaceExecutor> mobilenetv2_mace_cpu_executor(
-      new aibench::MaceExecutor(aibench::CPU, FLAGS_product_soc, {"input"},
-                                {"MobilenetV2/Predictions/Reshape_1"}));
-  AIBENCH_BENCHMARK(mobilenetv2_mace_cpu_executor.get(), MobileNetV2, MACE,
-                    CPU, mobilenet_v2, (std::vector<std::string>{"input"}),
-                    (std::vector<std::string>{}),
-                    (std::vector<std::vector<int64_t>>{{1, 224, 224, 3}}),
-                    (std::vector<std::string>{
-                        "MobilenetV2/Predictions/Reshape_1"}),
-                    (std::vector<std::vector<int64_t>>{{1, 1001}}));
-  std::unique_ptr<aibench::MaceExecutor> mobilenetv2quant_mace_cpu_executor(
-      new aibench::MaceExecutor(aibench::CPU, FLAGS_product_soc, {"input"},
-                                {"output"}));
-  AIBENCH_BENCHMARK(mobilenetv2quant_mace_cpu_executor.get(), MobileNetV2Quant,
-                    MACE, CPU, mobilenet_v2_quantize_retrain,
-                    (std::vector<std::string>{"input"}),
-                    (std::vector<std::string>{
-                      "input_n01440764_15071.JPEG_input"}),
-                    (std::vector<std::vector<int64_t>>{{1, 224, 224, 3}}),
-                    (std::vector<std::string>{
-                        "output"}),
-                    (std::vector<std::vector<int64_t>>{{1, 1001}}));
-  std::unique_ptr<aibench::MaceExecutor> squeezenetv11_mace_cpu_executor(
-      new aibench::MaceExecutor(aibench::CPU, FLAGS_product_soc, {"data"},
-                                {"prob"}));
-  AIBENCH_BENCHMARK(squeezenetv11_mace_cpu_executor.get(), SqueezeNetV11, MACE,
-                    CPU, squeezenet_v11, (std::vector<std::string>{"data"}),
-                    (std::vector<std::string>{}),
-                    (std::vector<std::vector<int64_t>>{{1, 227, 227, 3}}),
-                    (std::vector<std::string>{"prob"}),
-                    (std::vector<std::vector<int64_t>>{{1, 1, 1, 1000}}));
-  std::unique_ptr<aibench::MaceExecutor> inceptionv3_mace_cpu_executor(
-      new aibench::MaceExecutor(aibench::CPU, FLAGS_product_soc, {"input"},
-                                {"InceptionV3/Predictions/Reshape_1"}));
-  AIBENCH_BENCHMARK(inceptionv3_mace_cpu_executor.get(), InceptionV3, MACE,
-                    CPU, inception_v3, (std::vector<std::string>{"input"}),
-                    (std::vector<std::string>{}),
-                    (std::vector<std::vector<int64_t>>{{1, 299, 299, 3}}),
-                    (std::vector<std::string>{
-                        "InceptionV3/Predictions/Reshape_1"}),
-                    (std::vector<std::vector<int64_t>>{{1, 1001}}));
-  std::unique_ptr<aibench::MaceExecutor> vgg16_mace_cpu_executor(
-      new aibench::MaceExecutor(aibench::CPU, FLAGS_product_soc, {"input"},
-                                {"vgg_16/fc8/BiasAdd"}));
-  AIBENCH_BENCHMARK(vgg16_mace_cpu_executor.get(), VGG16, MACE,
-                    CPU, vgg16, (std::vector<std::string>{"input"}),
-                    (std::vector<std::string>{}),
-                    (std::vector<std::vector<int64_t>>{{1, 224, 224, 3}}),
-                    (std::vector<std::string>{"vgg_16/fc8/BiasAdd"}),
-                    (std::vector<std::vector<int64_t>>{{1, 1, 1, 1000}}));
+  auto benchmark_option = static_cast<BenchmarkOption>(FLAGS_benchmark_option);
+  auto executor_type = static_cast<ExecutorType>(FLAGS_executor);
+  auto device_type = static_cast<DeviceType>(FLAGS_device_type);
+  auto model_name = static_cast<ModelName>(FLAGS_model_name);
 
-  std::unique_ptr<aibench::MaceExecutor> mobilenetv1_mace_gpu_executor(
-      new aibench::MaceExecutor(aibench::GPU, FLAGS_product_soc, {"input"},
-                                {"MobilenetV1/Predictions/Reshape_1"}));
-  AIBENCH_BENCHMARK(mobilenetv1_mace_gpu_executor.get(), MobileNetV1, MACE,
-                    GPU, mobilenet_v1, (std::vector<std::string>{"input"}),
-                    (std::vector<std::string>{"dog.npy"}),
-                    (std::vector<std::vector<int64_t>>{{1, 224, 224, 3}}),
-                    (std::vector<std::string>{
-                        "MobilenetV1/Predictions/Reshape_1"}),
-                    (std::vector<std::vector<int64_t>>{{1, 1001}}));
-  std::unique_ptr<aibench::MaceExecutor> mobilenetv2_mace_gpu_executor(
-      new aibench::MaceExecutor(aibench::GPU, FLAGS_product_soc, {"input"},
-                                {"MobilenetV2/Predictions/Reshape_1"}));
-  AIBENCH_BENCHMARK(mobilenetv2_mace_gpu_executor.get(), MobileNetV2, MACE,
-                    GPU, mobilenet_v2, (std::vector<std::string>{"input"}),
-                    (std::vector<std::string>{}),
-                    (std::vector<std::vector<int64_t>>{{1, 224, 224, 3}}),
-                    (std::vector<std::string>{
-                        "MobilenetV2/Predictions/Reshape_1"}),
-                    (std::vector<std::vector<int64_t>>{{1, 1001}}));
-  std::unique_ptr<aibench::MaceExecutor> squeezenetv11_mace_gpu_executor(
-      new aibench::MaceExecutor(aibench::GPU, FLAGS_product_soc, {"data"},
-                                {"prob"}));
-  AIBENCH_BENCHMARK(squeezenetv11_mace_gpu_executor.get(), SqueezeNetV11, MACE,
-                    GPU, squeezenet_v11, (std::vector<std::string>{"data"}),
-                    (std::vector<std::string>{}),
-                    (std::vector<std::vector<int64_t>>{{1, 227, 227, 3}}),
-                    (std::vector<std::string>{"prob"}),
-                    (std::vector<std::vector<int64_t>>{{1, 1, 1, 1000}}));
-  std::unique_ptr<aibench::MaceExecutor> inceptionv3_mace_gpu_executor(
-      new aibench::MaceExecutor(aibench::GPU, FLAGS_product_soc, {"input"},
-                                {"InceptionV3/Predictions/Reshape_1"}));
-  AIBENCH_BENCHMARK(inceptionv3_mace_gpu_executor.get(), InceptionV3, MACE,
-                    GPU, inception_v3, (std::vector<std::string>{"input"}),
-                    (std::vector<std::string>{}),
-                    (std::vector<std::vector<int64_t>>{{1, 299, 299, 3}}),
-                    (std::vector<std::string>{
-                        "InceptionV3/Predictions/Reshape_1"}),
-                    (std::vector<std::vector<int64_t>>{{1, 1001}}));
-  std::unique_ptr<aibench::MaceExecutor> vgg16_mace_gpu_executor(
-      new aibench::MaceExecutor(aibench::GPU, FLAGS_product_soc, {"data"},
-                                {"prob"}));
-  AIBENCH_BENCHMARK(vgg16_mace_gpu_executor.get(), VGG16, MACE,
-                    GPU, vgg16_caffe_gpu, (std::vector<std::string>{"data"}),
-                    (std::vector<std::string>{}),
-                    (std::vector<std::vector<int64_t>>{{1, 224, 224, 3}}),
-                    (std::vector<std::string>{"prob"}),
-                    (std::vector<std::vector<int64_t>>{{1, 1, 1, 1000}}));
-#ifdef AIBENCH_ENABLE_MACE_DSP
-  std::unique_ptr<aibench::MaceExecutor> inceptionv3_mace_dsp_executor(
-      new aibench::MaceExecutor(aibench::DSP, FLAGS_product_soc, {"Mul"},
-                                {"softmax"}));
-  if (FLAGS_product_soc.compare("polaris.sdm845") == 0) {
-    AIBENCH_BENCHMARK(inceptionv3_mace_dsp_executor.get(), InceptionV3, MACE,
-                      DSP, inception_v3_dsp, (std::vector<std::string>{"Mul"}),
-                      (std::vector<std::string>{}),
-                      (std::vector<std::vector<int64_t>>{{1, 299, 299, 3}}),
-                      (std::vector<std::string>{"softmax"}),
-                      (std::vector<std::vector<int64_t>>{{1, 1, 1, 1008}}));
+  std::vector<std::string> input_names;
+  std::vector<std::string> output_names;
+  std::string model_file;
+  std::string weight_file;
+  if (GetBenchInfo("benchmark.pb",
+                   &input_names,
+                   &output_names,
+                   &model_file,
+                   &weight_file) != Status::SUCCESS) {
+    LOG(FATAL) << "Bench info parse failed";
   }
-#endif  // AIBENCH_ENABLE_MACE_DSP
+
+  ChannelOrder channel_order;
+  std::vector<DataFormat> data_formats;
+  std::vector<std::vector<int64_t>> input_shapes;
+  std::vector<std::vector<int64_t>> output_shapes;
+  std::vector<std::vector<float>> input_means;
+  std::vector<float> input_var;
+  PreProcessor_PreProcessorType pre_processor_type;
+  PostProcessor_PostProcessorType post_processor_type;
+  MetricEvaluator_MetricEvaluatorType metric_evaluator_type;
+  if (GetModelBaseInfo("model.pb",
+                       &channel_order,
+                       &data_formats,
+                       &input_shapes,
+                       &output_shapes,
+                       &input_means,
+                       &input_var,
+                       &pre_processor_type,
+                       &post_processor_type,
+                       &metric_evaluator_type) != SUCCESS) {
+    LOG(FATAL) << "Model info parse failed";
+  }
+
+  std::unique_ptr<aibench::BaseExecutor> executor;
+#ifdef AIBENCH_ENABLE_MACE
+  if (executor_type == aibench::MACE) {
+    executor.reset(new aibench::MaceExecutor(device_type,
+                                             model_file,
+                                             weight_file,
+                                             input_names,
+                                             output_names));
+  }
 #endif
 #ifdef AIBENCH_ENABLE_SNPE
-  std::unique_ptr<aibench::SnpeExecutor>
-      snpe_cpu_executor(new aibench::SnpeExecutor(aibench::CPU));
-  AIBENCH_BENCHMARK(snpe_cpu_executor.get(), InceptionV3, SNPE, CPU,
-                    inception_v3.dlc, (std::vector<std::string>{"Mul:0"}),
-                    (std::vector<std::string>{"keyboard_299x299.dat"}),
-                    (std::vector<std::vector<int64_t>>{{299, 299, 3}}),
-                    (std::vector<std::string>{}),
-                    (std::vector<std::vector<int64_t>>{}));
-  AIBENCH_BENCHMARK(snpe_cpu_executor.get(), MobileNetV1, SNPE, CPU,
-                    mobilenet-v1.dlc, (std::vector<std::string>{"input:0"}),
-                    (std::vector<std::string>{"chairs_224x224.raw"}),
-                    (std::vector<std::vector<int64_t>>{{224, 224, 3}}),
-                    (std::vector<std::string>{}),
-                    (std::vector<std::vector<int64_t>>{}));
-  AIBENCH_BENCHMARK(snpe_cpu_executor.get(), MobileNetV2, SNPE, CPU,
-                    mobilenet-v2.dlc, (std::vector<std::string>{"input:0"}),
-                    (std::vector<std::string>{"chairs_224x224.raw"}),
-                    (std::vector<std::vector<int64_t>>{{224, 224, 3}}),
-                    (std::vector<std::string>{}),
-                    (std::vector<std::vector<int64_t>>{}));
-  AIBENCH_BENCHMARK(snpe_cpu_executor.get(), VGG16, SNPE, CPU,
-                    vgg16.dlc, (std::vector<std::string>{"input:0"}),
-                    (std::vector<std::string>{"chairs_224x224.raw"}),
-                    (std::vector<std::vector<int64_t>>{{224, 224, 3}}),
-                    (std::vector<std::string>{}),
-                    (std::vector<std::vector<int64_t>>{}));
-  AIBENCH_BENCHMARK(snpe_cpu_executor.get(), SqueezeNetV11, SNPE, CPU,
-                    squeezenet_v11.dlc, (std::vector<std::string>{"data"}),
-                    (std::vector<std::string>{}),
-                    (std::vector<std::vector<int64_t>>{{227, 227, 3}}),
-                    (std::vector<std::string>{}),
-                    (std::vector<std::vector<int64_t>>{}));
-
-  std::unique_ptr<aibench::SnpeExecutor>
-      snpe_gpu_executor(new aibench::SnpeExecutor(aibench::GPU));
-  AIBENCH_BENCHMARK(snpe_gpu_executor.get(), InceptionV3, SNPE, GPU,
-                    inception_v3.dlc, (std::vector<std::string>{"Mul:0"}),
-                    (std::vector<std::string>{"keyboard_299x299.dat"}),
-                    (std::vector<std::vector<int64_t>>{{299, 299, 3}}),
-                    (std::vector<std::string>{}),
-                    (std::vector<std::vector<int64_t>>{}));
-  AIBENCH_BENCHMARK(snpe_gpu_executor.get(), MobileNetV1, SNPE, GPU,
-                    mobilenet-v1.dlc, (std::vector<std::string>{"input:0"}),
-                    (std::vector<std::string>{"chairs_224x224.raw"}),
-                    (std::vector<std::vector<int64_t>>{{224, 224, 3}}),
-                    (std::vector<std::string>{}),
-                    (std::vector<std::vector<int64_t>>{}));
-  AIBENCH_BENCHMARK(snpe_gpu_executor.get(), MobileNetV2, SNPE, GPU,
-                    mobilenet-v2.dlc, (std::vector<std::string>{"input:0"}),
-                    (std::vector<std::string>{"chairs_224x224.raw"}),
-                    (std::vector<std::vector<int64_t>>{{224, 224, 3}}),
-                    (std::vector<std::string>{}),
-                    (std::vector<std::vector<int64_t>>{}));
-  AIBENCH_BENCHMARK(snpe_gpu_executor.get(), SqueezeNetV11, SNPE, GPU,
-                    squeezenet_v11.dlc, (std::vector<std::string>{"data"}),
-                    (std::vector<std::string>{}),
-                    (std::vector<std::vector<int64_t>>{{227, 227, 3}}),
-                    (std::vector<std::string>{}),
-                    (std::vector<std::vector<int64_t>>{}));
-  // TODO(wuchenghui): benchmark snpe + gpu + vgg16
-
-  std::unique_ptr<aibench::SnpeExecutor>
-      snpe_dsp_executor(new aibench::SnpeExecutor(aibench::DSP));
-  AIBENCH_BENCHMARK(snpe_dsp_executor.get(), InceptionV3, SNPE, DSP,
-                    inception_v3_quantized.dlc,
-                    (std::vector<std::string>{"Mul:0"}),
-                    (std::vector<std::string>{"keyboard_299x299.dat"}),
-                    (std::vector<std::vector<int64_t>>{{299, 299, 3}}),
-                    (std::vector<std::string>{}),
-                    (std::vector<std::vector<int64_t>>{}));
-  AIBENCH_BENCHMARK(snpe_dsp_executor.get(), VGG16, SNPE, DSP,
-                    vgg16_quantized.dlc, (std::vector<std::string>{"input:0"}),
-                    (std::vector<std::string>{"chairs_224x224.raw"}),
-                    (std::vector<std::vector<int64_t>>{{224, 224, 3}}),
-                    (std::vector<std::string>{}),
-                    (std::vector<std::vector<int64_t>>{}));
+  if (executor_type == aibench::SNPE) {
+    executor.reset(new aibench::SnpeExecutor(device_type, model_file));
+  }
 #endif
 #ifdef AIBENCH_ENABLE_NCNN
-  std::unique_ptr<aibench::NcnnExecutor>
-      ncnn_executor(new aibench::NcnnExecutor());
-  AIBENCH_BENCHMARK(ncnn_executor.get(), MobileNetV1, NCNN, CPU,
-                    mobilenet.param, (std::vector<std::string>{"data"}),
-                    (std::vector<std::string>{}),
-                    (std::vector<std::vector<int64_t>>{{224, 224, 3}}),
-                    (std::vector<std::string>{}),
-                    (std::vector<std::vector<int64_t>>{}));
-  AIBENCH_BENCHMARK(ncnn_executor.get(), MobileNetV2, NCNN, CPU,
-                    mobilenet_v2.param, (std::vector<std::string>{"data"}),
-                    (std::vector<std::string>{}),
-                    (std::vector<std::vector<int64_t>>{{224, 224, 3}}),
-                    (std::vector<std::string>{}),
-                    (std::vector<std::vector<int64_t>>{}));
-  AIBENCH_BENCHMARK(ncnn_executor.get(), SqueezeNetV11, NCNN, CPU,
-                    squeezenet.param, (std::vector<std::string>{"data"}),
-                    (std::vector<std::string>{}),
-                    (std::vector<std::vector<int64_t>>{{227, 227, 3}}),
-                    (std::vector<std::string>{}),
-                    (std::vector<std::vector<int64_t>>{}));
-  AIBENCH_BENCHMARK(ncnn_executor.get(), VGG16, NCNN, CPU,
-                    vgg16.param, (std::vector<std::string>{"data"}),
-                    (std::vector<std::string>{}),
-                    (std::vector<std::vector<int64_t>>{{224, 224, 3}}),
-                    (std::vector<std::string>{}),
-                    (std::vector<std::vector<int64_t>>{}));
-  AIBENCH_BENCHMARK(ncnn_executor.get(), InceptionV3, NCNN, CPU,
-                    inception_v3.param, (std::vector<std::string>{"data"}),
-                    (std::vector<std::string>{}),
-                    (std::vector<std::vector<int64_t>>{{299, 299, 3}}),
-                    (std::vector<std::string>{}),
-                    (std::vector<std::vector<int64_t>>{}));
+  if (executor_type == aibench::NCNN) {
+    executor.reset(new aibench::NcnnExecutor(model_file));
+  }
 #endif
 #ifdef AIBENCH_ENABLE_TFLITE
-  std::unique_ptr<aibench::TfLiteExecutor>
-      tflite_executor(new aibench::TfLiteExecutor());
-  AIBENCH_BENCHMARK(tflite_executor.get(), MobileNetV1Quant, TFLITE, CPU,
-                    mobilenet_quant_v1_224.tflite,
-                    (std::vector<std::string>{"Placeholder"}),
-                    (std::vector<std::string>{}),
-                    (std::vector<std::vector<int64_t>>{{1, 224, 224, 3}}),
-                    (std::vector<std::string>{}),
-                    (std::vector<std::vector<int64_t>>{}));
-  AIBENCH_BENCHMARK(tflite_executor.get(), MobileNetV2Quant, TFLITE, CPU,
-                    mobilenet_v2_1.0_224_quant.tflite,
-                    (std::vector<std::string>{"Placeholder"}),
-                    (std::vector<std::string>{}),
-                    (std::vector<std::vector<int64_t>>{{1, 224, 224, 3}}),
-                    (std::vector<std::string>{}),
-                    (std::vector<std::vector<int64_t>>{}));
-  AIBENCH_BENCHMARK(tflite_executor.get(), MobileNetV1, TFLITE, CPU,
-                    mobilenet_v1_1.0_224.tflite,
-                    (std::vector<std::string>{"input"}),
-                    (std::vector<std::string>{}),
-                    (std::vector<std::vector<int64_t>>{{1, 224, 224, 3}}),
-                    (std::vector<std::string>{}),
-                    (std::vector<std::vector<int64_t>>{}));
-  AIBENCH_BENCHMARK(tflite_executor.get(), MobileNetV2, TFLITE, CPU,
-                    mobilenet_v2_1.0_224.tflite,
-                    (std::vector<std::string>{"input"}),
-                    (std::vector<std::string>{}),
-                    (std::vector<std::vector<int64_t>>{{1, 224, 224, 3}}),
-                    (std::vector<std::string>{}),
-                    (std::vector<std::vector<int64_t>>{}));
-  AIBENCH_BENCHMARK(tflite_executor.get(), InceptionV3Quant, TFLITE, CPU,
-                    inception_v3_quant.tflite,
-                    (std::vector<std::string>{"Placeholder"}),
-                    (std::vector<std::string>{}),
-                    (std::vector<std::vector<int64_t>>{{1, 299, 299, 3}}),
-                    (std::vector<std::string>{}),
-                    (std::vector<std::vector<int64_t>>{}));
-  AIBENCH_BENCHMARK(tflite_executor.get(), InceptionV3, TFLITE, CPU,
-                    inception_v3.tflite,
-                    (std::vector<std::string>{"input"}),
-                    (std::vector<std::string>{}),
-                    (std::vector<std::vector<int64_t>>{{1, 299, 299, 3}}),
-                    (std::vector<std::string>{}),
-                    (std::vector<std::vector<int64_t>>{}));
-
+  if (executor_type == aibench::TFLITE) {
+    executor.reset(new aibench::TfLiteExecutor(model_file));
+  }
 #endif
-  aibench::Status status = aibench::benchmark::Benchmark::Run(
-      FLAGS_model_name.c_str(), FLAGS_framework.c_str(), FLAGS_runtime.c_str(),
-      FLAGS_run_interval, FLAGS_num_threads);
+
+  std::unique_ptr<Benchmark> benchmark;
+  if (benchmark_option == BenchmarkOption::Performance) {
+    benchmark.reset(new PerformanceBenchmark(executor.get(),
+                                             model_name,
+                                             FLAGS_quantize,
+                                             input_names,
+                                             input_shapes,
+                                             output_names,
+                                             output_shapes,
+                                             FLAGS_run_interval,
+                                             FLAGS_num_threads));
+  } else {
+    std::unique_ptr<PreProcessor> pre_processor =
+        PreProcessorFactory::CreatePreProcessor(pre_processor_type,
+                                                data_formats,
+                                                input_means,
+                                                input_var,
+                                                channel_order);
+    std::unique_ptr<PostProcessor> post_processor =
+        PostProcessorFactory::CreatePostProcessor(post_processor_type);
+    benchmark.reset(new PrecisionBenchmark(executor.get(),
+                                           model_name,
+                                           FLAGS_quantize,
+                                           input_names,
+                                           input_shapes,
+                                           output_names,
+                                           output_shapes,
+                                           FLAGS_run_interval,
+                                           FLAGS_num_threads,
+                                           std::move(pre_processor),
+                                           std::move(post_processor),
+                                           metric_evaluator_type));
+  }
+
+  Status status = benchmark->Run();
   return status;
 }
+
+}  // namespace benchmark
+}  // namespace aibench
+
+int main(int argc, char **argv) { aibench::benchmark::Main(argc, argv); }

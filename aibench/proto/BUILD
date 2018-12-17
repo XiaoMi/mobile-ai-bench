@@ -1,5 +1,5 @@
 # Description:
-# mace proto.
+# aibench proto.
 #
 
 package(
