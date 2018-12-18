@@ -155,12 +155,12 @@ def parse_args():
         "--benchmark_option",
         type=str,
         default="Performance",
-        help="Benchmark items, Performace/Precision")
+        help="Benchmark options, Performace/Precision")
     parser.add_argument(
         "--input_dir",
         type=str,
         default="",
-        help="Input data directory")
+        help="Input data directory for precision benchmark")
     parser.add_argument(
         "--target_abis",
         type=str,
