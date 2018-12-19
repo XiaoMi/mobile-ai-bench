@@ -175,8 +175,9 @@ def get_tflite(configs, output_dir):
     sh.unzip("-o", file_path, "-d", "third_party/tflite")
 
 
-def bazel_build(serialno, target, abi, executors, device_types):
-    print("* Build %s with ABI %s" % (target, abi))
+def bazel_build(serialno, target, abi, executor, device_types):
+    print("* Build %s for %s with ABI %s"
+          % (target, base_pb2.ExecutorType.Name(executor), abi))
     if abi == "host":
         bazel_args = (
             "build",
@@ -192,13 +193,13 @@ def bazel_build(serialno, target, abi, executors, device_types):
             "--action_env=ANDROID_NDK_HOME=%s"
             % os.environ["ANDROID_NDK_HOME"],
         )
-    for executor in executors:
-        bazel_args += ("--define", "%s=true"
-                       % base_pb2.ExecutorType.Name(executor).lower())
-    bazel_args += ("--define", "neon=true")
-    bazel_args += ("--define", "openmp=true")
-    bazel_args += ("--define", "opencl=true")
-    bazel_args += ("--define", "quantize=true")
+    bazel_args += ("--define", "%s=true"
+                   % base_pb2.ExecutorType.Name(executor).lower())
+    if executor == base_pb2.MACE:
+        bazel_args += ("--define", "neon=true")
+        bazel_args += ("--define", "openmp=true")
+        bazel_args += ("--define", "opencl=true")
+        bazel_args += ("--define", "quantize=true")
 
     if base_pb2.DSP in device_types and abi == "armeabi-v7a":
         with device_lock(serialno):
@@ -229,7 +230,7 @@ def bazel_target_to_bin(target):
     return host_bin_path, bin_name
 
 
-def prepare_device_env(serialno, abi, device_bin_path, executors):
+def prepare_device_env(serialno, abi, device_bin_path, executor):
     opencv_lib_path = ""
     if abi == "armeabi-v7a":
         opencv_lib_path = "bazel-mobile-ai-bench/external/opencv/sdk/native/libs/armeabi-v7a/libopencv_java3.so"  # noqa
@@ -238,7 +239,7 @@ def prepare_device_env(serialno, abi, device_bin_path, executors):
     if opencv_lib_path:
         adb_push(opencv_lib_path, device_bin_path, serialno)
     # for snpe
-    if base_pb2.SNPE in executors:
+    if base_pb2.SNPE == executor:
         snpe_lib_path = ""
         if abi == "armeabi-v7a":
             snpe_lib_path = \
@@ -258,12 +259,12 @@ def prepare_device_env(serialno, abi, device_bin_path, executors):
                  device_bin_path, serialno)
 
     # for mace
-    if base_pb2.MACE in executors and abi == "armeabi-v7a":
+    if base_pb2.MACE == executor and abi == "armeabi-v7a":
         adb_push("third_party/mace/nnlib/libhexagon_controller.so",  # noqa
                  device_bin_path, serialno)
 
     # for tflite
-    if base_pb2.TFLITE in executors:
+    if base_pb2.TFLITE == executor:
         tflite_lib_path = ""
         if abi == "armeabi-v7a":
             tflite_lib_path = \
@@ -417,7 +418,7 @@ def get_cpu_mask(serialno):
             cpu_id += 1
     for freq in freq_list:
         cpu_mask = '1' + cpu_mask if freq == max(freq_list) else '0' + cpu_mask
-    return str(hex(int(cpu_mask, 2)))[2:]
+    return str(hex(int(cpu_mask, 2)))[2:], cpu_mask.count('1')
 
 
 def adb_run(abi,
@@ -429,14 +430,10 @@ def adb_run(abi,
             run_interval,
             num_threads,
             max_time_per_lock,
-            push_list,
             benchmark_list,
-            executors,
+            executor,
             device_bin_path,
-            output_dir,
             ):
-    sh.adb("-s", serialno, "shell", "rm -rf %s"
-           % os.path.join(device_bin_path, "result.txt"))
     props = adb_getprop_by_serialno(serialno)
     product_model = props["ro.product.model"]
     target_soc = props["ro.board.platform"]
@@ -465,8 +462,8 @@ def adb_run(abi,
             sh.adb("-s", serialno, "shell", "mkdir %s"
                    % os.path.join(device_bin_path, "interior"))
 
-            prepare_device_env(serialno, abi, device_bin_path, executors)
-            push_all_models(serialno, device_bin_path, push_list)
+            prepare_device_env(serialno, abi, device_bin_path, executor)
+
             if benchmark_option == base_pb2.Precision:
                 push_precision_files(serialno, device_bin_path, input_dir)
 
@@ -475,23 +472,30 @@ def adb_run(abi,
             adb_push(host_bin_full_path, device_bin_path, serialno)
             print("Run %s" % device_bin_full_path)
 
-            cpu_mask = get_cpu_mask(serialno)
+            cpu_mask, big_core_num = get_cpu_mask(serialno)
+            num_threads = min(big_core_num, num_threads)
             cmd = "cd %s; ADSP_LIBRARY_PATH='.;/system/lib/rfsa/adsp;" \
                   "/system/vendor/lib/rfsa/adsp;/dsp';" \
-                  " LD_LIBRARY_PATH=. taskset " \
-                  % device_bin_path + cpu_mask + " ./model_benchmark"
+                  " LD_LIBRARY_PATH=." % device_bin_path
+            cmd_tflite = cmd + " taskset " + cpu_mask + " ./model_benchmark"
+            cmd = cmd + " ./model_benchmark"
 
             elapse_minutes = 0  # run at least one model
             while elapse_minutes < max_time_per_lock \
                     and i < len(benchmark_list):
                 item = benchmark_list[i]
                 i += 1
+                if item[AIBenchKeyword.executor] != executor:
+                    continue
                 print(
-                    base_pb2.ExecutorType.Name(item[AIBenchKeyword.executor]),
-                    base_pb2.ModelName.Name(item[AIBenchKeyword.model_name]),
+                    base_pb2.ExecutorType.Name(
+                        item[AIBenchKeyword.executor]),
+                    base_pb2.ModelName.Name(
+                        item[AIBenchKeyword.model_name]),
                     base_pb2.DeviceType.Name(
                         item[AIBenchKeyword.device_type]),
-                    "Quantized" if item[AIBenchKeyword.quantize] else "Float")
+                    "Quantized" if item[AIBenchKeyword.quantize]
+                    else "Float")
                 args = [
                     "--run_interval=%d" % run_interval,
                     "--num_threads=%d " % num_threads,
@@ -502,20 +506,16 @@ def adb_run(abi,
                     "--quantize=%s" % item[AIBenchKeyword.quantize],
                     ]
                 args = ' '.join(args)
+                cmd_run = cmd_tflite if item[AIBenchKeyword.executor] \
+                    == base_pb2.TFLITE else cmd
                 sh.adb(
                     "-s",
                     serialno,
                     "shell",
-                    "%s %s" % (cmd, args),
+                    "%s %s" % (cmd_run, args),
                     _fg=True)
                 elapse_minutes = (time.time() - start_time) / 60
             print("Elapse time: %f minutes." % elapse_minutes)
         # Sleep awhile so that other pipelines can get the device lock.
         time.sleep(run_interval)
-
-    src_path = device_bin_path + "/result.txt"
-    dest_path = output_dir + "/" + product_model + "_" + target_soc + "_" \
-        + abi + "_" + "result.txt"
-    adb_pull(src_path, dest_path, serialno)
-
-    return dest_path
+    return product_model, target_soc
