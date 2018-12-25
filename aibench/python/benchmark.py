@@ -15,6 +15,7 @@
 import argparse
 import os
 import random
+import sh
 import sys
 import yaml
 
@@ -22,7 +23,6 @@ from aibench.proto import base_pb2
 from aibench.python.utils.common import aibench_check
 from aibench.python.utils.common import ABI_TYPES
 import sh_commands
-
 
 DEVICE_PATH = "/data/local/tmp/aibench"
 
@@ -268,20 +268,27 @@ def main(unused_args):
             print("Unable to run on host yet!")
             continue
         for serialno in target_devices:
-            sh_commands.bazel_build(serialno, target, target_abi, executors,
-                                    device_types)
+            sh.adb("-s", serialno, "shell", "rm -rf %s"
+                   % os.path.join(DEVICE_PATH, "result.txt"))
             if target_abi not in set(
                     sh_commands.adb_supported_abis(serialno)):
                 print("Skip device %s which does not support ABI %s" %
                       (serialno, target_abi))
                 continue
-
-            result_file = sh_commands.adb_run(
-                target_abi, serialno, host_bin_path, bin_name,
-                benchmark_option, input_dir, FLAGS.run_interval,
-                FLAGS.num_threads, FLAGS.max_time_per_lock, push_list,
-                benchmark_list, executors, DEVICE_PATH, FLAGS.output_dir)
-            result_files.append(result_file)
+            sh_commands.push_all_models(serialno, DEVICE_PATH, push_list)
+            for executor in executors:
+                sh_commands.bazel_build(serialno, target, target_abi, executor,
+                                        device_types)
+                product_model, target_soc = sh_commands.adb_run(
+                    target_abi, serialno, host_bin_path, bin_name,
+                    benchmark_option, input_dir, FLAGS.run_interval,
+                    FLAGS.num_threads, FLAGS.max_time_per_lock,
+                    benchmark_list, executor, DEVICE_PATH)
+            src_path = DEVICE_PATH + "/result.txt"
+            dest_path = FLAGS.output_dir + "/" + product_model + "_" + \
+                target_soc + "_" + target_abi + "_" + "result.txt"
+            sh_commands.adb_pull(src_path, dest_path, serialno)
+            result_files.append(dest_path)
 
     process_result(result_files)
 
