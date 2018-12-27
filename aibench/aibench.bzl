@@ -30,12 +30,6 @@ def if_mace_enabled(a):
         "//conditions:default": [],
     })
 
-def if_mace_dsp_enabled(a):
-    return select({
-        "//aibench:mace_dsp_enabled": a,
-        "//conditions:default": [],
-    })
-
 def if_ncnn_enabled(a):
     return select({
         "//aibench:ncnn_enabled": a,

@@ -68,6 +68,7 @@ std::string GetFileName(const std::string &path) {
 Status GetBenchInfo(const std::string &filename,
                     std::vector<std::string> *input_names,
                     std::vector<std::string> *output_names,
+                    std::vector<std::vector<int64_t>> *output_shapes,
                     std::string *model_file,
                     std::string *weight_file) {
   std::vector<unsigned char> file_buffer;
@@ -91,6 +92,13 @@ Status GetBenchInfo(const std::string &filename,
                             model.input_names().end());
         output_names->assign(model.output_names().begin(),
                              model.output_names().end());
+        if (model.output_shape_size() > 0) {
+          output_shapes->resize(model.output_shape_size());
+          for (int i = 0; i < model.output_shape_size(); ++i) {
+            (*output_shapes)[i].assign(model.output_shape(i).shape().begin(),
+                                       model.output_shape(i).shape().end());
+          }
+        }
         return Status::SUCCESS;
       }
     }
@@ -204,18 +212,6 @@ int Main(int argc, char **argv) {
   auto device_type = static_cast<DeviceType>(FLAGS_device_type);
   auto model_name = static_cast<ModelName>(FLAGS_model_name);
 
-  std::vector<std::string> input_names;
-  std::vector<std::string> output_names;
-  std::string model_file;
-  std::string weight_file;
-  if (GetBenchInfo("benchmark.pb",
-                   &input_names,
-                   &output_names,
-                   &model_file,
-                   &weight_file) != Status::SUCCESS) {
-    LOG(FATAL) << "Bench info parse failed";
-  }
-
   ChannelOrder channel_order;
   std::vector<DataFormat> data_formats;
   std::vector<std::vector<int64_t>> input_shapes;
@@ -236,6 +232,19 @@ int Main(int argc, char **argv) {
                        &post_processor_type,
                        &metric_evaluator_type) != SUCCESS) {
     LOG(FATAL) << "Model info parse failed";
+  }
+
+  std::vector<std::string> input_names;
+  std::vector<std::string> output_names;
+  std::string model_file;
+  std::string weight_file;
+  if (GetBenchInfo("benchmark.pb",
+                   &input_names,
+                   &output_names,
+                   &output_shapes,
+                   &model_file,
+                   &weight_file) != Status::SUCCESS) {
+    LOG(FATAL) << "Bench info parse failed";
   }
 
   std::unique_ptr<aibench::BaseExecutor> executor;

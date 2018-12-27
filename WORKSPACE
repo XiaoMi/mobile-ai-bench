@@ -37,12 +37,12 @@ new_http_archive(
 
 http_archive(
     name = "mace",
-    sha256 = "1983eed6316e2baf414d8bd6ec91e58c93087725b9f2a9fe2273b692a981f94d",
-    strip_prefix = "mace-ce465fa60864a2166d4c160c5294f2e3d7c1e8a6",
+    sha256 = "414e9ba6798fde4f217e2614714e8e40fb27095d1b23d0410b99501606107b8a",
+    strip_prefix = "mace-aea5e30a1151b1fe75becac697793917b89b8ed1",
     type = "zip",
     urls = [
-        "https://cnbj1.fds.api.xiaomi.com/aibench/third_party/mace-ce465fa60864a2166d4c160c5294f2e3d7c1e8a6.zip",
-        "https://codeload.github.com/XiaoMi/mace/zip/ce465fa60864a2166d4c160c5294f2e3d7c1e8a6",
+        "https://cnbj1.fds.api.xiaomi.com/aibench/third_party/mace-aea5e30a1151b1fe75becac697793917b89b8ed1.zip",
+        "https://codeload.github.com/XiaoMi/mace/zip/aea5e30a1151b1fe75becac697793917b89b8ed1",
     ]
 )
 
