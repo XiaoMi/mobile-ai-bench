@@ -201,23 +201,28 @@ def bazel_build(serialno, target, abi, executor, device_types):
         bazel_args += ("--define", "opencl=true")
         bazel_args += ("--define", "quantize=true")
 
-    if base_pb2.DSP in device_types and abi == "armeabi-v7a":
-        with device_lock(serialno):
-            try:
-                output = sh.adb("-s", serialno, "shell",
-                                "ls /system/lib/libcdsprpc.so")
-            except sh.ErrorReturnCode_1:
-                print("/system/lib/libcdsprpc.so does not exists! Skip DSP.")
-            else:
-                if "No such file or directory" in output:
-                    print("/system/lib/libcdsprpc.so does not exists! Skip DSP.")  # noqa
+    avail_device_types = copy.copy(device_types)
+    if base_pb2.DSP in avail_device_types:
+        avail_device_types.remove(base_pb2.DSP)
+        if abi == "armeabi-v7a":
+            with device_lock(serialno):
+                try:
+                    output = sh.adb("-s", serialno, "shell",
+                                    "ls /system/vendor/lib/rfsa/adsp/libhexagon_nn_skel.so")  # noqa
+                except sh.ErrorReturnCode_1:
+                    print("/system/vendor/lib/rfsa/adsp/libhexagon_nn_skel.so does not exists! Skip DSP.")  # noqa
                 else:
-                    bazel_args += ("--define", "dsp=true")
-                    bazel_args += ("--define", "hexagon=true")
+                    if "No such file or directory" in output:
+                        print("/system/vendor/lib/rfsa/adsp/libhexagon_nn_skel.so does not exists! Skip DSP.")  # noqa
+                    else:
+                        avail_device_types.append(base_pb2.DSP)
+                        bazel_args += ("--define", "hexagon=true")
     sh.bazel(
         _fg=True,
         *bazel_args)
     print("Build done!\n")
+
+    return avail_device_types
 
 
 def bazel_target_to_bin(target):
@@ -432,6 +437,7 @@ def adb_run(abi,
             max_time_per_lock,
             benchmark_list,
             executor,
+            device_types,
             device_bin_path,
             ):
     props = adb_getprop_by_serialno(serialno)
@@ -485,7 +491,8 @@ def adb_run(abi,
                     and i < len(benchmark_list):
                 item = benchmark_list[i]
                 i += 1
-                if item[AIBenchKeyword.executor] != executor:
+                if item[AIBenchKeyword.executor] != executor or \
+                        item[AIBenchKeyword.device_type] not in device_types:
                     continue
                 print(
                     base_pb2.ExecutorType.Name(

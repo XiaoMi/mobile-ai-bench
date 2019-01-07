@@ -6,6 +6,9 @@ option optimize_for = LITE_RUNTIME;
 
 import "aibench/proto/base.proto";
 
+message TensorShape {
+  repeated int32 shape = 1;
+}
 
 message ModelInfo {
   optional ModelName model_name = 1;
@@ -17,6 +20,9 @@ message ModelInfo {
   repeated DeviceType devices = 7;
   repeated string input_names = 8;
   repeated string output_names = 9;
+
+  // To use specific tensor as output
+  repeated TensorShape output_shape = 10;
 }
 
 message BenchInfo {
@@ -28,9 +34,6 @@ message ModelBaseInfo {
   enum ModelCategory {
     ImageClassification = 1;
     ObjectDetection = 2;
-  }
-  message TensorShape {
-    repeated int32 shape = 1;
   }
 
   optional ModelName model_name = 1;

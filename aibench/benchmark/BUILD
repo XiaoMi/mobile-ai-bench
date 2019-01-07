@@ -11,7 +11,6 @@ load(
     "if_android_arm64",
     "if_android_armv7",
     "if_mace_enabled",
-    "if_mace_dsp_enabled",
     "if_ncnn_enabled",
     "if_snpe_enabled",
     "if_tflite_enabled",
@@ -49,8 +48,6 @@ cc_test(
     srcs = ["benchmark_main.cc"],
     copts = if_mace_enabled([
         "-DAIBENCH_ENABLE_MACE",
-    ]) + if_mace_dsp_enabled([
-        "-DAIBENCH_ENABLE_MACE_DSP",
     ]) + if_ncnn_enabled([
         "-DAIBENCH_ENABLE_NCNN",
     ]) + if_snpe_enabled([

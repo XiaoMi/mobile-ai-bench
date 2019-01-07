@@ -277,13 +277,14 @@ def main(unused_args):
                 continue
             sh_commands.push_all_models(serialno, DEVICE_PATH, push_list)
             for executor in executors:
-                sh_commands.bazel_build(serialno, target, target_abi, executor,
-                                        device_types)
+                avail_device_types = \
+                    sh_commands.bazel_build(serialno, target, target_abi,
+                                            executor, device_types)
                 product_model, target_soc = sh_commands.adb_run(
                     target_abi, serialno, host_bin_path, bin_name,
                     benchmark_option, input_dir, FLAGS.run_interval,
                     FLAGS.num_threads, FLAGS.max_time_per_lock,
-                    benchmark_list, executor, DEVICE_PATH)
+                    benchmark_list, executor, avail_device_types, DEVICE_PATH)
             src_path = DEVICE_PATH + "/result.txt"
             dest_path = FLAGS.output_dir + "/" + product_model + "_" + \
                 target_soc + "_" + target_abi + "_" + "result.txt"

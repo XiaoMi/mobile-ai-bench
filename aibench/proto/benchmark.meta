@@ -82,7 +82,46 @@ benchmarks {
     output_names: "output"
   }
 }
-
+benchmarks {
+  executor: MACE
+  models {
+    model_name: MobileNetV1
+    quantize: true
+    model_path: "https://cnbj1.fds.api.xiaomi.com/aibench/models/mobilenet_v1_quantize_retrain_dsp.pb"
+    model_checksum: "33636df51aa944d78739b03c405cd1bb"
+    weight_path: "https://cnbj1.fds.api.xiaomi.com/aibench/models/mobilenet_v1_quantize_retrain_dsp.data"
+    weight_checksum: "ef5e0840800724396b0c73dbc3522a8f"
+    devices: DSP
+    input_names: "input"
+    output_names: "MobilenetV1/Logits/Conv2d_1c_1x1/BiasAdd:0"
+    output_shape: {
+        shape: 1
+        shape: 1
+        shape: 1
+        shape: 1001
+    }
+  }
+}
+benchmarks {
+  executor: MACE
+  models {
+    model_name: MobileNetV2
+    quantize: true
+    model_path: "https://cnbj1.fds.api.xiaomi.com/aibench/models/mobilenet_v2_quantize_retrain_dsp.pb"
+    model_checksum: "c3286157875c16aed0420eb9f32de28e"
+    weight_path: "https://cnbj1.fds.api.xiaomi.com/aibench/models/mobilenet_v2_quantize_retrain_dsp.data"
+    weight_checksum: "2a72f8b378606d7001e071307b9424f7"
+    devices: DSP
+    input_names: "input"
+    output_names: "MobilenetV2/Logits/Conv2d_1c_1x1/BiasAdd:0"
+    output_shape: {
+        shape: 1
+        shape: 1
+        shape: 1
+        shape: 1001
+    }
+  }
+}
 
 benchmarks {
   executor: SNPE

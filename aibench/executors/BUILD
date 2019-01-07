@@ -8,7 +8,6 @@ load(
     "//aibench:aibench.bzl",
     "if_android_arm64",
     "if_android_armv7",
-    "if_mace_dsp_enabled",
     "if_not_android",
 )
 
