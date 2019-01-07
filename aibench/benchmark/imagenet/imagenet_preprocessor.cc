@@ -158,7 +158,7 @@ Status ImageNetPreProcessor::Run(const std::string &filename,
     cv::dnn::blobFromImage(image,
                            blob,
                            1.0 / input_var_[0],
-                           cv::Size(image_height, image_width),
+                           cv::Size(image_width, image_height),
                            cv::Scalar(input_means_[0][0],
                                       input_means_[0][1],
                                       input_means_[0][2]),
@@ -166,16 +166,17 @@ Status ImageNetPreProcessor::Run(const std::string &filename,
                            true);
 
     MACE_CHECK(blob.isContinuous(), "blob is not continuous.");
-    std::vector<float>
-        chw_input_data(blob.begin<float>(), blob.end<float>());
+    auto input_size = std::distance(blob.begin<float>(), blob.end<float>());
+    MACE_CHECK(input_size == image_channels * image_height * image_width,
+               "Wrong input size: ", input_size);
     if (data_formats_[0] == NHWC) {
-      imagenet::TransformCHWToHWC(chw_input_data.data(),
+      imagenet::TransformCHWToHWC(blob.ptr<float>(),
                                   image_height,
                                   image_width,
                                   image_channels,
                                   input_data);
     } else if (data_formats_[0] == NCHW) {
-      std::copy_n(chw_input_data.data(), chw_input_data.size(), input_data);
+      std::copy_n(blob.ptr<float>(), input_size, input_data);
     } else {
       LOG(FATAL) << "Wrong input format: " << data_formats_[0];
     }
