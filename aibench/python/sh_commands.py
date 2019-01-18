@@ -399,12 +399,7 @@ def push_precision_files(serialno, device_bin_path, input_dir):
         imagenet_input_path = device_bin_path + "/inputs/"
         print("Pushing images from %s to %s ..."
               % (input_dir, imagenet_input_path))
-        sh.adb("-s", serialno, "shell", "mkdir -p %s" % imagenet_input_path)
-        sh.adb("-s", serialno, "push", input_dir, imagenet_input_path)
-        base_dir = os.path.basename(input_dir) \
-            if input_dir[-1] != '/' else os.path.basename(input_dir[:-1])
-        sh.adb("-s", serialno, "shell", "mv %s/* %s"
-               % (imagenet_input_path + base_dir, imagenet_input_path))
+        sh.adb("-s", serialno, "push", input_dir + "/.", imagenet_input_path)
 
 
 def get_cpu_mask(serialno):
