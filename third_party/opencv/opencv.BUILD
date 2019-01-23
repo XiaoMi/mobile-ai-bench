@@ -3,9 +3,9 @@ exports_files(["LICENSE"])
 cc_library(
     name = "opencv_header",
     hdrs = glob([
-        "sdk/native/jni/include/**/*.hpp",
+        "include/**/*.hpp",
     ]),
-    includes = ["sdk/native/jni/include"],
+    includes = ["include"],
 )
 
 cc_library(
@@ -26,7 +26,7 @@ cc_library(
 cc_library(
     name = "opencv_armeabi-v7a",
     srcs = glob([
-        "sdk/native/libs/armeabi-v7a/libopencv_java3.so",
+        "libs/armeabi-v7a/libopencv_java4.so",
     ]),
     linkopts = [
         "-lz",
@@ -41,10 +41,9 @@ cc_library(
 cc_library(
     name = "opencv_arm64-v8a",
     srcs = glob([
-        "sdk/native/libs/arm64-v8a/libopencv_java3.so",
+        "libs/arm64-v8a/libopencv_java4.so",
     ]),
     linkopts = [
-        "-ljnigraphics",
         "-lz",
         "-ldl",
         "-lm",
@@ -53,3 +52,4 @@ cc_library(
     deps = ["opencv_header"],
     visibility = ["//visibility:public"],
 )
+

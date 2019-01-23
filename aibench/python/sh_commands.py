@@ -238,9 +238,9 @@ def bazel_target_to_bin(target):
 def prepare_device_env(serialno, abi, device_bin_path, executor):
     opencv_lib_path = ""
     if abi == "armeabi-v7a":
-        opencv_lib_path = "bazel-mobile-ai-bench/external/opencv/sdk/native/libs/armeabi-v7a/libopencv_java3.so"  # noqa
+        opencv_lib_path = "bazel-mobile-ai-bench/external/opencv/libs/armeabi-v7a/libopencv_java4.so"  # noqa
     elif abi == "arm64-v8a":
-        opencv_lib_path = "bazel-mobile-ai-bench/external/opencv/sdk/native/libs/arm64-v8a/libopencv_java3.so"  # noqa
+        opencv_lib_path = "bazel-mobile-ai-bench/external/opencv/libs/arm64-v8a/libopencv_java4.so"  # noqa
     if opencv_lib_path:
         adb_push(opencv_lib_path, device_bin_path, serialno)
     # for snpe

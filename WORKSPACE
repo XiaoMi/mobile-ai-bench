@@ -27,14 +27,12 @@ new_http_archive(
 new_http_archive(
     name = "opencv",
     build_file = "third_party/opencv/opencv.BUILD",
-    sha256 = "315bf15ea001e0a153b460969eca513295a73a768409099ff6b856700e95bf91",
-    strip_prefix = "OpenCV-android-sdk",
+    sha256 = "9e4350a7aa5f4c8600a1a94466d42546098d76378f24bd2cf05ab7e96959c910",
     urls = [
-        "https://cnbj1.fds.api.xiaomi.com/aibench/third_party/opencv-3.4.4-android-sdk.zip",
-        "https://sourceforge.net/projects/opencvlibrary/files/3.4.4/opencv-3.4.4-android-sdk.zip/download",
+        "http://cnbj1.fds.api.xiaomi.com/aibench/third_party/opencv-ndk-custom-3.4.4.zip",
     ],
 )
-
+    
 http_archive(
     name = "mace",
     sha256 = "414e9ba6798fde4f217e2614714e8e40fb27095d1b23d0410b99501606107b8a",

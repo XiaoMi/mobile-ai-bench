@@ -10,7 +10,6 @@ load(
     "if_android_armv7",
     "if_armhf_linux",
     "if_aarch64_linux",
-    "if_mace_dsp_enabled",
     "if_not_android",
     "if_android",
 )

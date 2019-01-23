@@ -126,6 +126,8 @@ class StringFormatter:
 ABI_TYPES = [
     "armeabi-v7a",
     "arm64-v8a",
+    "armhf",
+    "aarch64",
     "host",
 ]
 

@@ -73,11 +73,3 @@ config_setting(
     },
     visibility = ["//visibility:public"],
 )
-
-config_setting(
-    name = "opencv_enabled",
-    define_values = {
-        "opencv": "true",
-    },
-    visibility = ["//visibility:public"],
-)
