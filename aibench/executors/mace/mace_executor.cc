@@ -59,7 +59,7 @@ Status MaceExecutor::CreateEngine(std::shared_ptr<mace::MaceEngine> *engine) {
   mace::DeviceType device_type = GetMaceDeviceType(GetDeviceType());
   mace::MaceEngineConfig config(device_type);
   config.SetCPUThreadPolicy(num_threads_,
-                            mace::CPUAffinityPolicy::AFFINITY_BIG_ONLY,
+                            mace::CPUAffinityPolicy::AFFINITY_HIGH_PERFORMANCE,
                             true);
   if (device_type == mace::DeviceType::GPU) {
     const char *storage_path_ptr = getenv("MACE_INTERNAL_STORAGE_PATH");

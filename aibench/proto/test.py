@@ -17,4 +17,3 @@ try:
         print(str(bench_factory))
 except text_format.ParseError as e:
     raise IOError("Cannot parse file.", e)
-

@@ -17,6 +17,7 @@ import os
 import random
 import sh
 import sys
+import threading
 import yaml
 
 from aibench.proto import base_pb2
@@ -224,7 +225,46 @@ def parse_args():
         default=300,
         help="Max run time(in minutes) after every device lock for other "
              "pipelines to get device lock.")
+    parser.add_argument(
+        "--all_devices_at_once",
+        action="store_true",
+        help="whether to benchmark all devices simultaneously.")
     return parser.parse_known_args()
+
+
+def run_on_device(serialno,
+                  target_abi,
+                  push_list,
+                  executors,
+                  target,
+                  device_types,
+                  host_bin_path,
+                  bin_name,
+                  input_dir,
+                  benchmark_option,
+                  benchmark_list,
+                  result_files,
+                  ):
+
+    props = sh_commands.adb_getprop_by_serialno(serialno)
+    product_model = props["ro.product.model"]
+    target_soc = props["ro.board.platform"]
+    result_path = os.path.join(
+        FLAGS.output_dir, product_model + "_" + target_soc + "_" + target_abi +
+        "_" + "result.txt")
+    sh.rm("-rf", result_path)
+    sh_commands.push_all_models(serialno, DEVICE_PATH, push_list)
+    for executor in executors:
+        avail_device_types = \
+            sh_commands.bazel_build(serialno, target, target_abi,
+                                    executor, device_types)
+        sh_commands.adb_run(
+            target_abi, serialno, host_bin_path, bin_name,
+            benchmark_option, input_dir, FLAGS.run_interval,
+            FLAGS.num_threads, FLAGS.max_time_per_lock,
+            benchmark_list, executor, avail_device_types, DEVICE_PATH,
+            FLAGS.output_dir, result_path, product_model, target_soc)
+    result_files.append(result_path)
 
 
 def main(unused_args):
@@ -267,29 +307,32 @@ def main(unused_args):
         if target_abi == "host":
             print("Unable to run on host yet!")
             continue
+
+        threads = []
         for serialno in target_devices:
-            sh.adb("-s", serialno, "shell", "rm -rf %s"
-                   % os.path.join(DEVICE_PATH, "result.txt"))
             if target_abi not in set(
                     sh_commands.adb_supported_abis(serialno)):
                 print("Skip device %s which does not support ABI %s" %
                       (serialno, target_abi))
                 continue
-            sh_commands.push_all_models(serialno, DEVICE_PATH, push_list)
-            for executor in executors:
-                avail_device_types = \
-                    sh_commands.bazel_build(serialno, target, target_abi,
-                                            executor, device_types)
-                product_model, target_soc = sh_commands.adb_run(
-                    target_abi, serialno, host_bin_path, bin_name,
-                    benchmark_option, input_dir, FLAGS.run_interval,
-                    FLAGS.num_threads, FLAGS.max_time_per_lock,
-                    benchmark_list, executor, avail_device_types, DEVICE_PATH)
-            src_path = DEVICE_PATH + "/result.txt"
-            dest_path = FLAGS.output_dir + "/" + product_model + "_" + \
-                target_soc + "_" + target_abi + "_" + "result.txt"
-            sh_commands.adb_pull(src_path, dest_path, serialno)
-            result_files.append(dest_path)
+
+            if FLAGS.all_devices_at_once:
+                t = threading.Thread(
+                    target=run_on_device,
+                    args=(serialno, target_abi, push_list, executors, target,
+                          device_types, host_bin_path, bin_name, input_dir,
+                          benchmark_option, benchmark_list, result_files,))
+                t.start()
+                threads.append(t)
+            else:
+                run_on_device(
+                    serialno, target_abi, push_list, executors, target,
+                    device_types, host_bin_path, bin_name, input_dir,
+                    benchmark_option, benchmark_list, result_files,)
+
+        if FLAGS.all_devices_at_once:
+            for t in threads:
+                t.join()
 
     process_result(result_files)
 

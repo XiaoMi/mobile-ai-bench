@@ -143,7 +143,7 @@ interests. Only MACE supports precision benchmark right now.
 
 | option         | type | default     | explanation |
 | :-----------:  | :--: | :----------:| ------------|
-| --benchmark_option | str | Performance | Benchmark options, Performace/Precision. |
+| --benchmark_option | str | Performance | Benchmark options, Performance/Precision. |
 | --output_dir   | str  | output      | Benchmark output directory. |
 | --executors    | str  | all         | Executors(MACE/SNPE/NCNN/TFLITE), comma separated list or all. |
 | --device_types | str  | all         | DeviceTypes(CPU/GPU/DSP), comma separated list or all. |

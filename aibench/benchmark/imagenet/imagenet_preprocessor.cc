@@ -58,13 +58,9 @@ void GetBlackFileList(const std::string &filename,
 
 bool isValidFileName(const std::unordered_set<std::string> &blacklist,
                      const std::string &filename) {
-  if (filename.find(kImageNameHead) != std::string::npos
+  return (filename.find(kImageNameHead) != std::string::npos
       && filename.find(kImageNameTail) != std::string::npos
-      && blacklist.count(filename) == 0) {
-    return true;
-  } else {
-    return false;
-  }
+      && blacklist.count(filename) == 0);
 }
 
 void TransformCHWToHWC(const float *input_data,
@@ -144,6 +140,8 @@ Status ImageNetPreProcessor::Run(const std::string &filename,
     image_channels = input_shape[1];
     image_height = input_shape[2];
     image_width = input_shape[3];
+  } else {
+    LOG(FATAL) << "Wrong input format: " << data_formats_[0];
   }
   MACE_CHECK(image_channels == 3, "Input channels should be 3");
 

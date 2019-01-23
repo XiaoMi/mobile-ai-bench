@@ -434,11 +434,11 @@ def adb_run(abi,
             executor,
             device_types,
             device_bin_path,
+            output_dir,
+            dest_path,
+            product_model,
+            target_soc,
             ):
-    props = adb_getprop_by_serialno(serialno)
-    product_model = props["ro.product.model"]
-    target_soc = props["ro.board.platform"]
-
     i = 0
     while i < len(benchmark_list):
         print(
@@ -450,9 +450,7 @@ def adb_run(abi,
             print("Run on device: %s, %s, %s" %
                   (serialno, product_model, target_soc))
             try:
-                sh.bash("tools/power.sh",
-                        serialno, props["ro.board.platform"],
-                        _fg=True)
+                sh.bash("tools/power.sh", serialno, target_soc, _fg=True)
             except Exception, e:
                 print("Config power exception %s" % str(e))
 
@@ -462,6 +460,8 @@ def adb_run(abi,
                    % os.path.join(device_bin_path, "interior"))
             sh.adb("-s", serialno, "shell", "mkdir %s"
                    % os.path.join(device_bin_path, "interior"))
+            sh.adb("-s", serialno, "shell", "rm -rf %s"
+                   % os.path.join(device_bin_path, "result.txt"))
 
             prepare_device_env(serialno, abi, device_bin_path, executor)
 
@@ -518,6 +518,10 @@ def adb_run(abi,
                     _fg=True)
                 elapse_minutes = (time.time() - start_time) / 60
             print("Elapse time: %f minutes." % elapse_minutes)
+            src_path = os.path.join(device_bin_path, "result.txt")
+            tmp_path = os.path.join(output_dir, serialno + "_result.txt")
+            adb_pull(src_path, tmp_path, serialno)
+            with open(tmp_path, "r") as tmp, open(dest_path, "a") as dest:
+                dest.write(tmp.read())
         # Sleep awhile so that other pipelines can get the device lock.
         time.sleep(run_interval)
-    return product_model, target_soc

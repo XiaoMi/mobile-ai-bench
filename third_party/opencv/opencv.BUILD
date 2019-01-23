@@ -9,21 +9,6 @@ cc_library(
 )
 
 cc_library(
-    name = "opencv_x86_64",
-    srcs = glob([
-        "sdk/native/libs/x86_64/libopencv_java3.so",
-    ]),
-    linkopts = [
-        "-lz",
-        "-ldl",
-        "-lm",
-        "-llog",
-    ],
-    deps = ["opencv_header"],
-    visibility = ["//visibility:public"],
-)
-
-cc_library(
     name = "opencv_armeabi-v7a",
     srcs = glob([
         "libs/armeabi-v7a/libopencv_java4.so",
