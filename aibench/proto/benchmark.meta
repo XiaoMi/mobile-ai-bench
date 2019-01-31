@@ -2,10 +2,10 @@ benchmarks {
   executor: MACE
   models {
     model_name: MobileNetV1
-    model_path: "https://cnbj1.fds.api.xiaomi.com/aibench/models/mobilenet-v1_1544063874.pb"
-    model_checksum: "4eeacb95d7a47bd3b51a8644b1926825"
-    weight_path: "https://cnbj1.fds.api.xiaomi.com/aibench/models/mobilenet-v1_1544063874.data"
-    weight_checksum: "365bfdd5410a96ea9c0dd39a5decc7cd"
+    model_path: "https://cnbj1.fds.api.xiaomi.com/aibench/models/mobilenet-v1_1548916615.pb"
+    model_checksum: "ee034d9a361ba673c21cb9c00c542b5c"
+    weight_path: "https://cnbj1.fds.api.xiaomi.com/aibench/models/mobilenet-v1_1548916615.data"
+    weight_checksum: "28ffae5a0d45be3fc93ec91b319d77d7"
     devices: CPU
     devices: GPU
     input_names: "input"
@@ -16,10 +16,10 @@ benchmarks {
   executor: MACE
   models {
     model_name: MobileNetV2
-    model_path: "https://cnbj1.fds.api.xiaomi.com/aibench/models/mobilenet-v2_1544063874.pb"
-    model_checksum: "f60091d1707d576ceada02277fd8d8fc"
-    weight_path: "https://cnbj1.fds.api.xiaomi.com/aibench/models/mobilenet-v2_1544063874.data"
-    weight_checksum: "e23470696a2176905fb5c25b37c4bf94"
+    model_path: "https://cnbj1.fds.api.xiaomi.com/aibench/models/mobilenet-v2_1548916615.pb"
+    model_checksum: "0534a1559a75c74551655d19f1174bb3"
+    weight_path: "https://cnbj1.fds.api.xiaomi.com/aibench/models/mobilenet-v2_1548916615.data"
+    weight_checksum: "eabffb58df8267dd017d18bbbcf40ab9"
     devices: CPU
     devices: GPU
     input_names: "input"
@@ -30,10 +30,10 @@ benchmarks {
   executor: MACE
   models {
     model_name: InceptionV3
-    model_path: "https://cnbj1.fds.api.xiaomi.com/aibench/models/inception-v3_1544063874.pb"
-    model_checksum: "b3e30ccf7649149d9e90bc91c7569025"
-    weight_path: "https://cnbj1.fds.api.xiaomi.com/aibench/models/inception-v3_1544063874.data"
-    weight_checksum: "ee3af6920e6e031f704686724e917391"
+    model_path: "https://cnbj1.fds.api.xiaomi.com/aibench/models/inception-v3_1548916615.pb"
+    model_checksum: "fa4903d7d8cb8cc24e17146170a1b4bb"
+    weight_path: "https://cnbj1.fds.api.xiaomi.com/aibench/models/inception-v3_1548916615.data"
+    weight_checksum: "6e1659cbe99ccd9d45c1f6df42755cfa"
     devices: CPU
     devices: GPU
     input_names: "input"
@@ -44,10 +44,10 @@ benchmarks {
   executor: MACE
   models {
     model_name: SqueezeNetV11
-    model_path: "https://cnbj1.fds.api.xiaomi.com/aibench/models/squeezenet-v11_1544063874.pb"
-    model_checksum: "b5bb8be931397d326b401a8e6f8f82cf"
-    weight_path: "https://cnbj1.fds.api.xiaomi.com/aibench/models/squeezenet-v11_1544063874.data"
-    weight_checksum: "3b3c943e25e3c23dbffbfb4c8cc306ff"
+    model_path: "https://cnbj1.fds.api.xiaomi.com/aibench/models/squeezenet-v11_1548916615.pb"
+    model_checksum: "27ffcac5750ee57f26e7b22da2c446fe"
+    weight_path: "https://cnbj1.fds.api.xiaomi.com/aibench/models/squeezenet-v11_1548916615.data"
+    weight_checksum: "0f95ba040d59eabf3f739315d0c0dbd7"
     devices: CPU
     devices: GPU
     input_names: "data"
@@ -59,10 +59,10 @@ benchmarks {
   models {
     model_name: MobileNetV1
     quantize: true
-    model_path: "https://cnbj1.fds.api.xiaomi.com/aibench/models/mobilenet-v1-quantize-retrain_1544063874.pb"
-    model_checksum: "27e39f3984a635b7b6c64357577086df"
-    weight_path: "https://cnbj1.fds.api.xiaomi.com/aibench/models/mobilenet-v1-quantize-retrain_1544063874.data"
-    weight_checksum: "5b2099ce86acb8d17957f6d02e07491a"
+    model_path: "https://cnbj1.fds.api.xiaomi.com/aibench/models/mobilenet-v1-quantize-retrain_1548916615.pb"
+    model_checksum: "5899a61eca0aebd5ec20ac478478ea59"
+    weight_path: "https://cnbj1.fds.api.xiaomi.com/aibench/models/mobilenet-v1-quantize-retrain_1548916615.data"
+    weight_checksum: "d1c584cfc9fe2646b836c297ad232df9"
     devices: CPU
     input_names: "input"
     output_names: "MobilenetV1/Predictions/Softmax:0"
@@ -73,10 +73,24 @@ benchmarks {
   models {
     model_name: MobileNetV2
     quantize: true
-    model_path: "https://cnbj1.fds.api.xiaomi.com/aibench/models/mobilenet-v2-quantize-retrain_1544063874.pb"
-    model_checksum: "70c64fbeeb926f583ace1368bfa9ed76"
-    weight_path: "https://cnbj1.fds.api.xiaomi.com/aibench/models/mobilenet-v2-quantize-retrain_1544063874.data"
-    weight_checksum: "7379bffd0990f7277b18b1f09bba0197"
+    model_path: "https://cnbj1.fds.api.xiaomi.com/aibench/models/mobilenet-v2-quantize-retrain_1548916615.pb"
+    model_checksum: "631cd4dc2d30546b7e6fcd8af13ce000"
+    weight_path: "https://cnbj1.fds.api.xiaomi.com/aibench/models/mobilenet-v2-quantize-retrain_1548916615.data"
+    weight_checksum: "e4fa7a5b8ae666cc9d0712dfe1b325a8"
+    devices: CPU
+    input_names: "input"
+    output_names: "output"
+  }
+}
+benchmarks {
+  executor: MACE
+  models {
+    model_name: InceptionV3
+    quantize: true
+    model_path: "https://cnbj1.fds.api.xiaomi.com/aibench/models/inception-v3-quantize-retrain_1548916615.pb"
+    model_checksum: "2a7e4249e07512b9c7623c79ac54b500"
+    weight_path: "https://cnbj1.fds.api.xiaomi.com/aibench/models/inception-v3-quantize-retrain_1548916615.data"
+    weight_checksum: "b4fcc416982a65831d6902520d068f66"
     devices: CPU
     input_names: "input"
     output_names: "output"
@@ -87,8 +101,8 @@ benchmarks {
   models {
     model_name: MobileNetV1
     quantize: true
-    model_path: "https://cnbj1.fds.api.xiaomi.com/aibench/models/mobilenet_v1_quantize_retrain_dsp.pb"
-    model_checksum: "33636df51aa944d78739b03c405cd1bb"
+    model_path: "https://cnbj1.fds.api.xiaomi.com/aibench/models/mobilenet-v1-quantize-retrain-dsp_1548916615.pb"
+    model_checksum: "a3aace1f65bd69dc92643fee2ad52201"
     weight_path: "https://cnbj1.fds.api.xiaomi.com/aibench/models/mobilenet_v1_quantize_retrain_dsp.data"
     weight_checksum: "ef5e0840800724396b0c73dbc3522a8f"
     devices: DSP
@@ -107,8 +121,8 @@ benchmarks {
   models {
     model_name: MobileNetV2
     quantize: true
-    model_path: "https://cnbj1.fds.api.xiaomi.com/aibench/models/mobilenet_v2_quantize_retrain_dsp.pb"
-    model_checksum: "c3286157875c16aed0420eb9f32de28e"
+    model_path: "https://cnbj1.fds.api.xiaomi.com/aibench/models/mobilenet_v2_quantize_retrain_dsp_1548916615.pb"
+    model_checksum: "1d1f03173e3e89bd9f1c415078c40971"
     weight_path: "https://cnbj1.fds.api.xiaomi.com/aibench/models/mobilenet_v2_quantize_retrain_dsp.data"
     weight_checksum: "2a72f8b378606d7001e071307b9424f7"
     devices: DSP
@@ -122,38 +136,61 @@ benchmarks {
     }
   }
 }
+benchmarks {
+  executor: MACE
+  models {
+    model_name: InceptionV3
+    quantize: true
+    model_path: "https://cnbj1.fds.api.xiaomi.com/aibench/models/inception-v3-quantize-retrain-dsp_1548916615.pb"
+    model_checksum: "a3eca1cea012b082ace9ed36b7e747ed"
+    weight_path: "https://cnbj1.fds.api.xiaomi.com/aibench/models/inception-v3-quantize-retrain-dsp_1548916615.data"
+    weight_checksum: "bf1cafce4f0ea11339b94c0587f64467"
+    devices: DSP
+    input_names: "input"
+    output_names: "InceptionV3/Logits/Conv2d_1c_1x1/BiasAdd:0"
+    output_shape: {
+        shape: 1
+        shape: 1
+        shape: 1
+        shape: 1001
+    }
+  }
+}
 
 benchmarks {
   executor: SNPE
   models {
     model_name: MobileNetV1
-    model_path: "http://cnbj1.fds.api.xiaomi.com/aibench/models/mobilenet-v1-1.0.dlc"
-    model_checksum: "a8f669ab3cfbbbf9162ea63c5f99c6c3"
+    model_path: "https://cnbj1.fds.api.xiaomi.com/aibench/models/mobilenet-v1-1.0_1548901793.dlc"
+    model_checksum: "8ba7862aa1fe776dd997081131e800fc"
     devices: CPU
     devices: GPU
     input_names: "input:0"
+    output_names: "MobilenetV1/Predictions/Reshape_1:0"
   }
 }
 benchmarks {
   executor: SNPE
   models {
     model_name: MobileNetV2
-    model_path: "http://cnbj1.fds.api.xiaomi.com/aibench/models/mobilenet-v2-1.0.dlc"
-    model_checksum: "ec7ca4679714ecb16c5b5696b9b65e9c"
+    model_path: "https://cnbj1.fds.api.xiaomi.com/aibench/models/mobilenet-v2-1.0_1548901793.dlc"
+    model_checksum: "ebc671c7a693bb196ba28801712e4157"
     devices: CPU
     devices: GPU
     input_names: "input:0"
+    output_names: "MobilenetV2/Predictions/Reshape_1:0"
   }
 }
 benchmarks {
   executor: SNPE
   models {
     model_name: InceptionV3
-    model_path: "https://cnbj1.fds.api.xiaomi.com/aibench/models/inception_v3.dlc"
-    model_checksum: "e9f24b8e365d8869dd96d7c1275fefd8"
+    model_path: "https://cnbj1.fds.api.xiaomi.com/aibench/models/inception_v3_1548901793.dlc"
+    model_checksum: "c502e63c38c322953af09dd0546d4311"
     devices: CPU
     devices: GPU
-    input_names: "Mul:0"
+    input_names: "input:0"
+    output_names: "InceptionV3/Predictions/Reshape_1:0"
   }
 }
 benchmarks {
@@ -161,10 +198,23 @@ benchmarks {
   models {
     model_name: InceptionV3
     quantize: true
-    model_path: "https://cnbj1.fds.api.xiaomi.com/aibench/models/inception_v3_quantized.dlc"
-    model_checksum: "473d402718d6a5456754bf43dfa2f6f9"
+    model_path: "https://cnbj1.fds.api.xiaomi.com/aibench/models/inception_v3_quantized_1548901793.dlc"
+    model_checksum: "35b4a7473510bf9e14942ac640ee60d8"
     devices: DSP
-    input_names: "Mul:0"
+    input_names: "input:0"
+    output_names: "InceptionV3/Predictions/Reshape_1:0"
+  }
+}
+benchmarks {
+  executor: SNPE
+  models {
+    model_name: InceptionV3
+    quantize: true
+    model_path: "https://cnbj1.fds.api.xiaomi.com/aibench/models/inception_v3_quantized_aix_1548901793.dlc"
+    model_checksum: "3a8f4fc60ee583114de9b2829ad9b416"
+    devices: NPU
+    input_names: "input:0"
+    output_names: "InceptionV3/Predictions/Reshape_1:0"
   }
 }
 

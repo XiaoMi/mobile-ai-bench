@@ -74,17 +74,26 @@ Status MaceExecutor::CreateEngine(std::shared_ptr<mace::MaceEngine> *engine) {
         mace::GPUPerfHint::PERF_HIGH,
         mace::GPUPriorityHint::PRIORITY_HIGH);
   }
-  std::vector<unsigned char> model_pb_data;
-  if (ReadBinaryFile(&model_pb_data, GetModelFile()) != Status::SUCCESS) {
+
+  std::vector<unsigned char> model_graph_data;
+  if (!mace::ReadBinaryFile(&model_graph_data, GetModelFile())) {
     LOG(FATAL) << "Failed to read file: " << GetModelFile();
   }
+  model_weights_data_.clear();
+  if (!mace::ReadBinaryFile(&model_weights_data_, GetWeightFile())) {
+    LOG(FATAL) << "Failed to read file: " << GetWeightFile();
+  }
+
   mace::MaceStatus create_engine_status;
-  create_engine_status = mace::CreateMaceEngineFromProto(model_pb_data,
-                                                         GetWeightFile(),
-                                                         input_names_,
-                                                         output_names_,
-                                                         config,
-                                                         engine);
+  create_engine_status =
+      mace::CreateMaceEngineFromProto(model_graph_data.data(),
+                                      model_graph_data.size(),
+                                      model_weights_data_.data(),
+                                      model_weights_data_.size(),
+                                      input_names_,
+                                      output_names_,
+                                      config,
+                                      engine);
   return create_engine_status ==
       mace::MaceStatus::MACE_SUCCESS ? Status::SUCCESS : Status::RUNTIME_ERROR;
 }

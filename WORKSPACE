@@ -35,12 +35,12 @@ new_http_archive(
     
 http_archive(
     name = "mace",
-    sha256 = "414e9ba6798fde4f217e2614714e8e40fb27095d1b23d0410b99501606107b8a",
-    strip_prefix = "mace-aea5e30a1151b1fe75becac697793917b89b8ed1",
+    sha256 = "48b6457fa2813f17e201e7e3bff56f8b1f31bb22146d2986ab67500f29626fea",
+    strip_prefix = "mace-973550044dc01a06942edd9aef98f79940e23b28",
     type = "zip",
     urls = [
-        "https://cnbj1.fds.api.xiaomi.com/aibench/third_party/mace-aea5e30a1151b1fe75becac697793917b89b8ed1.zip",
-        "https://codeload.github.com/XiaoMi/mace/zip/aea5e30a1151b1fe75becac697793917b89b8ed1",
+        "https://cnbj1.fds.api.xiaomi.com/aibench/third_party/mace-973550044dc01a06942edd9aef98f79940e23b28.zip",
+        "https://codeload.github.com/XiaoMi/mace/zip/973550044dc01a06942edd9aef98f79940e23b28",
     ]
 )
 
@@ -65,10 +65,10 @@ new_http_archive(
 new_http_archive(
     name = "snpe",
     build_file = "third_party/snpe/snpe.BUILD",
-    sha256 = "6f40cdeb86a1afd25b8bc7a41981b55b5f2db59f82e2aaf4c8951a9c5472ef4e",
-    strip_prefix = "snpe-1.18.0",
+    sha256 = "8f2b92b236aa7492e4acd217a96259b0ddc1a656cbc3201c7d1c843e1f957e77",
+    strip_prefix = "snpe-1.22.2.233",
     urls = [
-        "https://cnbj1-fds.api.xiaomi.net/aibench/third_party/snpe-1.18.0_with_libgnustl_shared.so.zip",
+        "https://cnbj1-fds.api.xiaomi.net/aibench/third_party/snpe-1.22.2_with_libgnustl_shared.so.zip",
     ],
 )
 # You need to uncomment following new_local_repository and comment foregoing
@@ -76,7 +76,7 @@ new_http_archive(
 # new_local_repository(
 #     name = "snpe",
 #     build_file = "third_party/snpe/snpe.BUILD",
-#     path = "/path/to/snpe-1.18.0",
+#     path = "/path/to/snpe",
 # )
 
 http_archive(

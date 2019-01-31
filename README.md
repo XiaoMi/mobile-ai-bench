@@ -78,17 +78,17 @@ uncompress it, [copy libgnustl_shared.so](https://developer.qualcomm.com/docs/sn
 #new_http_archive(
 #    name = "snpe",
 #    build_file = "third_party/snpe/snpe.BUILD",
-#    sha256 = "820dda1eaa5d36f7548fc803122c2c119f669a905cca03349f0480d023f7ed17",
-#    strip_prefix = "snpe-1.18.0",
+#    sha256 = "8f2b92b236aa7492e4acd217a96259b0ddc1a656cbc3201c7d1c843e1f957e77",
+#    strip_prefix = "snpe-1.22.2.233",
 #    urls = [
-#        "https://cnbj1-fds.api.xiaomi.net/aibench/third_party/snpe-1.18.0.zip",
+#        "https://cnbj1-fds.api.xiaomi.net/aibench/third_party/snpe-1.22.2_with_libgnustl_shared.so.zip",
 #    ],
 #)
 
 new_local_repository(
     name = "snpe",
     build_file = "third_party/snpe/snpe.BUILD",
-    path = "/path/to/snpe-1.18.0",
+    path = "/path/to/snpe",
 )
 ```
 

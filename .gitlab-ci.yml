@@ -24,10 +24,10 @@ benchmark:
     - DAY_OF_WEEK=`date +%u`
     - >
       if [ $DAY_OF_WEEK -lt 6 ]; then
-        bash tools/benchmark.sh --output_dir=$CI_PROJECT_OUTPUT_PATH --benchmark_option=Precision --target_abis=armeabi-v7a,arm64-v8a --max_time_per_lock=30 --executors=MACE --input_dir=http --num_targets=1;
+        bash tools/benchmark.sh --output_dir=$CI_PROJECT_OUTPUT_PATH --benchmark_option=Precision --target_abis=armeabi-v7a,arm64-v8a --max_time_per_lock=30 --executors=MACE,SNPE --input_dir=http --num_targets=1;
         bash tools/benchmark.sh --output_dir=$CI_PROJECT_OUTPUT_PATH --target_abis=armeabi-v7a,arm64-v8a --max_time_per_lock=30 --num_targets=1;
       else
-        bash tools/benchmark.sh --output_dir=$CI_PROJECT_OUTPUT_PATH --benchmark_option=Precision --target_abis=armeabi-v7a,arm64-v8a --max_time_per_lock=30 --executors=MACE --input_dir=http --all_devices_at_once;
+        bash tools/benchmark.sh --output_dir=$CI_PROJECT_OUTPUT_PATH --benchmark_option=Precision --target_abis=armeabi-v7a,arm64-v8a --max_time_per_lock=30 --executors=MACE,SNPE --input_dir=http --all_devices_at_once;
         bash tools/benchmark.sh --output_dir=$CI_PROJECT_OUTPUT_PATH --target_abis=armeabi-v7a,arm64-v8a --max_time_per_lock=30 --all_devices_at_once;
       fi
     - >

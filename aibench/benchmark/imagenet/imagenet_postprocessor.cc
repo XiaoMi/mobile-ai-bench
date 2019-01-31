@@ -66,11 +66,7 @@ Status ImageNetPostProcessor::Run(
     const std::map<std::string, BaseTensor> &outputs) {
   MACE_CHECK(outputs.size() == 1);
   auto output = outputs.begin();
-  int64_t output_size =
-      std::accumulate(output->second.shape().begin(),
-                      output->second.shape().end(),
-                      1,
-                      std::multiplies<int64_t>());
+  int64_t output_size = output->second.size();
   MACE_CHECK(output_size == 1001 || output_size == 1000,
              "Output size should be 1001 or 1000.");
   float *output_data = output->second.data().get();

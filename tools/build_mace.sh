@@ -19,8 +19,11 @@ cd mace/
 
 MODELS=(
     "inception-v3"
+    "inception-v3-quantize-retrain"
+    "inception-v3-quantize-retrain-dsp"
     "mobilenet-v1"
     "mobilenet-v1-quantize-retrain"
+    "mobilenet-v1-quantize-retrain-dsp"
     "mobilenet-v2"
     "mobilenet-v2-quantize-retrain"
     "squeezenet-v11"
@@ -32,7 +35,7 @@ for CONF_FILE in $CONF_FILES; do
     for MODEL in "${MODELS[@]}"; do
         if [ "$(basename $CONF_FILE .yml)" == "$MODEL" ]; then
             set +e
-            python tools/converter.py convert --config=$CONF_FILE
+            python tools/converter.py convert --config=$CONF_FILE $1
             RESULT=$?
             set -e
             if [ $RESULT == 0 ]; then

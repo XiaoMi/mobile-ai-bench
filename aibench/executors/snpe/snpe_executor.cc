@@ -78,7 +78,7 @@ Status ProcessInput(zdl::SNPE::SNPE *snpe,
     const auto &input_shape = *input_shape_opt;
     std::unique_ptr<zdl::DlSystem::ITensor> input_tensor =
         zdl::SNPE::SNPEFactory::getTensorFactory().createTensor(input_shape);
-    size_t input_size = inputs.at(input_name).size();
+    auto input_size = inputs.at(input_name).size();
 
     std::copy(inputs.at(input_name).data().get(),
               inputs.at(input_name).data().get() + input_size,
@@ -93,28 +93,21 @@ Status ProcessOutput(const zdl::DlSystem::TensorMap &output_tensor_map,
   auto tensor_names = output_tensor_map.getTensorNames();
   for (size_t i = 0; i < tensor_names.size(); ++i) {
     std::string output_name(tensor_names.at(i));
-    if (outputs->count(output_name) > 0) continue;
     zdl::DlSystem::ITensor* output_tensor =
         output_tensor_map.getTensor(output_name.c_str());
-    std::shared_ptr<float> out_data(new float[output_tensor->getSize()]);
     std::copy(output_tensor->begin(), output_tensor->end(),
-              out_data.get());
-    auto output_shape = output_tensor->getShape();
-    std::vector<int64_t> out_shape(output_shape.rank());
-    for (size_t j = 0; j < out_shape.size(); ++j) {
-      out_shape[j] = output_shape[j];
-    }
-    outputs->insert({output_name, BaseTensor(out_shape, out_data)});
+              (*outputs)[output_name].data().get());
   }
   return Status::SUCCESS;
 }
 
 zdl::DlSystem::Runtime_t GetSnpeRuntime(const DeviceType &device_type) {
   switch (device_type) {
-    case CPU: return zdl::DlSystem::Runtime_t::CPU;
-    case GPU: return zdl::DlSystem::Runtime_t::GPU;
-    case DSP: return zdl::DlSystem::Runtime_t::DSP;
-    default: return zdl::DlSystem::Runtime_t::CPU;
+    case CPU: return zdl::DlSystem::Runtime_t::CPU_FLOAT32;
+    case GPU: return zdl::DlSystem::Runtime_t::GPU_FLOAT32_16_HYBRID;
+    case DSP: return zdl::DlSystem::Runtime_t::DSP_FIXED8_TF;
+    case NPU: return zdl::DlSystem::Runtime_t::AIP_FIXED8_TF;
+    default: return zdl::DlSystem::Runtime_t::CPU_FLOAT32;
   }
 }
 
@@ -128,7 +121,7 @@ Status SnpeExecutor::Init(int num_threads) {
 Status SnpeExecutor::Prepare() {
   zdl::DlSystem::Runtime_t device_type = GetSnpeRuntime(GetDeviceType());
   snpe_ = BuildSnpeRuntime(GetModelFile(), device_type);
-  if (snpe_ == nullptr) return Status::RUNTIME_ERROR;
+  if (snpe_ == nullptr) return Status::NOT_SUPPORTED;
   return Status::SUCCESS;
 }
 

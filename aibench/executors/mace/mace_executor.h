@@ -52,6 +52,7 @@ class MaceExecutor : public BaseExecutor {
   std::shared_ptr<mace::MaceEngine> engine_;
   int num_threads_;
   std::shared_ptr<mace::GPUContext> gpu_context_;
+  std::vector<unsigned char> model_weights_data_;
 };
 
 }  // namespace aibench

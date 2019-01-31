@@ -200,6 +200,7 @@ def bazel_build(serialno, target, abi, executor, device_types):
         bazel_args += ("--define", "openmp=true")
         bazel_args += ("--define", "opencl=true")
         bazel_args += ("--define", "quantize=true")
+        bazel_args += ("--define", "hexagon=true")
 
     avail_device_types = copy.copy(device_types)
     if base_pb2.DSP in avail_device_types:
@@ -216,7 +217,6 @@ def bazel_build(serialno, target, abi, executor, device_types):
                         print("/system/vendor/lib/rfsa/adsp/libhexagon_nn_skel.so does not exists! Skip DSP.")  # noqa
                     else:
                         avail_device_types.append(base_pb2.DSP)
-                        bazel_args += ("--define", "hexagon=true")
     sh.bazel(
         _fg=True,
         *bazel_args)
