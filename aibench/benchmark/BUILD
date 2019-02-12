@@ -16,6 +16,7 @@ load(
     "if_ncnn_enabled",
     "if_snpe_enabled",
     "if_tflite_enabled",
+    "if_hiai_enabled",
 )
 
 cc_library(
@@ -41,9 +42,9 @@ cc_library(
     ]) + if_android_arm64([
         "@opencv//:opencv_arm64-v8a",
     ]) + if_armhf_linux([
-        "@opencv//:opencv_armhf",
+        "@opencv//:opencv_armhf_linux",
     ]) + if_aarch64_linux([
-        "@opencv//:opencv_aarch64",
+        "@opencv//:opencv_aarch64_linux",
     ]),
     alwayslink = 1,
 )
@@ -60,6 +61,8 @@ cc_test(
         "-DAIBENCH_ENABLE_SNPE",
     ]) + if_tflite_enabled([
         "-DAIBENCH_ENABLE_TFLITE",
+    ]) + if_hiai_enabled([
+        "-DAIBENCH_ENABLE_HIAI",
     ]),
     linkopts = [
         "-fopenmp",
@@ -80,5 +83,7 @@ cc_test(
         "//aibench/executors:snpe_executor",
     ]) + if_tflite_enabled([
         "//aibench/executors:tflite_executor",
+    ]) + if_hiai_enabled([
+        "//aibench/executors:hiai_executor",
     ]),
 )

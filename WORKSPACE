@@ -120,8 +120,8 @@ bind(
 # Set up Android NDK
 android_ndk_repository(
     name = "androidndk",
-    # Android 5.0
-    api_level = 21,
+    # Android 7.0, without HIAI the api_level can be 21
+    api_level = 24,
 )
 
 # Set up default cross compilers for arm linux
@@ -144,5 +144,16 @@ new_http_archive(
     urls = [
         "https://cnbj1.fds.api.xiaomi.com/mace/third-party/gcc-linaro/gcc-linaro-7.3.1-2018.05-x86_64_aarch64-linux-gnu.tar.xz",
         "https://releases.linaro.org/components/toolchain/binaries/latest/aarch64-linux-gnu/gcc-linaro-7.3.1-2018.05-x86_64_aarch64-linux-gnu.tar.xz",
+    ],
+)
+
+new_http_archive(
+    name = "hiai",
+    build_file = "third_party/hiai/hiai.BUILD",
+    sha256 = "8da8305617573bc495df8f4509fcb1655ffb073d790d9c0b6ca32ba4a4e41055",
+    strip_prefix = "HiAI_DDK_100.200.010.011",
+    type = "zip",
+    urls = [
+        "http://cnbj1.fds.api.xiaomi.com/aibench/third_party/HiAI_DDK_100.200.010.011_LITE.zip",
     ],
 )

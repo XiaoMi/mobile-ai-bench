@@ -73,3 +73,11 @@ config_setting(
     },
     visibility = ["//visibility:public"],
 )
+
+config_setting(
+    name = "hiai_enabled",
+    define_values = {
+        "hiai": "true",
+    },
+    visibility = ["//visibility:public"],
+)

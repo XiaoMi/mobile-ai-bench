@@ -12,6 +12,7 @@ build --strategy=CppCompile=standalone
 build -c opt
 build --copt=-O3
 build --linkopt=-Wl,--strip-all
+build --copt=-fvisibility=hidden
 build --copt=-ffunction-sections
 build --copt=-fdata-sections
 build --linkopt=-Wl,--gc-sections

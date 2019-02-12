@@ -322,3 +322,42 @@ benchmarks {
     input_names: "data"
   }
 }
+
+benchmarks {
+  executor: HIAI
+  models {
+    model_name: InceptionV3
+    model_path: "https://cdn.cnbj1.fds.api.mi-img.com/aibench/models/InceptionV3.cambricon"
+    model_checksum: "08655fd8166e95d075d0496152714f49"
+    devices: NPU
+    input_names: "input"
+    output_names: "InceptionV3/Predictions/Reshape_1"
+    input_shape: {
+      shape: 1
+      shape: 3
+      shape: 299
+      shape: 299
+    }
+    data_format: NCHW
+  }
+}
+
+benchmarks {
+  executor: HIAI
+  models {
+    model_name: InceptionV3
+    quantize: true
+    model_path: "http://cnbj1.fds.api.xiaomi.com/aibench/models/Inceptionv3_8bit.cambricon"
+    model_checksum: "f830d64e19edbb6211999a43c51f83a8"
+    devices: NPU
+    input_names: "input"
+    output_names: "InceptionV3/Predictions/Reshape_1"
+    input_shape: {
+      shape: 1
+      shape: 3
+      shape: 299
+      shape: 299
+    }
+    data_format: NCHW
+  }
+}

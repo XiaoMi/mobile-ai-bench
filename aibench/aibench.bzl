@@ -66,3 +66,9 @@ def if_opencv_enabled(a):
         "//aibench:opencv_enabled": a,
         "//conditions:default": [],
     })
+
+def if_hiai_enabled(a):
+    return select({
+        "//aibench:hiai_enabled": a,
+        "//conditions:default": [],
+    })

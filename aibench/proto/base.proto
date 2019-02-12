@@ -14,6 +14,7 @@ enum ExecutorType {
   SNPE = 2;
   TFLITE = 3;
   NCNN = 4;
+  HIAI = 5;
 }
 
 enum DeviceType {

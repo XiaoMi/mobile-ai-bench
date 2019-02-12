@@ -217,6 +217,20 @@ def bazel_build(serialno, target, abi, executor, device_types):
                         print("/system/vendor/lib/rfsa/adsp/libhexagon_nn_skel.so does not exists! Skip DSP.")  # noqa
                     else:
                         avail_device_types.append(base_pb2.DSP)
+    if base_pb2.NPU in avail_device_types:
+        avail_device_types.remove(base_pb2.NPU)
+        if abi == "arm64-v8a":
+            with device_lock(serialno):
+                try:
+                    output = sh.adb("-s", serialno, "shell",
+                                    "getprop | grep Mate")
+                except sh.ErrorReturnCode_1:
+                    print("it is not mate 20, Skip NPU.")
+                else:
+                    if "Mate 20" not in output:
+                        print("it is not mate 20, Skip NPU.")
+                    else:
+                        avail_device_types.append(base_pb2.NPU)
     sh.bazel(
         _fg=True,
         *bazel_args)
@@ -282,6 +296,10 @@ def prepare_device_env(serialno, abi, device_bin_path, executor):
         if tflite_lib_path:
             adb_push(tflite_lib_path, device_bin_path, serialno)
 
+    # for HIAI
+    if base_pb2.HIAI == executor and abi == "arm64-v8a":
+        hiai_lib_path = "bazel-mobile-ai-bench/external/hiai/DDK/ai_ddk_mixmodel_lib/lib64/libhiai.so" #noqa
+        adb_push(hiai_lib_path, device_bin_path, serialno)
 
 def get_model_file(file_path, checksum, output_dir, push_list):
     filename = file_path.split('/')[-1]

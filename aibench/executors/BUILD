@@ -123,3 +123,22 @@ cc_library(
         "//third_party/tflite:tflite_aarch64",
     ])
 )
+
+cc_library(
+    name = "hiai_executor",
+    srcs = glob([
+        "hiai/hiai_executor.cc",
+    ]),
+    linkopts = [
+        "-lstdc++",
+    ],
+    hdrs = [
+        "hiai/hiai_executor.h",
+    ],
+    deps = [
+        ":base_executor",
+        "@mace//mace/utils",
+    ] + if_android_arm64([
+        "@hiai//:hiai_arm64-v8a",
+    ])
+)
