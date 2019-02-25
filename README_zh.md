@@ -12,14 +12,14 @@
 **MobileAIBench** 是一个端到端的测试工具，用于评测相同的模型在不同硬件和软件框架上运行的性能和精度表现，对开发者的技术选型给出客观参考数据。
 
 ## 每日评测结果
-请查看最新的[CI Pipeline页面](https://gitlab.com/llhe/mobile-ai-bench/pipelines)中的*benchmark*步骤的运行结果。
+请查看最新的[CI Pipeline页面](https://gitlab.com/llhe/mobile-ai-bench/pipelines)中的*benchmark*步骤的运行结果，由于设备原因，运行结果不会覆盖所有的设备和框架。
 
 ## FAQ
 参考英文文档。
 
 ## 准备环境
 
-MobileAIBench 现在支持多种框架 ([MACE](https://github.com/XiaoMi/mace), [SNPE](https://developer.qualcomm.com/software/qualcomm-neural-processing-sdk), [ncnn](https://github.com/Tencent/ncnn) 以及 [TensorFlow Lite](https://github.com/tensorflow/tensorflow/tree/master/tensorflow/contrib/lite))，需要安装以下的依赖：
+MobileAIBench 现在支持多种框架 ([MACE](https://github.com/XiaoMi/mace), [SNPE](https://developer.qualcomm.com/software/qualcomm-neural-processing-sdk), [ncnn](https://github.com/Tencent/ncnn), [TensorFlow Lite](https://github.com/tensorflow/tensorflow/tree/master/tensorflow/contrib/lite) 以及 [HIAI](https://developer.huawei.com/consumer/cn/devservice/doc/3140201))，需要安装以下的依赖：
 
 | 依赖  | 安装命令  | 验证可用的版本  |
 | :-------: | :-------------------: | :-------------: |
@@ -33,7 +33,7 @@ MobileAIBench 现在支持多种框架 ([MACE](https://github.com/XiaoMi/mace), 
 | sh  | pip install -I sh==1.12.14  | 1.12.14  |
 | SNPE (可选)  | [下载](https://developer.qualcomm.com/software/qualcomm-neural-processing-sdk)并解压 | 1.18.0  |
 
-**备注:** 鉴于SNPE的许可不允许第三方再分发, 目前Bazel WORKSPACE配置中的链接只能在CI Server中访问。
+**备注1:** 鉴于SNPE的许可不允许第三方再分发, 目前Bazel WORKSPACE配置中的链接只能在CI Server中访问。
 如果想测评SNPE(通过`--executors`指定`all`或者显式指定了`SNPE`)
 ，需从[官方地址](https://developer.qualcomm.com/software/qualcomm-neural-processing-sdk)
 下载并解压，[复制libgnustl_shared.so](https://developer.qualcomm.com/docs/snpe/setup.html)，然后修改`WORKSPACE`文件如下。
@@ -55,6 +55,29 @@ new_local_repository(
 )
 ```
 
+**备注2:** 鉴于HIAI的许可不允许第三方再分发, 目前Bazel WORKSPACE配置中的链接只能在CI Server中访问。
+如果想测评HIAI(通过`--executors`指定`all`或者显式指定了`HIAI`)
+，需从[官方地址](https://developer.huawei.com/consumer/cn/devservice/doc/3140202)
+登录账号下载`HiAI DDK.zip`并解压，获得其中的`HiAI_DDK_100.200.010.011.zip`文件并解压，然后修改`WORKSPACE`文件如下。
+```python
+#new_http_archive(
+#    name = "hiai",
+#    build_file = "third_party/hiai/hiai.BUILD",
+#    sha256 = "8da8305617573bc495df8f4509fcb1655ffb073d790d9c0b6ca32ba4a4e41055",
+#    strip_prefix = "HiAI_DDK_100.200.010.011",
+#    type = "zip",
+#    urls = [
+#        "http://cnbj1.fds.api.xiaomi.com/aibench/third_party/HiAI_DDK_100.200.010.011_LITE.zip",
+#    ],
+#)
+
+new_local_repository(
+    name = "hiai",
+    build_file = "third_party/hiai/hiai.BUILD",
+    path = "/path/to/hiai",
+)
+```
+
 ## 数据结构
 ```
 +-----------------+         +------------------+      +---------------+
@@ -69,26 +92,31 @@ new_local_repository(
 | - output_shapes |         | + Run()          | <--- | NcnnExecutor  |
 | - run_interval  |         | + Finish()       |      +---------------+
 | - num_threads   |         |                  |
-+-----------------+         +------------------+      +---------------+
-| - Run()         |                              <--- | TfLiteExecutor|
-+-----------------+                                   +---------------+
-        ^     ^             +--------------------+     
-        |     |             |PerformanceBenchmark|      
-        |     --------------+--------------------+       
-        |                   | - Run()            |       
-        |                   +--------------------+ 
++-----------------+         |                  |      +---------------+
+| - Run()         |         |                  | <--- | TfLiteExecutor|
++-----------------+         |                  |      +---------------+
+        ^     ^             |                  |
+        |     |             |                  |      +---------------+
+        |     |             |                  | <--- | HiaiExecutor  |
+        |     |             +------------------+      +---------------+
+        |     |
+        |     |             +--------------------+
+        |     |             |PerformanceBenchmark|
+        |     --------------+--------------------+
+        |                   | - Run()            |
+        |                   +--------------------+
         |
-        |                   +---------------+      +---------------------+                           
-+--------------------+ ---> |PreProcessor   | <--- |ImageNetPreProcessor |                       
-| PrecisionBenchmark |      +---------------+      +---------------------+                         
-+--------------------+                           
-| - pre_processor    |      +---------------+      +---------------------+                         
-| - post_processor   | ---> |PostProcessor  | <--- |ImageNetPostProcessor|                       
-| - metric_evaluator |      +---------------+      +---------------------+                    
-+--------------------+                       
-| - Run()            |      +---------------+                     
-+--------------------+ ---> |MetricEvaluator|                     
-                            +---------------+    
+        |                   +---------------+      +---------------------+
++--------------------+ ---> |PreProcessor   | <--- |ImageNetPreProcessor |
+| PrecisionBenchmark |      +---------------+      +---------------------+
++--------------------+
+| - pre_processor    |      +---------------+      +---------------------+
+| - post_processor   | ---> |PostProcessor  | <--- |ImageNetPostProcessor|
+| - metric_evaluator |      +---------------+      +---------------------+
++--------------------+
+| - Run()            |      +---------------+
++--------------------+ ---> |MetricEvaluator|
+                            +---------------+
 ```
 
 ## 如何使用
@@ -97,7 +125,7 @@ new_local_repository(
 
 ```bash
 bash tools/benchmark.sh --benchmark_option=Performance \
-                        --target_abis=armeabi-v7a,arm64-v8a
+                        --target_abis=armeabi-v7a,arm64-v8a,aarch64,armhf
 ```
 
 运行时间可能比较长，如果只想测试指定模型和框架，可以添加如下选项。当前只有MACE支持精度测试。 
@@ -106,14 +134,26 @@ bash tools/benchmark.sh --benchmark_option=Performance \
 | :-----------:  | :--: | :----------:| ------------|
 | --benchmark_option | str | Performance | Benchmark options, Performance/Precision. |
 | --output_dir   | str  | output      | Benchmark output directory. |
-| --executors    | str  | all         | Executors(MACE/SNPE/NCNN/TFLITE), comma separated list or all. |
-| --device_types | str  | all         | DeviceTypes(CPU/GPU/DSP), comma separated list or all. |
-| --target_abis  | str  | armeabi-v7a | Target ABIs(armeabi-v7a,arm64-v8a), comma separated list. |
+| --executors    | str  | all         | Executors(MACE/SNPE/NCNN/TFLITE/HIAI), comma separated list or all. |
+| --device_types | str  | all         | DeviceTypes(CPU/GPU/DSP/NPU), comma separated list or all. |
+| --target_abis  | str  | armeabi-v7a | Target ABIs(armeabi-v7a,arm64-v8a,aarch64,armhf), comma separated list. |
 | --model_names  | str  | all         | Model names(InceptionV3,MobileNetV1...), comma separated list or all. |
 | --run_interval | int  | 10          | Run interval between benchmarks, seconds. |
 | --num_threads  | int  | 4           | The number of threads. |
 | --input_dir    | str  | ""          | Input data directory for precision benchmark. |
 
+### 配置连接方式为ssh的设备
+对abi为aarch64、armhf的ARM-Linux设备，支持以ssh方式进行连接，需添加yaml配置信息。
+在`generic-mobile-devices/devices_for_ai_bench.yml`配置ssh设备，下面是一个例子：
+```yaml
+devices:
+  nanopi:
+    target_abis: [aarch64, armhf]
+    target_socs: RK3333
+    models: Nanopi M4
+    address: 10.231.46.118
+    username: pi
+```
 
 ### 在已有框架中添加新模型评测
 
@@ -129,7 +169,7 @@ bash tools/benchmark.sh --benchmark_option=Performance \
     ```bash
     bash tools/benchmark.sh --benchmark_option=Performance \
                             --executors=MACE --device_types=CPU --model_names=MobileNetV1 \
-                            --target_abis=armeabi-v7a,arm64-v8a
+                            --target_abis=armeabi-v7a,arm64-v8a,aarch64,armhf
     ```
 
     精度benchmark。当前仅支持以ImageNet图像为输入测试MACE精度。
@@ -137,7 +177,7 @@ bash tools/benchmark.sh --benchmark_option=Performance \
     ```bash
     bash tools/benchmark.sh --benchmark_option=Precision --input_dir=/path/to/inputs \
                             --executors=MACE --device_types=CPU --model_names=MobileNetV1 \
-                            --target_abis=armeabi-v7a,arm64-v8a
+                            --target_abis=armeabi-v7a,arm64-v8a,aarch64,armhf
     ```
     
 * 查看结果

@@ -21,11 +21,9 @@ import threading
 import yaml
 
 from aibench.proto import base_pb2
-from aibench.python.utils.common import aibench_check
 from aibench.python.utils.common import ABI_TYPES
-import sh_commands
-
-DEVICE_PATH = "/data/local/tmp/aibench"
+from aibench.python.utils.common import aibench_check
+import bench_engine
 
 
 class ResultProcessorUtil(object):
@@ -182,13 +180,14 @@ def parse_args():
         "--executors",
         type=str,
         default="all",
-        help="executors to run, MACE/SNPE/NCNN/TFLITE,"
+        help="executors to run, MACE/SNPE/NCNN/TFLITE/HIAI,"
              "comma seperated list or all")
     parser.add_argument(
         "--device_types",
         type=str,
         default="all",
-        help="device_types to run, CPU/GPU/DSP, comma seperated list or all")
+        help="device_types to run, CPU/GPU/DSP/NPU, "
+             "comma seperated list or all")
     parser.add_argument(
         "--run_interval",
         type=int,
@@ -232,7 +231,7 @@ def parse_args():
     return parser.parse_known_args()
 
 
-def run_on_device(serialno,
+def run_on_device(target_device,
                   target_abi,
                   push_list,
                   executors,
@@ -245,25 +244,27 @@ def run_on_device(serialno,
                   benchmark_list,
                   result_files,
                   ):
-
-    props = sh_commands.adb_getprop_by_serialno(serialno)
+    props = target_device.get_props()
     product_model = props["ro.product.model"]
-    target_soc = props["ro.board.platform"]
     result_path = os.path.join(
-        FLAGS.output_dir, product_model + "_" + target_soc + "_" + target_abi +
-        "_" + "result.txt")
+        FLAGS.output_dir, product_model + "_" + target_device.target_soc
+        + "_" + target_abi + "_" + "result.txt")
     sh.rm("-rf", result_path)
-    sh_commands.push_all_models(serialno, DEVICE_PATH, push_list)
+    device_bench_path = target_device.get_bench_path()
+    target_device.exec_command("mkdir -p %s" % device_bench_path)
+    bench_engine.push_all_models(target_device, device_bench_path, push_list)
     for executor in executors:
         avail_device_types = \
-            sh_commands.bazel_build(serialno, target, target_abi,
-                                    executor, device_types)
-        sh_commands.adb_run(
-            target_abi, serialno, host_bin_path, bin_name,
+            target_device.get_available_device_types(device_types, target_abi,
+                                                     executor)
+        bench_engine.bazel_build(target, target_abi, executor,
+                                 avail_device_types)
+        bench_engine.bench_run(
+            target_abi, target_device, host_bin_path, bin_name,
             benchmark_option, input_dir, FLAGS.run_interval,
             FLAGS.num_threads, FLAGS.max_time_per_lock,
-            benchmark_list, executor, avail_device_types, DEVICE_PATH,
-            FLAGS.output_dir, result_path, product_model, target_soc)
+            benchmark_list, executor, avail_device_types, device_bench_path,
+            FLAGS.output_dir, result_path, product_model)
     result_files.append(result_path)
 
 
@@ -274,29 +275,33 @@ def main(unused_args):
     target_socs = None
     if FLAGS.target_socs != "all":
         target_socs = set(FLAGS.target_socs.split(','))
-    target_devices = sh_commands.get_target_socs_serialnos(target_socs)
+
+    target_devices = bench_engine.get_target_devices_by_socs(target_socs)
     if not target_devices:
         print("No available target!")
     if FLAGS.num_targets != 0 and FLAGS.num_targets < len(target_devices):
         random.shuffle(target_devices)
         target_devices = target_devices[:FLAGS.num_targets]
+
     if not os.path.exists(FLAGS.output_dir):
         os.mkdir(FLAGS.output_dir)
+
     target_abis = FLAGS.target_abis.split(',')
+
     target = FLAGS.target
-    host_bin_path, bin_name = sh_commands.bazel_target_to_bin(target)
+    host_bin_path, bin_name = bench_engine.bazel_target_to_bin(target)
 
     executors, device_types, push_list, benchmark_list = \
-        sh_commands.prepare_all_models(
+        bench_engine.prepare_all_models(
             FLAGS.executors, FLAGS.model_names, FLAGS.device_types,
             FLAGS.output_dir)
 
     configs = get_configs()
-    input_dir = sh_commands.prepare_datasets(configs, FLAGS.output_dir,
-                                             FLAGS.input_dir)
+    input_dir = bench_engine.prepare_datasets(configs, FLAGS.output_dir,
+                                              FLAGS.input_dir)
 
     if base_pb2.TFLITE in executors:
-        sh_commands.get_tflite(configs, FLAGS.output_dir)
+        bench_engine.get_tflite(configs, FLAGS.output_dir)
 
     result_files = []
     for target_abi in target_abis:
@@ -309,32 +314,39 @@ def main(unused_args):
             continue
 
         threads = []
-        for serialno in target_devices:
-            if target_abi not in set(
-                    sh_commands.adb_supported_abis(serialno)):
+        for target_device in target_devices:
+            if target_abi not in target_device.target_abis:
                 print("Skip device %s which does not support ABI %s" %
-                      (serialno, target_abi))
+                      (target_device.address, target_abi))
+                continue
+
+            avail_executors = \
+                target_device.get_available_executors(executors, target_abi)
+            if len(avail_executors) == 0:
+                print("Skip device %s which doesn't support current "
+                      "executors" % target_device.address)
                 continue
 
             if FLAGS.all_devices_at_once:
                 t = threading.Thread(
                     target=run_on_device,
-                    args=(serialno, target_abi, push_list, executors, target,
-                          device_types, host_bin_path, bin_name, input_dir,
-                          benchmark_option, benchmark_list, result_files,))
+                    args=(target_device, target_abi, push_list,
+                          avail_executors, target, device_types,
+                          host_bin_path, bin_name, input_dir, benchmark_option,
+                          benchmark_list, result_files,))
                 t.start()
                 threads.append(t)
             else:
                 run_on_device(
-                    serialno, target_abi, push_list, executors, target,
-                    device_types, host_bin_path, bin_name, input_dir,
+                    target_device, target_abi, push_list, avail_executors,
+                    target, device_types, host_bin_path, bin_name, input_dir,
                     benchmark_option, benchmark_list, result_files,)
 
         if FLAGS.all_devices_at_once:
             for t in threads:
                 t.join()
-
-    process_result(result_files)
+    if len(result_files) > 0:
+        process_result(result_files)
 
 
 if __name__ == "__main__":

@@ -23,7 +23,7 @@ which covers different chips and inference frameworks, with results
 include both speed and model accuracy, which will give insights for developers.
 
 ## Daily Benchmark Results
-Please check *benchmark* step in [daily CI pipeline page](https://gitlab.com/llhe/mobile-ai-bench/pipelines).
+Please check *benchmark* step in [daily CI pipeline page](https://gitlab.com/llhe/mobile-ai-bench/pipelines), due to the lack of test devices, the CI result may not cover all hardwares and frameworks.
 
 ## FAQ
 **Q: Why are benchmark results not stable on my device?**
@@ -53,7 +53,7 @@ Thread count can be set by adding `--num_threads` to `tools/benchmark.sh` comman
 
 ## Environment requirement
 
-MobileAIBench supports several deep learning frameworks (called `executor` in this project, i.e., [MACE](https://github.com/XiaoMi/mace), [SNPE](https://developer.qualcomm.com/software/qualcomm-neural-processing-sdk), [ncnn](https://github.com/Tencent/ncnn) and [TensorFlow Lite](https://github.com/tensorflow/tensorflow/tree/master/tensorflow/contrib/lite)) currently, which may require the following dependencies:
+MobileAIBench supports several deep learning frameworks (called `executor` in this project, i.e., [MACE](https://github.com/XiaoMi/mace), [SNPE](https://developer.qualcomm.com/software/qualcomm-neural-processing-sdk), [ncnn](https://github.com/Tencent/ncnn), [TensorFlow Lite](https://github.com/tensorflow/tensorflow/tree/master/tensorflow/contrib/lite) and [HIAI](https://developer.huawei.com/consumer/en/devservice/doc/2020314)) currently, which may require the following dependencies:
 
 | Software  | Installation command  | Tested version  |
 | :-------: | :-------------------: | :-------------: |
@@ -67,7 +67,7 @@ MobileAIBench supports several deep learning frameworks (called `executor` in th
 | sh  | pip install -I sh==1.12.14  | 1.12.14  |
 | SNPE (optional) | [download](https://developer.qualcomm.com/software/qualcomm-neural-processing-sdk) and uncompress  | 1.18.0  |
 
-**Note:** [SNPE](https://developer.qualcomm.com/software/qualcomm-neural-processing-sdk)
+**Note 1:** [SNPE](https://developer.qualcomm.com/software/qualcomm-neural-processing-sdk)
 has strict license that disallows redistribution, so the default link in the
 Bazel `WORKSPACE` file is only accessible by the CI server. To benchmark SNPE
 in your local system (i.e. set `--executors` with `all` or `SNPE` explicitly),
@@ -92,6 +92,32 @@ new_local_repository(
 )
 ```
 
+**Note 2:** [HIAI](https://developer.huawei.com/consumer/en/devservice/doc/2020301)
+has strict license that disallows redistribution, so the default link in the
+Bazel `WORKSPACE` file is only accessible by the CI server. To benchmark HIAI
+in your local system (i.e. set `--executors` with `all` or `HIAI` explicitly),
+you need to login and download the SDK [here](https://developer.huawei.com/consumer/en/devservice/doc/2020301),
+uncompress it and get the `HiAI_DDK_100.200.010.011.zip` file, uncompress it
+ and modify `WORKSPACE` as the following:
+```python
+#new_http_archive(
+#    name = "hiai",
+#    build_file = "third_party/hiai/hiai.BUILD",
+#    sha256 = "8da8305617573bc495df8f4509fcb1655ffb073d790d9c0b6ca32ba4a4e41055",
+#    strip_prefix = "HiAI_DDK_100.200.010.011",
+#    type = "zip",
+#    urls = [
+#        "http://cnbj1.fds.api.xiaomi.com/aibench/third_party/HiAI_DDK_100.200.010.011_LITE.zip",
+#    ],
+#)
+
+new_local_repository(
+    name = "hiai",
+    build_file = "third_party/hiai/hiai.BUILD",
+    path = "/path/to/hiai",
+)
+```
+
 ## Architecture
 ```
 +-----------------+         +------------------+      +---------------+
@@ -106,26 +132,31 @@ new_local_repository(
 | - output_shapes |         | + Run()          | <--- | NcnnExecutor  |
 | - run_interval  |         | + Finish()       |      +---------------+
 | - num_threads   |         |                  |
-+-----------------+         +------------------+      +---------------+
-| - Run()         |                              <--- | TfLiteExecutor|
-+-----------------+                                   +---------------+
-        ^     ^             +--------------------+     
-        |     |             |PerformanceBenchmark|      
-        |     --------------+--------------------+       
-        |                   | - Run()            |       
-        |                   +--------------------+ 
++-----------------+         |                  |      +---------------+
+| - Run()         |         |                  | <--- | TfLiteExecutor|
++-----------------+         |                  |      +---------------+
+        ^     ^             |                  |
+        |     |             |                  |      +---------------+
+        |     |             |                  | <--- | HiaiExecutor  |
+        |     |             +------------------+      +---------------+
+        |     |
+        |     |             +--------------------+
+        |     |             |PerformanceBenchmark|
+        |     --------------+--------------------+
+        |                   | - Run()            |
+        |                   +--------------------+
         |
         |                   +---------------+      +---------------------+                           
-+--------------------+ ---> |PreProcessor   | <--- |ImageNetPreProcessor |                       
-| PrecisionBenchmark |      +---------------+      +---------------------+                         
-+--------------------+                           
-| - pre_processor    |      +---------------+      +---------------------+                         
-| - post_processor   | ---> |PostProcessor  | <--- |ImageNetPostProcessor|                       
-| - metric_evaluator |      +---------------+      +---------------------+                    
-+--------------------+                       
-| - Run()            |      +---------------+                     
-+--------------------+ ---> |MetricEvaluator|                     
-                            +---------------+                  
++--------------------+ ---> |PreProcessor   | <--- |ImageNetPreProcessor |
+| PrecisionBenchmark |      +---------------+      +---------------------+
++--------------------+
+| - pre_processor    |      +---------------+      +---------------------+
+| - post_processor   | ---> |PostProcessor  | <--- |ImageNetPostProcessor|
+| - metric_evaluator |      +---------------+      +---------------------+
++--------------------+
+| - Run()            |      +---------------+
++--------------------+ ---> |MetricEvaluator|
+                            +---------------+
 ```
 
 ## How To Use
@@ -134,7 +165,7 @@ new_local_repository(
 
 ```bash
 bash tools/benchmark.sh --benchmark_option=Performance \
-                        --target_abis=armeabi-v7a,arm64-v8a
+                        --target_abis=armeabi-v7a,arm64-v8a,aarch64,armhf
 ```
 
 The whole benchmark may take a few time, and continuous benchmarking may heat
@@ -145,14 +176,26 @@ interests. Only MACE supports precision benchmark right now.
 | :-----------:  | :--: | :----------:| ------------|
 | --benchmark_option | str | Performance | Benchmark options, Performance/Precision. |
 | --output_dir   | str  | output      | Benchmark output directory. |
-| --executors    | str  | all         | Executors(MACE/SNPE/NCNN/TFLITE), comma separated list or all. |
-| --device_types | str  | all         | DeviceTypes(CPU/GPU/DSP), comma separated list or all. |
-| --target_abis  | str  | armeabi-v7a | Target ABIs(armeabi-v7a,arm64-v8a), comma separated list. |
+| --executors    | str  | all         | Executors(MACE/SNPE/NCNN/TFLITE/HIAI), comma separated list or all. |
+| --device_types | str  | all         | DeviceTypes(CPU/GPU/DSP/NPU), comma separated list or all. |
+| --target_abis  | str  | armeabi-v7a | Target ABIs(armeabi-v7a,arm64-v8a,aarch64,armhf), comma separated list. |
 | --model_names  | str  | all         | Model names(InceptionV3,MobileNetV1...), comma separated list or all. |
 | --run_interval | int  | 10          | Run interval between benchmarks, seconds. |
 | --num_threads  | int  | 4           | The number of threads. |
 | --input_dir    | str  | ""          | Input data directory for precision benchmark. |
 
+### Configure ssh devices
+For embedded ARM-Linux devices whose abi is aarch64 or armhf, ssh connection is supported.
+Configure ssh devices in `generic-mobile-devices/devices_for_ai_bench.yml`, for example:
+```yaml
+devices:
+  nanopi:
+    target_abis: [aarch64, armhf]
+    target_socs: RK3333
+    models: Nanopi M4
+    address: 10.231.46.118
+    username: pi
+```
 
 ### Adding a model to run on existing executor
 
@@ -169,7 +212,7 @@ interests. Only MACE supports precision benchmark right now.
     ```bash
     bash tools/benchmark.sh --benchmark_option=Performance \
                             --executors=MACE --device_types=CPU --model_names=MobileNetV1 \
-                            --target_abis=armeabi-v7a,arm64-v8a
+                            --target_abis=armeabi-v7a,arm64-v8a,aarch64,armhf
     ```
 
     Precision benchmark. Only supports ImageNet images as inputs for benchmarking MACE precision.
@@ -177,7 +220,7 @@ interests. Only MACE supports precision benchmark right now.
     ```bash
     bash tools/benchmark.sh --benchmark_option=Precision --input_dir=/path/to/inputs \
                             --executors=MACE --device_types=CPU --model_names=MobileNetV1 \
-                            --target_abis=armeabi-v7a,arm64-v8a
+                            --target_abis=armeabi-v7a,arm64-v8a,aarch64,armhf
     ```
 * Check benchmark result
 

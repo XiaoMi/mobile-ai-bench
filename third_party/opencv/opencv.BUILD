@@ -41,7 +41,7 @@ cc_library(
 cc_library(
     name = "opencv_aarch64_linux",
     srcs = glob([
-        "libs/aarch64_linux/*.so",
+        "libs/aarch64_linux/*.so.4.0",
     ]),
     linkopts = [
         "-ldl",
@@ -54,7 +54,7 @@ cc_library(
 cc_library(
     name = "opencv_armhf_linux",
     srcs = glob([
-        "libs/armhf_linux/*.so",
+        "libs/armhf_linux/*.so.4.0",
     ]),
     linkopts = [
         "-ldl",

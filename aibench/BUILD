@@ -28,7 +28,7 @@ config_setting(
     name = "armhf_linux",
     values = {
         "crosstool_top": "//tools/arm_compiler:toolchain",
-        "cpu": "armeabi-v7a"
+        "cpu": "armhf"
     },
     visibility = ["//visibility:public"],
 )

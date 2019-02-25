@@ -147,6 +147,8 @@ new_http_archive(
     ],
 )
 
+# You need to comment following new_http_archive and uncomment following
+# new_local_repository to benchmark HIAI
 new_http_archive(
     name = "hiai",
     build_file = "third_party/hiai/hiai.BUILD",
@@ -154,6 +156,14 @@ new_http_archive(
     strip_prefix = "HiAI_DDK_100.200.010.011",
     type = "zip",
     urls = [
-        "http://cnbj1.fds.api.xiaomi.com/aibench/third_party/HiAI_DDK_100.200.010.011_LITE.zip",
+        "http://cnbj1-fds.api.xiaomi.net/aibench/third_party/HiAI_DDK_100.200.010.011_LITE.zip",
     ],
 )
+
+# You need to uncomment following new_local_repository and comment foregoing
+# new_http_archive to benchmark HIAI
+# new_local_repository(
+#     name = "hiai",
+#     build_file = "third_party/hiai/hiai.BUILD",
+#     path = "/path/to/hiai",
+# )
