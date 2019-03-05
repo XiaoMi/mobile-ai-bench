@@ -12,6 +12,7 @@ build --strategy=CppCompile=standalone
 build -c opt
 build --copt=-O3
 build --linkopt=-Wl,--strip-all
+build --copt=-fvisibility=hidden
 build --copt=-ffunction-sections
 build --copt=-fdata-sections
 build --linkopt=-Wl,--gc-sections
@@ -30,7 +31,7 @@ build:android --config=cross_compile
 build:arm_linux_gnueabihf --config=cross_compile
 build:arm_linux_gnueabihf --crosstool_top=//tools/arm_compiler:toolchain
 build:arm_linux_gnueabihf --host_crosstool_top=@bazel_tools//tools/cpp:toolchain
-build:arm_linux_gnueabihf --cpu=armeabi-v7a
+build:arm_linux_gnueabihf --cpu=armhf
 build:arm_linux_gnueabihf --copt -mfloat-abi=hard
 build:arm_linux_gnueabihf --copt -mfpu=neon
 build:arm_linux_gnueabihf --copt -Wno-ignored-attributes

@@ -25,6 +25,9 @@
 #include "aibench/proto/aibench.pb.h"
 #include "aibench/proto/base.pb.h"
 
+#ifdef AIBENCH_ENABLE_HIAI
+#include "aibench/executors/hiai/hiai_executor.h"
+#endif
 #ifdef AIBENCH_ENABLE_MACE
 #include "aibench/executors/mace/mace_executor.h"
 #endif
@@ -69,7 +72,9 @@ std::string GetFileName(const std::string &path) {
 Status GetBenchInfo(const std::string &filename,
                     std::vector<std::string> *input_names,
                     std::vector<std::string> *output_names,
+                    std::vector<std::vector<int64_t>> *input_shapes,
                     std::vector<std::vector<int64_t>> *output_shapes,
+                    std::vector<DataFormat> *data_formats,
                     std::string *model_file,
                     std::string *weight_file) {
   std::vector<unsigned char> file_buffer;
@@ -93,11 +98,24 @@ Status GetBenchInfo(const std::string &filename,
                             model.input_names().end());
         output_names->assign(model.output_names().begin(),
                              model.output_names().end());
+        if (model.input_shape_size() > 0) {
+          input_shapes->resize(model.input_shape_size());
+          for (int i = 0; i < model.input_shape_size(); ++i) {
+            (*input_shapes)[i].assign(model.input_shape(i).shape().begin(),
+                                      model.input_shape(i).shape().end());
+          }
+        }
         if (model.output_shape_size() > 0) {
           output_shapes->resize(model.output_shape_size());
           for (int i = 0; i < model.output_shape_size(); ++i) {
             (*output_shapes)[i].assign(model.output_shape(i).shape().begin(),
                                        model.output_shape(i).shape().end());
+          }
+        }
+        if (model.data_format_size() > 0) {
+          data_formats->resize(model.data_format_size());
+          for (int i = 0; i < model.data_format_size(); ++i) {
+            (*data_formats)[i] = model.data_format(i);
           }
         }
         return Status::SUCCESS;
@@ -222,6 +240,7 @@ int Main(int argc, char **argv) {
   PreProcessor_PreProcessorType pre_processor_type;
   PostProcessor_PostProcessorType post_processor_type;
   MetricEvaluator_MetricEvaluatorType metric_evaluator_type;
+
   if (GetModelBaseInfo("model.pb",
                        &channel_order,
                        &data_formats,
@@ -242,7 +261,9 @@ int Main(int argc, char **argv) {
   if (GetBenchInfo("benchmark.pb",
                    &input_names,
                    &output_names,
+                   &input_shapes,
                    &output_shapes,
+                   &data_formats,
                    &model_file,
                    &weight_file) != Status::SUCCESS) {
     LOG(FATAL) << "Bench info parse failed";
@@ -271,6 +292,14 @@ int Main(int argc, char **argv) {
 #ifdef AIBENCH_ENABLE_TFLITE
   if (executor_type == aibench::TFLITE) {
     executor.reset(new aibench::TfLiteExecutor(model_file));
+  }
+#endif
+#ifdef AIBENCH_ENABLE_HIAI
+  if (executor_type == aibench::HIAI) {
+    std::ostringstream model_name_stream;
+    model_name_stream << model_name;
+    executor.reset(new aibench::HiAiExecutor(model_file,
+                                             model_name_stream.str()));
   }
 #endif
 

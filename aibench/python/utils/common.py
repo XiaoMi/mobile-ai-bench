@@ -131,6 +131,14 @@ ABI_TYPES = [
     "host",
 ]
 
+ABI_TOOLCHAIN_CONFIG = {
+    "armeabi-v7a": "android",
+    "arm64-v8a": "android",
+    "armhf": "arm_linux_gnueabihf",
+    "aarch64": "aarch64_linux_gnu",
+    "host": "",
+}
+
 
 def download_and_extract_dataset(url, download_dir):
     filename = url.split('/')[-1]

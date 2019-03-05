@@ -38,3 +38,28 @@ cc_library(
     visibility = ["//visibility:public"],
 )
 
+cc_library(
+    name = "opencv_aarch64_linux",
+    srcs = glob([
+        "libs/aarch64_linux/*.so.4.0",
+    ]),
+    linkopts = [
+        "-ldl",
+        "-lm",
+    ],
+    deps = ["opencv_header"],
+    visibility = ["//visibility:public"],
+)
+
+cc_library(
+    name = "opencv_armhf_linux",
+    srcs = glob([
+        "libs/armhf_linux/*.so.4.0",
+    ]),
+    linkopts = [
+        "-ldl",
+        "-lm",
+    ],
+    deps = ["opencv_header"],
+    visibility = ["//visibility:public"],
+)

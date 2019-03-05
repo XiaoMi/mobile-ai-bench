@@ -34,10 +34,10 @@ py_test(
 
 py_library(
     name = "benchmark_lib",
-    srcs = [
-        "sh_commands.py",
-        "utils/common.py",
-    ],
+    srcs = glob([
+        "device/*.py",
+        "utils/*.py",
+    ]),
     srcs_version = "PY2AND3",
     deps = [
         "//aibench/proto:aibench_proto_py",
@@ -48,6 +48,7 @@ py_binary(
     name = "benchmark",
     srcs = [
         "benchmark.py",
+        "bench_engine.py",
     ],
     srcs_version = "PY2AND3",
     deps = [

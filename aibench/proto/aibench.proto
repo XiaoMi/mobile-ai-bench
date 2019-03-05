@@ -21,8 +21,10 @@ message ModelInfo {
   repeated string input_names = 8;
   repeated string output_names = 9;
 
-  // To use specific tensor as output
-  repeated TensorShape output_shape = 10;
+  // Specific members to override ModelBaseInfo's member
+  repeated DataFormat data_format = 10;
+  repeated TensorShape input_shape = 11;
+  repeated TensorShape output_shape = 12;
 }
 
 message BenchInfo {

@@ -28,7 +28,7 @@ config_setting(
     name = "armhf_linux",
     values = {
         "crosstool_top": "//tools/arm_compiler:toolchain",
-        "cpu": "armeabi-v7a"
+        "cpu": "armhf"
     },
     visibility = ["//visibility:public"],
 )
@@ -70,6 +70,14 @@ config_setting(
     name = "tflite_enabled",
     define_values = {
         "tflite": "true",
+    },
+    visibility = ["//visibility:public"],
+)
+
+config_setting(
+    name = "hiai_enabled",
+    define_values = {
+        "hiai": "true",
     },
     visibility = ["//visibility:public"],
 )

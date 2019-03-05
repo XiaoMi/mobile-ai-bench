@@ -120,8 +120,8 @@ bind(
 # Set up Android NDK
 android_ndk_repository(
     name = "androidndk",
-    # Android 5.0
-    api_level = 21,
+    # Android 7.0, without HIAI the api_level can be 21
+    api_level = 24,
 )
 
 # Set up default cross compilers for arm linux
@@ -146,3 +146,24 @@ new_http_archive(
         "https://releases.linaro.org/components/toolchain/binaries/latest/aarch64-linux-gnu/gcc-linaro-7.3.1-2018.05-x86_64_aarch64-linux-gnu.tar.xz",
     ],
 )
+
+# You need to comment following new_http_archive and uncomment following
+# new_local_repository to benchmark HIAI
+new_http_archive(
+    name = "hiai",
+    build_file = "third_party/hiai/hiai.BUILD",
+    sha256 = "8da8305617573bc495df8f4509fcb1655ffb073d790d9c0b6ca32ba4a4e41055",
+    strip_prefix = "HiAI_DDK_100.200.010.011",
+    type = "zip",
+    urls = [
+        "http://cnbj1-fds.api.xiaomi.net/aibench/third_party/HiAI_DDK_100.200.010.011_LITE.zip",
+    ],
+)
+
+# You need to uncomment following new_local_repository and comment foregoing
+# new_http_archive to benchmark HIAI
+# new_local_repository(
+#     name = "hiai",
+#     build_file = "third_party/hiai/hiai.BUILD",
+#     path = "/path/to/hiai",
+# )

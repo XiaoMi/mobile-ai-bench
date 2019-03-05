@@ -15,6 +15,7 @@
 
 #include "aibench/benchmark/imagenet/imagenet_postprocessor.h"
 
+#include <algorithm>
 #include <functional>
 #include <fstream>
 #include <iomanip>
@@ -77,7 +78,6 @@ Status ImageNetPostProcessor::Run(
       model_labels_[output_size == 1001 ? output_index : output_index + 1];
   std::string groundtruth_label =
       groundtruth_labels_[imagenet::GetFileNum(filename) - 1];
-
   if (output_label == groundtruth_label) {
     ++correct_count_;
   }
