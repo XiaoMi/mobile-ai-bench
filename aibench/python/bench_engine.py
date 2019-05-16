@@ -369,7 +369,7 @@ def bench_run(abi,
                 sh.bash("tools/power.sh", device.address,
                         device.get_shell_prefix(),
                         device.target_soc, _fg=True)
-            except Exception, e:
+            except Exception as e:
                 print("Config power exception %s" % str(e))
 
             device.exec_command("mkdir -p %s" % device_bin_path)
