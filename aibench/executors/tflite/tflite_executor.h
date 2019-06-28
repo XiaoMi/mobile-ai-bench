@@ -21,19 +21,23 @@
 #include <string>
 
 #include "aibench/executors/base_executor.h"
-#include "tensorflow/contrib/lite/interpreter.h"
-#include "tensorflow/contrib/lite/kernels/register.h"
-#include "tensorflow/contrib/lite/model.h"
-#include "tensorflow/contrib/lite/optional_debug_tools.h"
-#include "tensorflow/contrib/lite/string.h"
-#include "tensorflow/contrib/lite/string_util.h"
+#include "tensorflow/lite/interpreter.h"
+#include "tensorflow/lite/kernels/register.h"
+#include "tensorflow/lite/model.h"
+#include "tensorflow/lite/optional_debug_tools.h"
+#include "tensorflow/lite/string.h"
+#include "tensorflow/lite/string_util.h"
+#include "tensorflow/lite/delegates/gpu/gl_delegate.h"
 
 namespace aibench {
 
 class TfLiteExecutor : public BaseExecutor {
  public:
-  explicit TfLiteExecutor(const std::string &model_file)
-      : BaseExecutor(TFLITE, CPU, model_file, "") {}
+  using TfLiteDelegatePtr = tflite::Interpreter::TfLiteDelegatePtr;
+  using TfLiteDelegatePtrMap = std::map<std::string, TfLiteDelegatePtr>;
+  explicit TfLiteExecutor(DeviceType device_type,
+                          const std::string &model_file)
+      : BaseExecutor(TFLITE, device_type, model_file, "") {}
 
   virtual Status Init(int num_threads);
 
@@ -43,9 +47,10 @@ class TfLiteExecutor : public BaseExecutor {
                      std::map<std::string, BaseTensor> *outputs);
   virtual void Finish();
  private:
+  int num_threads_;
   std::unique_ptr<tflite::Interpreter> interpreter_;
   std::unique_ptr<tflite::FlatBufferModel> model_;
-  int num_threads_;
+  TfLiteDelegatePtrMap delegates_;
 };
 
 }  // namespace aibench

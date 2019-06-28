@@ -175,20 +175,12 @@ def prepare_device_env(device, abi, device_bin_path, executor):
         tflite_lib_path = ""
         if abi == "armeabi-v7a":
             tflite_lib_path = \
-                "third_party/tflite/tensorflow/contrib/lite/" + \
+                "third_party/tflite/tensorflow/lite/" + \
                 "lib/armeabi-v7a/libtensorflowLite.so"
         elif abi == "arm64-v8a":
             tflite_lib_path = \
-                "third_party/tflite/tensorflow/contrib/lite/" + \
+                "third_party/tflite/tensorflow/lite/" + \
                 "lib/arm64-v8a/libtensorflowLite.so"
-        elif abi == "armhf":
-            tflite_lib_path = \
-                "third_party/tflite/tensorflow/contrib/lite/" + \
-                "lib/armhf/libtensorflowLite.so"
-        elif abi == "aarch64":
-            tflite_lib_path = \
-                "third_party/tflite/tensorflow/contrib/lite/" + \
-                "lib/aarch64/libtensorflowLite.so"
         if tflite_lib_path:
             device.push(tflite_lib_path, device_bin_path)
 

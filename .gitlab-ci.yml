@@ -19,7 +19,7 @@ benchmark:
     - DATE_STR=`date "+%Y_%m_%d"`
     - CI_PROJECT_OUTPUT_PATH=/mace-build-output/$CI_PROJECT_NAME/${DATE_STR}_${CI_PIPELINE_ID}
     - mkdir -p $CI_PROJECT_OUTPUT_PATH
-    - ANDROID_NDK_HOME=/opt/android-ndk-r15c
+    - ANDROID_NDK_HOME=/opt/android-ndk-r17b
     - DAY_OF_WEEK=`date +%u`
     - >
       git clone git@v9.git.n.xiaomi.com:deep-computing/generic-mobile-devices.git;

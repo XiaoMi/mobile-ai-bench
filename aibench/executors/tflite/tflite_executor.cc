@@ -13,10 +13,22 @@
 // limitations under the License.
 
 #include "aibench/executors/tflite/tflite_executor.h"
+#include <utility>
 
 #include <iostream>
 
 namespace aibench {
+TfLiteExecutor::TfLiteDelegatePtr CreateGPUDelegate(
+    tflite::FlatBufferModel* model) {
+  TfLiteGpuDelegateOptions options;
+  options.metadata = TfLiteGpuDelegateGetModelMetadata(model->GetModel());
+  options.compile_options.precision_loss_allowed = 1;
+  options.compile_options.preferred_gl_object_type =
+      TFLITE_GL_OBJECT_TYPE_FASTEST;
+  options.compile_options.dynamic_batch_enabled = 0;
+  return TfLiteExecutor::TfLiteDelegatePtr(
+      TfLiteGpuDelegateCreate(&options), &TfLiteGpuDelegateDelete);
+}
 
 Status TfLiteExecutor::Init(int num_threads) {
   num_threads_ = num_threads;
@@ -24,6 +36,7 @@ Status TfLiteExecutor::Init(int num_threads) {
 }
 
 Status TfLiteExecutor::Prepare() {
+  DeviceType device_type = GetDeviceType();
   model_ = tflite::FlatBufferModel::BuildFromFile(GetModelFile().c_str());
   if (!model_) {
     std::cout << "Failed to mmap model_" << GetModelFile() << std::endl;
@@ -38,7 +51,25 @@ Status TfLiteExecutor::Prepare() {
   }
   interpreter_->SetNumThreads(num_threads_);
   interpreter_->UseNNAPI(false);
-  if (interpreter_->AllocateTensors() != kTfLiteOk) {
+  if (device_type == DeviceType::GPU) {
+    TfLiteExecutor::TfLiteDelegatePtr delegate =
+        CreateGPUDelegate(model_.get());
+    if (!delegate) {
+      std::cout << "GPU acceleration is unsupported on this platform."
+                   << std::endl;
+    } else {
+      delegates_.emplace("GPU", std::move(delegate));
+    }
+    for (const auto& delegate : delegates_) {
+      if (interpreter_->ModifyGraphWithDelegate(delegate.second.get()) !=
+          kTfLiteOk) {
+        std::cout << "Failed to apply" << delegate.first << "delegate.";
+      } else {
+        std::cout << "Applied" << delegate.first << "delegate.";
+      }
+    }
+  }
+  if (delegates_.empty() && interpreter_->AllocateTensors() != kTfLiteOk) {
     std::cout << "Failed to allocate tensors!" << std::endl;
     return Status::RUNTIME_ERROR;
   }

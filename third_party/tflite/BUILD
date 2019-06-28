@@ -5,8 +5,9 @@ exports_files(["LICENSE"])
 cc_library(
     name = "tflite_headers",
     hdrs = glob([
-        "tensorflow/contrib/lite/*.h",
-        "tensorflow/contrib/lite/*/*.h",
+        "tensorflow/lite/*.h",
+        "tensorflow/lite/*/*.h",
+        "tensorflow/lite/*/*/*.h",
         "flatbuffers/*.h",
     ]),
     visibility = ["//visibility:public"],
@@ -16,7 +17,7 @@ cc_library(
 cc_library(
     name = "tflite_armeabi-v7a",
     srcs = [
-        "tensorflow/contrib/lite/lib/armeabi-v7a/libtensorflowLite.so",
+        "tensorflow/lite/lib/armeabi-v7a/libtensorflowLite.so",
     ],
     visibility = ["//visibility:public"],
     deps = ["tflite_headers"],
@@ -25,25 +26,7 @@ cc_library(
 cc_library(
     name = "tflite_arm64-v8a",
     srcs = [
-        "tensorflow/contrib/lite/lib/arm64-v8a/libtensorflowLite.so",
-    ],
-    visibility = ["//visibility:public"],
-    deps = ["tflite_headers"],
-)
-
-cc_library(
-    name = "tflite_aarch64",
-	srcs = [
-        "tensorflow/contrib/lite/lib/aarch64/libtensorflowLite.so"
-    ],
-    visibility = ["//visibility:public"],
-    deps = ["tflite_headers"],
-)
-
-cc_library(
-    name = "tflite_armhf",
-	srcs = [
-        "tensorflow/contrib/lite/lib/armhf/libtensorflowLite.so"
+        "tensorflow/lite/lib/arm64-v8a/libtensorflowLite.so",
     ],
     visibility = ["//visibility:public"],
     deps = ["tflite_headers"],
