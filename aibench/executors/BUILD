@@ -6,12 +6,12 @@ licenses(["notice"])  # Apache 2.0
 
 load(
     "//aibench:aibench.bzl",
+    "if_aarch64_linux",
+    "if_android",
     "if_android_arm64",
     "if_android_armv7",
     "if_armhf_linux",
-    "if_aarch64_linux",
     "if_not_android",
-    "if_android",
 )
 
 cc_library(
@@ -75,7 +75,7 @@ cc_library(
         ":base_executor",
     ] + if_android_armv7([
         "@snpe//:snpe_armeabi-v7a",
-    ])+ if_android_arm64([
+    ]) + if_android_arm64([
         "@snpe//:snpe_arm64-v8a",
     ]) + if_aarch64_linux([
         "@snpe//:snpe_aarch64",
@@ -117,7 +117,7 @@ cc_library(
         "//third_party/tflite:tflite_armeabi-v7a",
     ]) + if_android_arm64([
         "//third_party/tflite:tflite_arm64-v8a",
-    ])
+    ]),
 )
 
 cc_library(
@@ -125,16 +125,33 @@ cc_library(
     srcs = glob([
         "hiai/hiai_executor.cc",
     ]),
-    linkopts = [
-        "-lstdc++",
-    ],
     hdrs = [
         "hiai/hiai_executor.h",
+    ],
+    linkopts = [
+        "-lstdc++",
     ],
     deps = [
         ":base_executor",
         "@mace//mace/utils",
     ] + if_android_arm64([
         "@hiai//:hiai_arm64-v8a",
-    ])
+    ]),
+)
+
+cc_library(
+    name = "mnn_executor",
+    srcs = glob([
+        "mnn/mnn_executor.cc",
+    ]),
+    hdrs = [
+        "mnn/mnn_executor.h",
+    ],
+    deps = [
+        ":base_executor",
+    ] + if_android_armv7([
+        "//third_party/mnn:mnn_armeabi-v7a",
+    ]) + if_android_arm64([
+        "//third_party/mnn:mnn_arm64-v8a",
+    ]),
 )

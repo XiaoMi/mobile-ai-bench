@@ -72,3 +72,8 @@ def if_hiai_enabled(a):
         "//aibench:hiai_enabled": a,
         "//conditions:default": [],
     })
+def if_mnn_enabled(a):
+    return select({
+        "//aibench:mnn_enabled": a,
+        "//conditions:default": [],
+    })

@@ -302,6 +302,8 @@ def main(unused_args):
 
     if base_pb2.TFLITE in executors:
         bench_engine.get_tflite(configs, FLAGS.output_dir)
+    if base_pb2.MNN in executors:
+        bench_engine.get_mnn(configs, FLAGS.output_dir)
 
     result_files = []
     for target_abi in target_abis:

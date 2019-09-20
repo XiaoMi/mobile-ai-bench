@@ -84,6 +84,11 @@ def get_tflite(configs, output_dir):
     sh.unzip("-o", file_path, "-d", "third_party/tflite")
 
 
+def get_mnn(configs, output_dir):
+    file_path = download_file(configs, "mnn-0.2.0.9.zip", output_dir)
+    sh.unzip("-o", file_path, "-d", "third_party/mnn")
+
+
 def bazel_build(target, abi, executor, device_types):
     print("* Build %s for %s with ABI %s"
           % (target, base_pb2.ExecutorType.Name(executor), abi))
@@ -189,6 +194,23 @@ def prepare_device_env(device, abi, device_bin_path, executor):
         hiai_lib_path = "bazel-mobile-ai-bench/external/hiai/" + \
                         "DDK/ai_ddk_mixmodel_lib/lib64/libhiai.so"
         device.push(hiai_lib_path, device_bin_path)
+
+    # for mnn
+    if base_pb2.MNN == executor:
+        mnn_lib_path = ""
+        if abi == "armeabi-v7a":
+            mnn_lib_path = \
+                "third_party/mnn/project/android/build_32/libMNN.so"
+            mnn_cl_lib_path = \
+                "third_party/mnn/project/android/build_32/libMNN_CL.so"
+        elif abi == "arm64-v8a":
+            mnn_lib_path = \
+                "third_party/mnn/project/android/build_64/libMNN.so"
+            mnn_cl_lib_path = \
+                "third_party/mnn/project/android/build_64/libMNN_CL.so"
+        if mnn_lib_path:
+            device.push(mnn_lib_path, device_bin_path)
+            device.push(mnn_cl_lib_path, device_bin_path)
 
 
 def get_model_file(file_path, checksum, output_dir, push_list):

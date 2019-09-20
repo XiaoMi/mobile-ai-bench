@@ -31,6 +31,9 @@
 #ifdef AIBENCH_ENABLE_MACE
 #include "aibench/executors/mace/mace_executor.h"
 #endif
+#ifdef AIBENCH_ENABLE_MNN
+#include "aibench/executors/mnn/mnn_executor.h"
+#endif
 #ifdef AIBENCH_ENABLE_NCNN
 #include "aibench/executors/ncnn/ncnn_executor.h"
 #endif
@@ -300,6 +303,11 @@ int Main(int argc, char **argv) {
     model_name_stream << model_name;
     executor.reset(new aibench::HiAiExecutor(model_file,
                                              model_name_stream.str()));
+  }
+#endif
+#ifdef AIBENCH_ENABLE_MNN
+  if (executor_type == aibench::MNN) {
+    executor.reset(new aibench::MnnExecutor(device_type, model_file));
   }
 #endif
 
