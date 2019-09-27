@@ -225,8 +225,10 @@ devices:
 * Check benchmark result
 
     ```bash
-    cat output/report.csv
+    python report/csv_to_html.py
     ```
+
+  Open the corresponding link in a browser to see the report.
 
 
 ### Adding a new AI executor

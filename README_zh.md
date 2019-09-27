@@ -183,8 +183,10 @@ devices:
 * 查看结果
 
     ```bash
-    cat output/report.csv
+    python report/csv_to_html.py
     ```
+
+    在浏览器中打开相应链接查看。
 
 
 ### 加入新的 AI 框架
