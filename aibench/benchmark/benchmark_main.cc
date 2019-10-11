@@ -291,7 +291,7 @@ int Main(int argc, char **argv) {
 #endif
 #ifdef AIBENCH_ENABLE_TFLITE
   if (executor_type == aibench::TFLITE) {
-    executor.reset(new aibench::TfLiteExecutor(model_file));
+    executor.reset(new aibench::TfLiteExecutor(device_type, model_file));
   }
 #endif
 #ifdef AIBENCH_ENABLE_HIAI

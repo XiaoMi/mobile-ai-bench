@@ -117,10 +117,6 @@ cc_library(
         "//third_party/tflite:tflite_armeabi-v7a",
     ]) + if_android_arm64([
         "//third_party/tflite:tflite_arm64-v8a",
-    ]) + if_armhf_linux([
-        "//third_party/tflite:tflite_armhf",
-    ]) + if_aarch64_linux([
-        "//third_party/tflite:tflite_aarch64",
     ])
 )
 

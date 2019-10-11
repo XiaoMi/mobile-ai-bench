@@ -225,6 +225,7 @@ benchmarks {
     model_path: "https://cnbj1.fds.api.xiaomi.com/aibench/models/mobilenet_v1_1.0_224.tflite"
     model_checksum: "8ac1abc6bb388135b8ae9343460482fe"
     devices: CPU
+    devices: GPU
     input_names: "input"
   }
 }
@@ -235,6 +236,7 @@ benchmarks {
     model_path: "https://cnbj1.fds.api.xiaomi.com/aibench/models/mobilenet_v2_1.0_224.tflite"
     model_checksum: "d8065bc96469fdc4f3fdb05b878c6bbc"
     devices: CPU
+    devices: GPU
     input_names: "input"
   }
 }
@@ -245,6 +247,7 @@ benchmarks {
     model_path: "https://cnbj1.fds.api.xiaomi.com/aibench/models/inception_v3.tflite"
     model_checksum: "b09e7cedafccf20f1ab91c6aa8d21d9a"
     devices: CPU
+    devices: GPU
     input_names: "input"
   }
 }
