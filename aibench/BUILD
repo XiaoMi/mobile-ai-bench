@@ -81,3 +81,11 @@ config_setting(
     },
     visibility = ["//visibility:public"],
 )
+
+config_setting(
+    name = "mnn_enabled",
+    define_values = {
+        "mnn": "true",
+    },
+    visibility = ["//visibility:public"],
+)

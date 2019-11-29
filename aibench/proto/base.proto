@@ -15,6 +15,7 @@ enum ExecutorType {
   TFLITE = 3;
   NCNN = 4;
   HIAI = 5;
+  MNN = 6;
 }
 
 enum DeviceType {
@@ -22,6 +23,8 @@ enum DeviceType {
   GPU = 2;
   DSP = 3;
   NPU = 4;
+  VULKAN = 5;
+  OPENGL = 6;
 }
 
 enum ModelName {

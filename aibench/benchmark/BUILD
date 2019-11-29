@@ -6,17 +6,18 @@ licenses(["notice"])  # Apache 2.0
 
 load(
     "//aibench:aibench.bzl",
+    "if_aarch64_linux",
     "if_android",
-    "if_not_android",
     "if_android_arm64",
     "if_android_armv7",
     "if_armhf_linux",
-    "if_aarch64_linux",
+    "if_hiai_enabled",
     "if_mace_enabled",
     "if_ncnn_enabled",
+    "if_not_android",
     "if_snpe_enabled",
     "if_tflite_enabled",
-    "if_hiai_enabled",
+    "if_mnn_enabled",
 )
 
 cc_library(
@@ -63,6 +64,8 @@ cc_test(
         "-DAIBENCH_ENABLE_TFLITE",
     ]) + if_hiai_enabled([
         "-DAIBENCH_ENABLE_HIAI",
+    ]) + if_mnn_enabled([
+        "-DAIBENCH_ENABLE_MNN",
     ]),
     linkopts = [
         "-fopenmp",
@@ -85,5 +88,7 @@ cc_test(
         "//aibench/executors:tflite_executor",
     ]) + if_hiai_enabled([
         "//aibench/executors:hiai_executor",
+    ]) + if_mnn_enabled([
+        "//aibench/executors:mnn_executor",
     ]),
 )
