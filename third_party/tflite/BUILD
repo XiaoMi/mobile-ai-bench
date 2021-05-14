@@ -9,6 +9,7 @@ cc_library(
         "tensorflow/lite/*/*.h",
         "tensorflow/lite/*/*/*.h",
         "flatbuffers/*.h",
+        "absl/base/*.h",
     ]),
     visibility = ["//visibility:public"],
     strip_include_prefix = "",
@@ -17,7 +18,7 @@ cc_library(
 cc_library(
     name = "tflite_armeabi-v7a",
     srcs = [
-        "tensorflow/lite/lib/armeabi-v7a/libtensorflowLite.so",
+        "tensorflow/lite/lib/armeabi-v7a/libtensorflowlite.so",
     ],
     visibility = ["//visibility:public"],
     deps = ["tflite_headers"],
@@ -26,7 +27,7 @@ cc_library(
 cc_library(
     name = "tflite_arm64-v8a",
     srcs = [
-        "tensorflow/lite/lib/arm64-v8a/libtensorflowLite.so",
+        "tensorflow/lite/lib/arm64-v8a/libtensorflowlite.so",
     ],
     visibility = ["//visibility:public"],
     deps = ["tflite_headers"],

@@ -27,7 +27,7 @@
 #include <vector>
 #include <numeric>
 
-#include "mace/utils/logging.h"
+#include "aibench/utils/logging.h"
 
 namespace aibench {
 namespace benchmark {
@@ -56,7 +56,7 @@ Benchmark::Benchmark(BaseExecutor *executor,
       output_shapes_(output_shapes),
       run_interval_(run_interval),
       num_threads_(num_threads) {
-  MACE_CHECK(
+  AIBENCH_CHECK(
       ((input_names.size() == input_shapes.size()) &&
       (output_names.size() == output_shapes.size()
           || output_names.size() == 0)),
@@ -83,7 +83,7 @@ Status Benchmark::LogResult(const std::string &result) {
     LOG(FATAL) << "Failed to log results to result.txt.";
   }
 
-  return SUCCESS;
+  return Status::SUCCESS;
 }
 
 Status PerformanceBenchmark::Run() {
@@ -96,7 +96,7 @@ Status PerformanceBenchmark::Run() {
 
   Status status = Run(&init_ms, &run_ms);
 
-  if (status != SUCCESS) {
+  if (status != Status::SUCCESS) {
     LOG(WARNING) << "benchmark failed: " << GetBenchmarkInfo();
   } else {
     // executor,model_name,device_type,quantize,init time,inference time
@@ -118,7 +118,7 @@ Status PerformanceBenchmark::Run(double *init_ms, double *run_ms) {
   Status status;
   // Init the target's environment
   status = executor_->Init(num_threads_);
-  if (status != SUCCESS) {
+  if (status != Status::SUCCESS) {
     executor_->Finish();
     return status;
   }
@@ -127,7 +127,7 @@ Status PerformanceBenchmark::Run(double *init_ms, double *run_ms) {
   status = executor_->Prepare();
   end_time = NowMicros();
   *init_ms = (end_time - start_time) * 1e-3;
-  if (status != SUCCESS) {
+  if (status != Status::SUCCESS) {
     executor_->Finish();
     return status;
   }
@@ -160,7 +160,7 @@ Status PerformanceBenchmark::Run(double *init_ms, double *run_ms) {
   for (int i = 0; i < 2; ++i) {
     status = executor_->Run(inputs, &outputs);
   }
-  if (status != SUCCESS) {
+  if (status != Status::SUCCESS) {
     executor_->Finish();
     return status;
   }
@@ -176,7 +176,7 @@ Status PerformanceBenchmark::Run(double *init_ms, double *run_ms) {
     end_time = NowMicros();
     durations.push_back(end_time - start_time);
     total_duration += durations.back();
-    if (status != SUCCESS) {
+    if (status != Status::SUCCESS) {
       executor_->Finish();
       return status;
     }
@@ -195,7 +195,7 @@ Status PerformanceBenchmark::Run(double *init_ms, double *run_ms) {
 
   *run_ms = total_duration * 1e-3 / valid_iters;
   executor_->Finish();
-  return SUCCESS;
+  return Status::SUCCESS;
 }
 
 std::string PrecisionBenchmark::GetBenchmarkInfo() const {
@@ -209,7 +209,7 @@ Status PrecisionBenchmark::Run() {
 
   Status status = Evaluate();
 
-  if (status != SUCCESS) {
+  if (status != Status::SUCCESS) {
     LOG(WARNING) << "benchmark failed: " << GetBenchmarkInfo();
   } else {
     std::stringstream stream;
@@ -225,13 +225,13 @@ Status PrecisionBenchmark::Evaluate() {
   Status status;
   // Init the target's environment
   status = executor_->Init(num_threads_);
-  if (status != SUCCESS) {
+  if (status != Status::SUCCESS) {
     executor_->Finish();
     return status;
   }
   // prepare
   status = executor_->Prepare();
-  if (status != SUCCESS) {
+  if (status != Status::SUCCESS) {
     executor_->Finish();
     return status;
   }
@@ -271,17 +271,17 @@ Status PrecisionBenchmark::Evaluate() {
       ++count;
       std::string filename = std::string(entry->d_name);
 
-      if (pre_processor_->Run(filename, &inputs) != SUCCESS) continue;
+      if (pre_processor_->Run(filename, &inputs) != Status::SUCCESS) continue;
 
-      MACE_CHECK(executor_->Run(inputs, &outputs) == SUCCESS);
+      AIBENCH_CHECK(executor_->Run(inputs, &outputs) == Status::SUCCESS);
 
-      MACE_CHECK(post_processor_->Run(filename, outputs) == SUCCESS);
+      AIBENCH_CHECK(post_processor_->Run(filename, outputs) == Status::SUCCESS);
     }
     closedir(dir_parent);
   }
 
   executor_->Finish();
-  return SUCCESS;
+  return Status::SUCCESS;
 }
 
 }  // namespace benchmark

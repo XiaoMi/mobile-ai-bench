@@ -22,14 +22,9 @@
 
 #include "aibench/proto/aibench.pb.h"
 #include "aibench/proto/base.pb.h"
+#include "aibench/utils/logging.h"
 
 namespace aibench {
-
-enum Status {
-  SUCCESS = 0,
-  RUNTIME_ERROR = 1,
-  NOT_SUPPORTED = 2
-};
 
 // input/output tensor
 class BaseTensor {

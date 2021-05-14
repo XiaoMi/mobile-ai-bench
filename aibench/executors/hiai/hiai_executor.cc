@@ -18,7 +18,7 @@
 #include <utility>
 #include <vector>
 
-#include "mace/utils/logging.h"
+#include "aibench/utils/logging.h"
 
 namespace aibench {
 

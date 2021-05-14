@@ -36,8 +36,9 @@ cc_library(
         "imagenet/imagenet_postprocessor.h",
     ],
     deps = [
+	"//aibench/port:port_base",
+	"//aibench/utils:utils",
         "//aibench/executors:base_executor",
-        "@mace//mace/utils",
     ] + if_android_armv7([
         "@opencv//:opencv_armeabi-v7a",
     ]) + if_android_arm64([
@@ -78,6 +79,7 @@ cc_test(
     deps = [
         "benchmark",
         "//external:gflags_nothreads",
+	"//aibench/port:port",
     ] + if_mace_enabled([
         "//aibench/executors:mace_executor",
     ]) + if_ncnn_enabled([

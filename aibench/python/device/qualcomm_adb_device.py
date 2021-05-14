@@ -14,7 +14,7 @@
 
 import sh
 
-from adb_device import AdbDevice
+from aibench.python.device.adb_device import AdbDevice
 from aibench.proto import base_pb2
 from aibench.python.utils.sh_commands import *
 
@@ -24,8 +24,7 @@ class QualcommAdbDevice(AdbDevice):
     def get_available_device_types(self, device_types, abi, executor):
         avail_device_types = AdbDevice.get_available_device_types(
             self, device_types, abi, executor)
-        if base_pb2.DSP in device_types and \
-                (executor == base_pb2.SNPE or self._support_dev_dsp()):
+        if base_pb2.DSP in device_types and self._support_dev_dsp():
             avail_device_types.append(base_pb2.DSP)
 
         if base_pb2.NPU in device_types and self._support_npu():

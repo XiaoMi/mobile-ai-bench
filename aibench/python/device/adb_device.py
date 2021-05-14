@@ -17,8 +17,8 @@ import sh
 
 from aibench.proto import base_pb2
 from aibench.python.utils import sh_commands
-from device import Device
-from device import YAMLKeyword
+from aibench.python.device.device import Device
+from aibench.python.device.device import YAMLKeyword
 
 
 class AdbDevice(Device):

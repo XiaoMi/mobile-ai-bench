@@ -21,6 +21,7 @@
 #include <utility>
 #include <vector>
 
+#include "aibench/port/logger.h"
 #include "aibench/executors/base_executor.h"
 
 namespace aibench {

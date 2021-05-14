@@ -20,7 +20,8 @@ cc_library(
 cc_library(
     name = "snpe_armeabi-v7a",
     srcs = [
-        "lib/arm-android-gcc4.9/libSNPE.so",
+        "lib/arm-android-clang6.0/libSNPE.so",
+        "lib/arm-android-clang6.0/libc++_shared.so",
     ],
     deps = ["snpe_hdr"],
     visibility = ["//visibility:public"],
@@ -32,10 +33,8 @@ cc_library(
         "-llog",
     ],
     srcs = [
-        "lib/aarch64-android-gcc4.9/libSNPE.so",
-        "lib/aarch64-android-gcc4.9/libsymphony-cpu.so",
-        "lib/aarch64-android-gcc4.9/libsymphonypower.so",
-        "lib/aarch64-android-gcc4.9/libgnustl_shared.so",
+        "lib/aarch64-android-clang6.0/libSNPE.so",
+        "lib/aarch64-android-clang6.0/libc++_shared.so",
     ],
     deps = ["snpe_hdr"],
     visibility = ["//visibility:public"],
@@ -44,8 +43,7 @@ cc_library(
 cc_library(
     name = "snpe_armhf",
     srcs = [
-        "lib/arm-linux-gcc4.8hf/libSNPE.so",
-        "lib/arm-linux-gcc4.8hf/libsymphony-cpu.so",
+        "lib/arm-oe-linux-gcc8.2hf/libSNPE.so",
     ],
     deps = ["snpe_hdr"],
     visibility = ["//visibility:public"],
@@ -55,7 +53,6 @@ cc_library(
     name = "snpe_aarch64",
     srcs = [
         "lib/aarch64-linux-gcc4.9/libSNPE.so",
-        "lib/aarch64-linux-gcc4.9/libsymphony-cpu.so",
     ],
     deps = ["snpe_hdr"],
     visibility = ["//visibility:public"],

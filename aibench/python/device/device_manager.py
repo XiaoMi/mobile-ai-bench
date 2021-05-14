@@ -18,13 +18,13 @@ import six
 import sh
 import yaml
 
-from adb_device import AdbDevice
-from device import Device
-from device import YAMLKeyword
-from host_device import HostDevice
-from huawei_adb_device import HuaweiAdbDevice
-from qualcomm_adb_device import QualcommAdbDevice
-from ssh_device import SshDevice
+from aibench.python.device.adb_device import AdbDevice
+from aibench.python.device.device import Device
+from aibench.python.device.device import YAMLKeyword
+from aibench.python.device.host_device import HostDevice
+from aibench.python.device.huawei_adb_device import HuaweiAdbDevice
+from aibench.python.device.qualcomm_adb_device import QualcommAdbDevice
+from aibench.python.device.ssh_device import SshDevice
 
 
 class DeviceManager:
@@ -66,7 +66,8 @@ class DeviceManager:
         adb_device = AdbDevice(adb)
         # TODO(luxuhui@xiaomi.com): optimize this match after qualcomm release
         # newer socs
-        if re.match("sdm\\d+$|msm\\d+$|msmnile", adb_device.target_soc, re.I):
+        if re.match("sdm\\d+$|msm\\d+$|msmnile|kona",
+                    adb_device.target_soc, re.I):
             # ["sdm845", "sdm660", "msm8998", "msm8996", "msmnile"]
             adb_device = QualcommAdbDevice(adb)
             print("Find qualcomm adb device:%s" % adb[0])

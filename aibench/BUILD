@@ -1,4 +1,20 @@
 config_setting(
+    name = "linux_base",
+    define_values = {
+        "linux_base": "true",
+    },
+    visibility = ["//visibility:public"],
+)
+
+config_setting(
+    name = "linux",
+    define_values = {
+        "linux": "true",
+    },
+    visibility = ["//visibility:public"],
+)
+
+config_setting(
     name = "android",
     values = {
         "crosstool_top": "//external:android/crosstool",

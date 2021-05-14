@@ -21,7 +21,8 @@
 #include <vector>
 
 #include "aibench/executors/base_executor.h"
-#include "mace/public/mace.h"
+#include "build/include/mace/public/mace.h"
+#include "mace/port/file_system.h"
 
 namespace aibench {
 
@@ -52,7 +53,7 @@ class MaceExecutor : public BaseExecutor {
   std::shared_ptr<mace::MaceEngine> engine_;
   int num_threads_;
   std::shared_ptr<mace::GPUContext> gpu_context_;
-  std::vector<unsigned char> model_weights_data_;
+  std::unique_ptr<mace::port::ReadOnlyMemoryRegion> model_weights_data_;
 };
 
 }  // namespace aibench

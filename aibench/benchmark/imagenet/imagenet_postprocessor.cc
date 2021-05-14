@@ -26,7 +26,7 @@
 #include <vector>
 #include <numeric>
 
-#include "mace/utils/logging.h"
+#include "aibench/utils/logging.h"
 #include "aibench/benchmark/imagenet/imagenet_preprocessor.h"
 
 namespace aibench {
@@ -65,10 +65,10 @@ ImageNetPostProcessor::ImageNetPostProcessor()
 Status ImageNetPostProcessor::Run(
     const std::string &filename,
     const std::map<std::string, BaseTensor> &outputs) {
-  MACE_CHECK(outputs.size() == 1);
+  AIBENCH_CHECK(outputs.size() == 1);
   auto output = outputs.begin();
   int64_t output_size = output->second.size();
-  MACE_CHECK(output_size == 1001 || output_size == 1000,
+  AIBENCH_CHECK(output_size == 1001 || output_size == 1000,
              "Output size should be 1001 or 1000.");
   float *output_data = output->second.data().get();
   auto output_iter = std::max_element(output_data,
@@ -83,7 +83,7 @@ Status ImageNetPostProcessor::Run(
   }
   ++total_count_;
 
-  return SUCCESS;
+  return Status::SUCCESS;
 }
 
 std::string ImageNetPostProcessor::GetResult() {
