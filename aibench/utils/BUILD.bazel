@@ -1,0 +1,38 @@
+# Description:
+# Mace utils.
+#
+package(
+    default_visibility = ["//visibility:public"],
+)
+
+licenses(["notice"])  # Apache 2.0
+
+load(
+    "//aibench:aibench.bzl",
+    "if_android",
+    "if_android_armv7",
+)
+
+cc_library(
+    name = "utils",
+    srcs = glob(
+        [
+            "*.cc",
+        ],
+    ),
+    copts = [
+        "-Werror",
+        "-Wextra",
+        "-Wno-missing-field-initializers",
+    ] + if_android_armv7([
+        "-mfpu=neon",
+        "-mfloat-abi=softfp",
+    ]),
+    linkopts = if_android([
+        "-llog",
+    ]),
+    deps = [
+        "//include:public_headers",
+    ],
+    alwayslink = 1,
+)

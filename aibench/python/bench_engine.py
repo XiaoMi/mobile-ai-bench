@@ -19,7 +19,11 @@ import os
 import re
 import sh
 import time
-import urllib
+try:
+    import urllib.request as urllib
+except ImportError:
+    import urllib as urllib
+import sys
 
 from aibench.proto import aibench_pb2
 from aibench.proto import base_pb2
@@ -79,13 +83,18 @@ def download_file(configs, filename, output_dir):
     return file_path
 
 
+def get_mace(configs, output_dir):
+    file_path = download_file(configs, "mace-1.0.4.zip", output_dir)
+    sh.unzip("-o", file_path, "-d", "third_party/mace")
+
+
 def get_tflite(configs, output_dir):
-    file_path = download_file(configs, "tensorflow-1.10.1.zip", output_dir)
+    file_path = download_file(configs, "tensorflow-2.4.1.zip", output_dir)
     sh.unzip("-o", file_path, "-d", "third_party/tflite")
 
 
 def get_mnn(configs, output_dir):
-    file_path = download_file(configs, "mnn-0.2.0.9.zip", output_dir)
+    file_path = download_file(configs, "MNN-1.1.1.zip", output_dir)
     sh.unzip("-o", file_path, "-d", "third_party/mnn")
 
 
@@ -116,10 +125,13 @@ def bazel_build(target, abi, executor, device_types):
         bazel_args += ("--define", "quantize=true")
         if base_pb2.DSP in device_types:
             bazel_args += ("--define", "hexagon=true")
-
-    sh.bazel(
-        _fg=True,
-        *bazel_args)
+    try:
+        sh.bazel(
+            _fg=True,
+            *bazel_args)
+    except Exception as e:
+        print(str(e) + e.stderr)
+        sys.exit(1)
     print("Build done!\n")
 
 
@@ -155,25 +167,57 @@ def prepare_device_env(device, abi, device_bin_path, executor):
         snpe_lib_path = ""
         if abi == "armeabi-v7a":
             snpe_lib_path = \
-                "bazel-mobile-ai-bench/external/snpe/lib/arm-android-gcc4.9"
+                "bazel-mobile-ai-bench/external/snpe/lib/arm-android-clang6.0"
         elif abi == "arm64-v8a":
             snpe_lib_path = \
-                "bazel-mobile-ai-bench/external/snpe/lib/aarch64-android-gcc4.9"  # noqa
+                "bazel-mobile-ai-bench/external/snpe/lib/aarch64-android-clang6.0"  # noqa
+        elif abi == "armhf":
+            snpe_lib_path = \
+                "bazel-mobile-ai-bench/external/snpe/lib/arm-oe-linux-gcc8.2hf"
+        elif abi == "aarch64":
+            snpe_lib_path = \
+                "bazel-mobile-ai-bench/external/snpe/lib/aarch64-linux-gcc4.9"
 
         if snpe_lib_path:
             device.push(snpe_lib_path, device_bin_path)
             libgnustl_path = os.environ["ANDROID_NDK_HOME"] + \
-                ("/sources/cxx-stl/gnu-libstdc++/4.9/libs/%s/" % abi) + \
-                "libgnustl_shared.so"
+                ("/sources/cxx-stl/llvm-libc++/libs/%s/" % abi) + \
+                "libc++_shared.so"
             device.push(libgnustl_path, device_bin_path)
 
         device.push("bazel-mobile-ai-bench/external/snpe/lib/dsp",
                     device_bin_path)
 
     # for mace
-    if base_pb2.MACE == executor and abi == "armeabi-v7a":
-        device.push("third_party/mace/nnlib/libhexagon_controller.so",
-                    device_bin_path)
+    if base_pb2.MACE == executor:
+        mace_lib_path = ""
+        mace_dsp_lib_path = ""
+        if abi == "armeabi-v7a":
+            mace_lib_path = \
+                "third_party/mace/build/lib/armeabi-v7a/libmace.so"
+            mace_dsp_lib_path = \
+                "third_party/mace/build/lib/armeabi-v7a/" + \
+                "libhexagon_controller.so"
+        elif abi == "arm64-v8a":
+            mace_lib_path = \
+                "third_party/mace/build/lib/arm64-v8a/libmace.so"
+            mace_dsp_lib_path = \
+                "third_party/mace/build/lib/arm64-v8a/libhexagon_controller.so"
+        elif abi == "armhf":
+            mace_lib_path = \
+                "third_party/mace/build/lib/arm_linux_gnueabihf"
+        elif abi == "aarch64":
+            mace_lib_path = \
+                "third_party/mace/build/lib/aarch64_linux_gnu"
+
+        if mace_lib_path:
+            device.push(mace_lib_path, device_bin_path)
+            libgnustl_path = os.environ["ANDROID_NDK_HOME"] + \
+                ("/sources/cxx-stl/llvm-libc++/libs/%s/" % abi) + \
+                "libc++_shared.so"
+            device.push(libgnustl_path, device_bin_path)
+        if mace_dsp_lib_path:
+            device.push(mace_dsp_lib_path, device_bin_path)
 
     # for tflite
     if base_pb2.TFLITE == executor:
@@ -181,11 +225,11 @@ def prepare_device_env(device, abi, device_bin_path, executor):
         if abi == "armeabi-v7a":
             tflite_lib_path = \
                 "third_party/tflite/tensorflow/lite/" + \
-                "lib/armeabi-v7a/libtensorflowLite.so"
+                "lib/armeabi-v7a/libtensorflowlite.so"
         elif abi == "arm64-v8a":
             tflite_lib_path = \
                 "third_party/tflite/tensorflow/lite/" + \
-                "lib/arm64-v8a/libtensorflowLite.so"
+                "lib/arm64-v8a/libtensorflowlite.so"
         if tflite_lib_path:
             device.push(tflite_lib_path, device_bin_path)
 
@@ -202,12 +246,12 @@ def prepare_device_env(device, abi, device_bin_path, executor):
             mnn_lib_path = \
                 "third_party/mnn/project/android/build_32/libMNN.so"
             mnn_cl_lib_path = \
-                "third_party/mnn/project/android/build_32/libMNN_CL.so"
+                "third_party/mnn/project/android/build_32/libMNN_Express.so"
         elif abi == "arm64-v8a":
             mnn_lib_path = \
                 "third_party/mnn/project/android/build_64/libMNN.so"
             mnn_cl_lib_path = \
-                "third_party/mnn/project/android/build_64/libMNN_CL.so"
+                "third_party/mnn/project/android/build_64/libMNN_Express.so"
         if mnn_lib_path:
             device.push(mnn_lib_path, device_bin_path)
             device.push(mnn_cl_lib_path, device_bin_path)
@@ -348,7 +392,7 @@ def get_cpu_mask(device):
         else:
             cpu_id += 1
     for freq in freq_list:
-        cpu_mask = '1' + cpu_mask if freq == max(freq_list) else '0' + cpu_mask
+        cpu_mask = '1' + cpu_mask if freq != min(freq_list) else '0' + cpu_mask
     return str(hex(int(cpu_mask, 2)))[2:], cpu_mask.count('1')
 
 
@@ -447,7 +491,14 @@ def bench_run(abi,
                 args = ' '.join(args)
                 cmd_run = cmd_tflite if item[AIBenchKeyword.executor] \
                     == base_pb2.TFLITE else cmd
-                device.exec_command("%s %s" % (cmd_run, args), _fg=True)
+                try:
+                    print(cmd_run + ' ' + args)
+                    device_output = device.exec_command("%s %s" %
+                                                        (cmd_run, args),
+                                                        _fg=True)
+                except Exception as e:
+                    print("stdout:" + e.stdout + " stderr:" + e.stderr)
+                    sys.exit(1)
                 elapse_minutes = (time.time() - start_time) / 60
             print("Elapse time: %f minutes." % elapse_minutes)
             src_path = os.path.join(device_bin_path, "result.txt")

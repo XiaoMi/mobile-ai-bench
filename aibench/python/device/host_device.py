@@ -13,7 +13,7 @@
 # limitations under the License.
 
 
-from device import Device
+from aibench.python.device.device import Device
 
 
 class HostDevice(Device):

@@ -16,7 +16,7 @@ import hashlib
 import os
 import sh
 
-import bench_utils
+import aibench.python.utils.bench_utils as bench_utils
 
 
 def strip_invalid_utf8(str):
@@ -26,7 +26,8 @@ def strip_invalid_utf8(str):
 def split_stdout(stdout_str):
     stdout_str = strip_invalid_utf8(stdout_str)
     # Filter out last empty line
-    return [l.strip() for l in stdout_str.split('\n') if len(l.strip()) > 0]
+    return [line.strip() for line in stdout_str.split('\n')
+            if len(line.strip()) > 0]
 
 
 def adb_push_file(src_file, dst_dir, serialno, silent=False):

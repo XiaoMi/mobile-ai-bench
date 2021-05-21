@@ -25,6 +25,18 @@ def if_android_arm64(a):
         "//conditions:default": [],
     })
 
+def if_linux(a, default_value = []):
+    return select({
+        "//aibench:linux": a,
+        "//conditions:default": [],
+    })
+
+def if_linux_base(a, default_value = []):
+    return select({
+        "//aibench:linux_base": a,
+        "//conditions:default": default_value,
+    })
+
 def if_armhf_linux(a):
     return select({
         "//aibench:armhf_linux": a,

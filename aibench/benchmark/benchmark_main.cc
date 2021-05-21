@@ -19,8 +19,8 @@
 
 #include "gflags/gflags.h"
 #include "google/protobuf/message_lite.h"
-#include "mace/utils/logging.h"
-#include "mace/utils/utils.h"
+#include "aibench/port/file_system.h"
+#include "aibench/utils/memory.h"
 #include "aibench/benchmark/benchmark.h"
 #include "aibench/proto/aibench.pb.h"
 #include "aibench/proto/base.pb.h"
@@ -48,6 +48,7 @@
 #include "aibench/benchmark/imagenet/imagenet_postprocessor.h"
 
 namespace aibench {
+
 namespace benchmark {
 
 DEFINE_int32(benchmark_option,
@@ -80,12 +81,17 @@ Status GetBenchInfo(const std::string &filename,
                     std::vector<DataFormat> *data_formats,
                     std::string *model_file,
                     std::string *weight_file) {
-  std::vector<unsigned char> file_buffer;
-  if (!mace::ReadBinaryFile(&file_buffer, filename)) {
+  std::unique_ptr<aibench::port::ReadOnlyMemoryRegion> file_buffer;
+  auto fs = GetFileSystem();
+  auto status = fs->NewReadOnlyMemoryRegionFromFile(filename.c_str(),
+                                                    &file_buffer);
+  if (status != Status::SUCCESS) {
     LOG(FATAL) << "Failed to read file: " << filename;
   }
   BenchFactory bench_factory;
-  bench_factory.ParseFromArray(file_buffer.data(), file_buffer.size());
+  bench_factory.ParseFromArray(
+      reinterpret_cast<const unsigned char *>(file_buffer->data()),
+      file_buffer->length());
   for (const auto &benchmark : bench_factory.benchmarks()) {
     if (benchmark.executor() != FLAGS_executor) continue;
     for (const auto &model : benchmark.models()) {
@@ -125,7 +131,7 @@ Status GetBenchInfo(const std::string &filename,
       }
     }
   }
-  return Status::NOT_SUPPORTED;
+  return Status::UNSUPPORTED;
 }
 
 Status GetModelBaseInfo(
@@ -139,12 +145,17 @@ Status GetModelBaseInfo(
     PreProcessor_PreProcessorType *pre_type,
     PostProcessor_PostProcessorType *post_type,
     MetricEvaluator_MetricEvaluatorType *metric_type) {
-  std::vector<unsigned char> file_buffer;
-  if (!mace::ReadBinaryFile(&file_buffer, filename)) {
+  std::unique_ptr<aibench::port::ReadOnlyMemoryRegion> file_buffer;
+  auto fs = GetFileSystem();
+  auto status = fs->NewReadOnlyMemoryRegionFromFile(filename.c_str(),
+                                                    &file_buffer);
+  if (status != Status::SUCCESS) {
     LOG(FATAL) << "Failed to read file: " << filename;
   }
   ModelFactory model_factory;
-  model_factory.ParseFromArray(file_buffer.data(), file_buffer.size());
+  model_factory.ParseFromArray(
+      reinterpret_cast<const unsigned char *>(file_buffer->data()),
+      file_buffer->length());
   for (const auto &model : model_factory.models()) {
     if (model.model_name() != FLAGS_model_name) continue;
     *channel_order = model.channel_order(0);
@@ -172,10 +183,10 @@ Status GetModelBaseInfo(
     input_var->assign(pre_processor.var().begin(), pre_processor.var().end());
     *post_type = model.post_processor().type();
     *metric_type = model.metric_evaluator().type();
-    return SUCCESS;
+    return Status::SUCCESS;
   }
 
-  return NOT_SUPPORTED;
+  return Status::UNSUPPORTED;
 }
 
 class PreProcessorFactory {
@@ -223,7 +234,7 @@ class PostProcessorFactory {
 
 }  // namespace
 
-int Main(int argc, char **argv) {
+Status Main(int argc, char **argv) {
   std::string usage = "run benchmark, e.g. " + std::string(argv[0]) +
       " [flags]";
   gflags::SetUsageMessage(usage);
@@ -253,7 +264,7 @@ int Main(int argc, char **argv) {
                        &input_var,
                        &pre_processor_type,
                        &post_processor_type,
-                       &metric_evaluator_type) != SUCCESS) {
+                       &metric_evaluator_type) != Status::SUCCESS) {
     LOG(FATAL) << "Model info parse failed";
   }
 

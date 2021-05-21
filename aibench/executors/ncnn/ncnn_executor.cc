@@ -65,7 +65,7 @@ Status NcnnExecutor::Prepare() {
 
   ret = net.load_param(GetModelFile().c_str());
   if (ret != 0) {
-    return Status::NOT_SUPPORTED;
+    return Status::UNSUPPORTED;
   }
 
   ret = net.load_model();

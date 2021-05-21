@@ -300,6 +300,8 @@ def main(unused_args):
     input_dir = bench_engine.prepare_datasets(configs, FLAGS.output_dir,
                                               FLAGS.input_dir)
 
+    if base_pb2.MACE in executors:
+        bench_engine.get_mace(configs, FLAGS.output_dir)
     if base_pb2.TFLITE in executors:
         bench_engine.get_tflite(configs, FLAGS.output_dir)
     if base_pb2.MNN in executors:

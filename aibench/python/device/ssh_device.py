@@ -20,8 +20,8 @@ import yaml
 
 from aibench.python.utils.common import *
 from aibench.python.utils.sh_commands import *
-from device import Device
-from device import YAMLKeyword
+from aibench.python.device.device import Device
+from aibench.python.device.device import YAMLKeyword
 
 
 class SshDevice(Device):

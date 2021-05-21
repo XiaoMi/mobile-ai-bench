@@ -30,7 +30,7 @@ Status MnnExecutor::Init(int num_threads) {
   } else if (device_type == DeviceType::VULKAN) {
     config_.type = MNN_FORWARD_VULKAN;
   } else {
-    return Status::NOT_SUPPORTED;
+    return Status::UNSUPPORTED;
   }
   return Status::SUCCESS;
 }

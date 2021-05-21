@@ -66,11 +66,13 @@ class Device:
         if base_pb2.MACE in executors:
             avail_executors.append(base_pb2.MACE)
         if base_pb2.TFLITE in executors:
-            avail_executors.append(base_pb2.TFLITE)
+            if abi != "aarch64" and abi != "armhf":
+                avail_executors.append(base_pb2.TFLITE)
         if base_pb2.NCNN in executors:
             avail_executors.append(base_pb2.NCNN)
         if base_pb2.MNN in executors:
-            avail_executors.append(base_pb2.MNN)
+            if abi != "aarch64" and abi != "armhf":
+                avail_executors.append(base_pb2.MNN)
 
         return avail_executors
 

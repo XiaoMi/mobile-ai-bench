@@ -68,11 +68,15 @@ Status ProcessInput(zdl::SNPE::SNPE *snpe,
   const auto &input_tensor_names_ref = snpe->getInputTensorNames();
   const auto &input_tensor_names = *input_tensor_names_ref;
   if (inputs.size() != input_tensor_names.size()) {
-    std::cerr << "inputs size not matched" << std::endl;
+    LOG(ERROR) << "inputs size not matched";
     return Status::RUNTIME_ERROR;
   }
   for (size_t i = 0; i < input_tensor_names.size(); i++) {
     std::string input_name(input_tensor_names.at(i));
+    if (inputs.find(input_name) == inputs.end()) {
+      std::cerr << "inputs name not matched" << std::endl;
+      return Status::RUNTIME_ERROR;
+    }
     const auto &input_shape_opt =
         snpe->getInputDimensions(input_tensor_names.at(i));
     const auto &input_shape = *input_shape_opt;
@@ -93,6 +97,10 @@ Status ProcessOutput(const zdl::DlSystem::TensorMap &output_tensor_map,
   auto tensor_names = output_tensor_map.getTensorNames();
   for (size_t i = 0; i < tensor_names.size(); ++i) {
     std::string output_name(tensor_names.at(i));
+    if (outputs->find(output_name) == outputs->end()) {
+      LOG(ERROR) << "outputs name not matched";
+      return Status::RUNTIME_ERROR;
+    }
     zdl::DlSystem::ITensor* output_tensor =
         output_tensor_map.getTensor(output_name.c_str());
     std::copy(output_tensor->begin(), output_tensor->end(),
@@ -121,13 +129,13 @@ Status SnpeExecutor::Init(int num_threads) {
 Status SnpeExecutor::Prepare() {
   zdl::DlSystem::Runtime_t device_type = GetSnpeRuntime(GetDeviceType());
   snpe_ = BuildSnpeRuntime(GetModelFile(), device_type);
-  if (snpe_ == nullptr) return Status::NOT_SUPPORTED;
+  if (snpe_ == nullptr) return Status::UNSUPPORTED;
   return Status::SUCCESS;
 }
 
 Status SnpeExecutor::Run(const std::map<std::string, BaseTensor> &inputs,
                          std::map<std::string, BaseTensor> *outputs) {
-  Status status = SUCCESS;
+  Status status = Status::SUCCESS;
 
   zdl::DlSystem::TensorMap input_tensor_map;
   zdl::DlSystem::TensorMap output_tensor_map;
@@ -141,6 +149,7 @@ Status SnpeExecutor::Run(const std::map<std::string, BaseTensor> &inputs,
 
   // step3: process output
   status = ProcessOutput(output_tensor_map, outputs);
+  if (status != Status::SUCCESS) return status;
 
   auto tensor_names = input_tensor_map.getTensorNames();
   for (size_t i = 0; i < tensor_names.size(); ++i) {

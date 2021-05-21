@@ -26,7 +26,7 @@
 #include <utility>
 #include <vector>
 
-#include "mace/utils/logging.h"
+#include "aibench/utils/logging.h"
 #include "opencv2/opencv.hpp"
 
 namespace aibench {
@@ -93,7 +93,7 @@ ImageNetPreProcessor::ImageNetPreProcessor(
   size_t means_size = input_means_.size();
   size_t var_size = input_var_.size();
 
-  MACE_CHECK(
+  AIBENCH_CHECK(
       ((formats_size == 1 || formats_size == 0)
           && (means_size == 1 || means_size == 0)
           && (var_size == 1 || var_size == 0)),
@@ -104,19 +104,19 @@ ImageNetPreProcessor::ImageNetPreProcessor(
   if (formats_size == 0) {
     data_formats_.emplace_back(NHWC);
   }
-  MACE_CHECK(data_formats_[0] == NHWC || data_formats_[0] == NCHW);
+  AIBENCH_CHECK(data_formats_[0] == NHWC || data_formats_[0] == NCHW);
   if (means_size == 0) {
     input_means_.emplace_back(3, 127.5);
   } else {
-    MACE_CHECK(input_means_[0].size() == 3, "Input means count should be 3");
+    AIBENCH_CHECK(input_means_[0].size() == 3, "Input means count should be 3");
   }
   if (var_size == 0) {
     input_var_.emplace_back(127.5);
   } else {
-    MACE_CHECK(input_var_[0] > 1e-6,
+    AIBENCH_CHECK(input_var_[0] > 1e-6,
                "Input standard deviation should be greater than zero");
   }
-  MACE_CHECK(channel_order_ == RGB || channel_order_ == BGR);
+  AIBENCH_CHECK(channel_order_ == RGB || channel_order_ == BGR);
 
   imagenet::GetBlackFileList("imagenet_blacklist.txt", &blacklist_);
 }
@@ -124,9 +124,9 @@ ImageNetPreProcessor::ImageNetPreProcessor(
 Status ImageNetPreProcessor::Run(const std::string &filename,
                                  std::map<std::string, BaseTensor> *inputs) {
   if (!imagenet::isValidFileName(blacklist_, filename)) {
-    return NOT_SUPPORTED;
+    return Status::UNSUPPORTED;
   }
-  MACE_CHECK(inputs->size() == 1);
+  AIBENCH_CHECK(inputs->size() == 1);
   auto input = inputs->begin();
   auto &input_shape = input->second.shape();
   auto input_data = input->second.data().get();
@@ -143,7 +143,7 @@ Status ImageNetPreProcessor::Run(const std::string &filename,
   } else {
     LOG(FATAL) << "Wrong input format: " << data_formats_[0];
   }
-  MACE_CHECK(image_channels == 3, "Input channels should be 3");
+  AIBENCH_CHECK(image_channels == 3, "Input channels should be 3");
 
   const std::string input_dir("inputs/");
   std::string file_path = input_dir + filename;
@@ -163,9 +163,9 @@ Status ImageNetPreProcessor::Run(const std::string &filename,
                            channel_order_ == RGB,
                            true);
 
-    MACE_CHECK(blob.isContinuous(), "blob is not continuous.");
+    AIBENCH_CHECK(blob.isContinuous(), "blob is not continuous.");
     auto input_size = std::distance(blob.begin<float>(), blob.end<float>());
-    MACE_CHECK(input_size == image_channels * image_height * image_width,
+    AIBENCH_CHECK(input_size == image_channels * image_height * image_width,
                "Wrong input size: ", input_size);
     if (data_formats_[0] == NHWC) {
       imagenet::TransformCHWToHWC(blob.ptr<float>(),
@@ -180,7 +180,7 @@ Status ImageNetPreProcessor::Run(const std::string &filename,
     }
   }
 
-  return SUCCESS;
+  return Status::SUCCESS;
 }
 
 }  // namespace benchmark

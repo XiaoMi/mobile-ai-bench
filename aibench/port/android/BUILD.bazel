@@ -1,0 +1,21 @@
+package(
+    default_visibility = ["//visibility:public"],
+)
+
+licenses(["notice"])  # Apache 2.0
+
+load("//aibench:aibench.bzl", "if_android")
+
+cc_library(
+    name = "port_android",
+    srcs = if_android(glob([
+        "*.cc",
+    ])),
+    hdrs = if_android(glob([
+        "*.h",
+    ])),
+    deps = if_android([
+        "//aibench/port/linux_base:port_linux_base",
+    ]),
+    alwayslink = 1,
+)

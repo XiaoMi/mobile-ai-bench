@@ -29,6 +29,7 @@ cc_library(
     ],
     deps = [
         "//aibench/proto:aibench_proto_cc",
+	"//include:public_headers",
     ],
 )
 
@@ -50,8 +51,15 @@ cc_library(
     ]),
     deps = [
         ":base_executor",
-        "//third_party/mace:mace",
-    ],
+    ] + if_android_armv7([
+        "//third_party/mace:mace_armeabi-v7a",
+    ]) + if_android_arm64([
+        "//third_party/mace:mace_arm64-v8a",
+    ]) + if_aarch64_linux([
+        "//third_party/mace:mace_aarch64",
+    ]) + if_armhf_linux([
+        "//third_party/mace:mace_armhf",
+    ]),
 )
 
 cc_library(
@@ -133,7 +141,7 @@ cc_library(
     ],
     deps = [
         ":base_executor",
-        "@mace//mace/utils",
+	"//aibench/utils:utils",
     ] + if_android_arm64([
         "@hiai//:hiai_arm64-v8a",
     ]),

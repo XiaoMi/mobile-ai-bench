@@ -15,7 +15,7 @@
 import re
 import sh
 
-from adb_device import AdbDevice
+from aibench.python.device.adb_device import AdbDevice
 from aibench.proto import base_pb2
 from aibench.python.utils.sh_commands import *
 

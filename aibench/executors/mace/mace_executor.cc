@@ -22,6 +22,7 @@
 #include <vector>
 
 #include "mace/utils/logging.h"
+#include "mace/port/file_system.h"
 
 namespace aibench {
 
@@ -59,8 +60,7 @@ Status MaceExecutor::CreateEngine(std::shared_ptr<mace::MaceEngine> *engine) {
   mace::DeviceType device_type = GetMaceDeviceType(GetDeviceType());
   mace::MaceEngineConfig config(device_type);
   config.SetCPUThreadPolicy(num_threads_,
-                            mace::CPUAffinityPolicy::AFFINITY_HIGH_PERFORMANCE,
-                            true);
+                            mace::CPUAffinityPolicy::AFFINITY_HIGH_PERFORMANCE);
   if (device_type == mace::DeviceType::GPU) {
     const char *storage_path_ptr = getenv("MACE_INTERNAL_STORAGE_PATH");
     const std::string storage_path =
@@ -75,25 +75,31 @@ Status MaceExecutor::CreateEngine(std::shared_ptr<mace::MaceEngine> *engine) {
         mace::GPUPriorityHint::PRIORITY_HIGH);
   }
 
-  std::vector<unsigned char> model_graph_data;
-  if (!mace::ReadBinaryFile(&model_graph_data, GetModelFile())) {
-    LOG(FATAL) << "Failed to read file: " << GetModelFile();
+  std::unique_ptr<mace::port::ReadOnlyMemoryRegion> model_graph_data;
+  auto fs = mace::GetFileSystem();
+  auto status = fs->NewReadOnlyMemoryRegionFromFile(GetModelFile().c_str(),
+                                                    &model_graph_data);
+  if (status != mace::MaceStatus::MACE_SUCCESS) {
+    LOG(FATAL) << "Failed to read model file: " << GetModelFile();
   }
-  model_weights_data_.clear();
-  if (!mace::ReadBinaryFile(&model_weights_data_, GetWeightFile())) {
+  model_weights_data_.reset();
+  status = fs->NewReadOnlyMemoryRegionFromFile(GetWeightFile().c_str(),
+                                               &model_weights_data_);
+  if (status != mace::MaceStatus::MACE_SUCCESS) {
     LOG(FATAL) << "Failed to read file: " << GetWeightFile();
   }
 
   mace::MaceStatus create_engine_status;
   create_engine_status =
-      mace::CreateMaceEngineFromProto(model_graph_data.data(),
-                                      model_graph_data.size(),
-                                      model_weights_data_.data(),
-                                      model_weights_data_.size(),
-                                      input_names_,
-                                      output_names_,
-                                      config,
-                                      engine);
+      mace::CreateMaceEngineFromProto(
+          reinterpret_cast<const unsigned char *>(model_graph_data->data()),
+          model_graph_data->length(),
+          reinterpret_cast<const unsigned char *>(model_weights_data_->data()),
+          model_weights_data_->length(),
+          input_names_,
+          output_names_,
+          config,
+          engine);
   return create_engine_status ==
       mace::MaceStatus::MACE_SUCCESS ? Status::SUCCESS : Status::RUNTIME_ERROR;
 }

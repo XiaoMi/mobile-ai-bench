@@ -20,10 +20,10 @@
 #include <string>
 
 #include "aibench/executors/base_executor.h"
-#include "include/Interpreter.hpp"
-#include "include/MNNDefine.h"
-#include "include/Tensor.hpp"
-#include "include/MNNForwardType.h"
+#include "include/MNN/Interpreter.hpp"
+#include "include/MNN/MNNDefine.h"
+#include "include/MNN/Tensor.hpp"
+#include "include/MNN/MNNForwardType.h"
 
 namespace aibench {
 
