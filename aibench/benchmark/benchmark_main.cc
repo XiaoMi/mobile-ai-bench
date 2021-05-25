@@ -43,6 +43,9 @@
 #ifdef AIBENCH_ENABLE_TFLITE
 #include "aibench/executors/tflite/tflite_executor.h"
 #endif
+#ifdef AIBENCH_ENABLE_TNN
+#include "aibench/executors/tnn/tnn_executor.h"
+#endif
 
 #include "aibench/benchmark/imagenet/imagenet_preprocessor.h"
 #include "aibench/benchmark/imagenet/imagenet_postprocessor.h"
@@ -319,6 +322,12 @@ Status Main(int argc, char **argv) {
 #ifdef AIBENCH_ENABLE_MNN
   if (executor_type == aibench::MNN) {
     executor.reset(new aibench::MnnExecutor(device_type, model_file));
+  }
+#endif
+#ifdef AIBENCH_ENABLE_TNN
+  if (executor_type == aibench::TNN) {
+    executor.reset(new aibench::TnnExecutor(device_type, model_file,
+                                            weight_file));
   }
 #endif
 

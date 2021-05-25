@@ -105,3 +105,11 @@ config_setting(
     },
     visibility = ["//visibility:public"],
 )
+
+config_setting(
+    name = "tnn_enabled",
+    define_values = {
+        "tnn": "true",
+    },
+    visibility = ["//visibility:public"],
+)

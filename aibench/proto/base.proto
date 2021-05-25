@@ -16,6 +16,7 @@ enum ExecutorType {
   NCNN = 4;
   HIAI = 5;
   MNN = 6;
+  TNN = 7;
 }
 
 enum DeviceType {

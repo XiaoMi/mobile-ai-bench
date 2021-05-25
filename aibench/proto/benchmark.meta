@@ -425,3 +425,59 @@ benchmarks {
     input_names: "input"
   }
 }
+benchmarks {
+  executor: TNN
+  models {
+    model_name: MobileNetV1
+    model_path: "https://cnbj1.fds.api.xiaomi.com/aibench/models/mobilenet_v1_1.0_224.tnnproto"
+    model_checksum: "795896c6f4f56d34a40fa5fffbdf26d2"
+    weight_path: "https://cnbj1.fds.api.xiaomi.com/aibench/models/mobilenet_v1_1.0_224.tnnmodel"
+    weight_checksum: "93f5e43f2a612632d84e86f6abb6a3cb"
+    devices: CPU
+    devices: GPU
+    input_names: "input"
+    output_names: "MobilenetV1/Predictions/Reshape_1"
+  }
+}
+benchmarks {
+  executor: TNN
+  models {
+    model_name: MobileNetV2
+    model_path: "https://cnbj1.fds.api.xiaomi.com/aibench/models/mobilenet_v2_1.0_224.tnnproto"
+    model_checksum: "6cde5b8334604868fc15272561c93830"
+    weight_path: "https://cnbj1.fds.api.xiaomi.com/aibench/models/mobilenet_v2_1.0_224.tnnmodel"
+    weight_checksum: "261592fb535df1c8dcde70e49c8421d6"
+    devices: CPU
+    devices: GPU
+    input_names: "input"
+    output_names: "MobilenetV2/Predictions/Reshape_1"
+  }
+}
+benchmarks {
+  executor: TNN
+  models {
+    model_name: InceptionV3
+    model_path: "https://cnbj1.fds.api.xiaomi.com/aibench/models/inception_v3_2016_08_28_frozen.tnnproto"
+    model_checksum: "c7abf3726db64e409e87d6a9bc2aa882"
+    weight_path: "https://cnbj1.fds.api.xiaomi.com/aibench/models/inception_v3_2016_08_28_frozen.tnnmodel"
+    weight_checksum: "b4498cbf98024069efece15ef60f078b"
+    devices: CPU
+    devices: GPU
+    input_names: "input"
+    output_names: "InceptionV3/Predictions/Reshape_1"
+  }
+}
+benchmarks {
+  executor: TNN
+  models {
+    model_name: SqueezeNetV11
+    model_path: "https://cnbj1.fds.api.xiaomi.com/aibench/models/squeezenet.tnnproto"
+    model_checksum: "7e44725c047d835b78132e6f294731ad"
+    weight_path: "https://cnbj1.fds.api.xiaomi.com/aibench/models/squeezenet.tnnmodel"
+    weight_checksum: "634388349e0faa1dd7e5197a0f49d76d"
+    devices: CPU
+    devices: GPU
+    input_names: "Placeholder"
+    output_names: "softmax_tensor"
+  }
+}

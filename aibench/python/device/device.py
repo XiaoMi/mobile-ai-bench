@@ -73,6 +73,9 @@ class Device:
         if base_pb2.MNN in executors:
             if abi != "aarch64" and abi != "armhf":
                 avail_executors.append(base_pb2.MNN)
+        if base_pb2.TNN in executors:
+            if abi != "aarch64" and abi != "armhf":
+                avail_executors.append(base_pb2.TNN)
 
         return avail_executors
 

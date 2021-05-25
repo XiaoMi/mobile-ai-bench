@@ -18,6 +18,7 @@ load(
     "if_snpe_enabled",
     "if_tflite_enabled",
     "if_mnn_enabled",
+    "if_tnn_enabled",
 )
 
 cc_library(
@@ -67,9 +68,10 @@ cc_test(
         "-DAIBENCH_ENABLE_HIAI",
     ]) + if_mnn_enabled([
         "-DAIBENCH_ENABLE_MNN",
+    ]) + if_tnn_enabled([
+        "-DAIBENCH_ENABLE_TNN",
     ]),
     linkopts = [
-        "-fopenmp",
         "-ldl",
     ] + if_android([
         "-pie",
@@ -92,5 +94,7 @@ cc_test(
         "//aibench/executors:hiai_executor",
     ]) + if_mnn_enabled([
         "//aibench/executors:mnn_executor",
+    ]) + if_tnn_enabled([
+        "//aibench/executors:tnn_executor",
     ]),
 )
