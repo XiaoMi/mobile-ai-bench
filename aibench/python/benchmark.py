@@ -257,6 +257,10 @@ def run_on_device(target_device,
         avail_device_types = \
             target_device.get_available_device_types(device_types, target_abi,
                                                      executor)
+        if len(avail_device_types) == 0:
+            print("Skip device %s which doesn't support current device_types"
+                  " %s" % (target_device.address, FLAGS.device_types))
+            continue
         bench_engine.bazel_build(target, target_abi, executor,
                                  avail_device_types)
         bench_engine.bench_run(
@@ -265,7 +269,8 @@ def run_on_device(target_device,
             FLAGS.num_threads, FLAGS.max_time_per_lock,
             benchmark_list, executor, avail_device_types, device_bench_path,
             FLAGS.output_dir, result_path, product_model)
-    result_files.append(result_path)
+    if os.path.exists(result_path):
+        result_files.append(result_path)
 
 
 def main(unused_args):

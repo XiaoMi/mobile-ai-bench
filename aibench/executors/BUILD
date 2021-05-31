@@ -105,10 +105,35 @@ cc_library(
         "-Wextra",
         "-Wno-missing-field-initializers",
     ],
+    linkopts = [
+        "-fopenmp",
+    ],
     deps = [
         ":base_executor",
         "@ncnn",
     ],
+)
+
+cc_library(
+    name = "tnn_executor",
+    srcs = glob([
+        "tnn/tnn_executor.cc",
+    ]),
+    hdrs = [
+        "tnn/tnn_executor.h",
+    ],
+    copts = [
+        "-Werror",
+        "-Wextra",
+        "-Wno-missing-field-initializers",
+    ],
+    deps = [
+        ":base_executor",
+    ] + if_android_armv7([
+        "@tnn//:tnn_armeabi-v7a",
+    ]) + if_android_arm64([
+        "@tnn//:tnn_arm64-v8a",
+    ]),
 )
 
 cc_library(

@@ -89,3 +89,8 @@ def if_mnn_enabled(a):
         "//aibench:mnn_enabled": a,
         "//conditions:default": [],
     })
+def if_tnn_enabled(a):
+    return select({
+        "//aibench:tnn_enabled": a,
+        "//conditions:default": [],
+    })

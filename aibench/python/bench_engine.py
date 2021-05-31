@@ -256,6 +256,18 @@ def prepare_device_env(device, abi, device_bin_path, executor):
             device.push(mnn_lib_path, device_bin_path)
             device.push(mnn_cl_lib_path, device_bin_path)
 
+    # for tnn
+    if base_pb2.TNN == executor:
+        tnn_lib_path = ""
+        if abi == "armeabi-v7a":
+            tnn_lib_path = \
+                "bazel-mobile-ai-bench/external/tnn/armeabi-v7a/libTNN.so"
+        elif abi == "arm64-v8a":
+            tnn_lib_path = \
+                "bazel-mobile-ai-bench/external/tnn/arm64-v8a/libTNN.so"
+        if tnn_lib_path:
+            device.push(tnn_lib_path, device_bin_path)
+
 
 def get_model_file(file_path, checksum, output_dir, push_list):
     filename = file_path.split('/')[-1]

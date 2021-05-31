@@ -146,6 +146,16 @@ new_http_archive(
     ],
 )
 
+# new_local_repository to benchmark TNN
+new_http_archive(
+    name = "tnn",
+    build_file = "third_party/tnn/tnn.BUILD",
+    sha256 = "83d084ca0a8974987f0f57c9b78e128d70499e00b0893f371b055fa75643c6db",
+    strip_prefix = "tnn-v0.3.0",
+    urls = [
+        "http://cnbj1-fds.api.xiaomi.net/aibench/third_party/tnn-v0.3.0.zip",
+    ],
+)
 # You need to uncomment following new_local_repository and comment foregoing
 # new_http_archive to benchmark HIAI
 # new_local_repository(
